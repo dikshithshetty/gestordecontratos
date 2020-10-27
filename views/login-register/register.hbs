@@ -1,0 +1,32 @@
+
+<form action="/register" method="POST">
+    
+    <input type="text" placeholder="Name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
+    <input type="text" placeholder="Surname" name="usersurname" value="{{#if formData.usersurname}}{{formData.usersurname}}{{/if}}">
+    <input type="email" placeholder="Email" name="email" value="{{#if formData.email}}{{formData.email}}{{/if}}">
+    <input type="email" placeholder="Repeat Email" name="repeatemail" value="{{#if formData.repeatemail}}{{formData.repeatemail}}{{/if}}">
+    <input type="password" placeholder="Password" name="password" value="{{#if formData.password}}{{formData.password}}{{/if}}">
+    <input type="password" placeholder="Password" name="repeatedpassword" value="{{#if formData.repeatedpassword}}{{formData.repeatedpassword}}{{/if}}">
+    <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
+        <option hidden selected>Select Your Role</option>
+        <option value="comercial-autorizado">Comercial - Autorizado</option>
+        <option value="comercial-director">Comercial - Director</option>
+        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
+        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
+        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
+        <option value="operaciones-director">Operaciones - Director</option>
+        <option value="prl-autorizado">PRL - Autorizado</option>
+        <option value="prl-director">PRL - Director</option>
+        
+    </select>
+    <button type="submit">Register</button>
+    {{#if formData.errorMsg}}
+    <div class="error-message">
+        <ul>
+            {{#each formData.errorMsg}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+</form>

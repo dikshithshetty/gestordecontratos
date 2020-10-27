@@ -1,0 +1,12 @@
+<form action="/" method="POST"> 
+    <input type="email" placeholder="Email" name="email">
+    <input type="password" placeholder="Password" name="password">
+    <button type="submit">Register</button>
+    Don't have an account? <a href="register">Create one here</a>
+    {{#if formData.succesMsg}}
+    <div class="success-message">{{formData.succesMsg}}</div>
+    {{/if}}
+    {{#if formData.errorMsg}}
+    <div class="error-message">{{formData.errorMsg}}</div>
+    {{/if}}
+</form>
