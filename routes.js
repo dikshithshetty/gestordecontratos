@@ -122,20 +122,11 @@ router.post('/', async(req,res,next)=>{
                 }
                 res.render("login-register/login",formData);
             }
-            
-
         } catch(error){
             next(error);
         }
-
-
     }
-
-    
-
-
-
 })
-
+//SESSION NOT WORKING
 
 module.exports=router;
