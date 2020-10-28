@@ -89,12 +89,20 @@ List of other features outside of the MVPs scope
 
 ## WireFrames
 
+<img src="/public/images/wireframes/login.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/register.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/register.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/login.png" alt="" heigth="200px">
 <img src="/public/images/wireframes/Contratos.png" alt="" heigth="200px">
-<img src="" alt="" heigth="200px">
-<img src="" alt="" heigth="200px">
-<img src="" alt="" heigth="200px">
-<img src="" alt="" heigth="200px">
-<img src="" alt="" heigth="200px">
+<img src="/public/images/wireframes/Approve Contracts.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Reject Contracts.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Delete Contracts.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Contract Detail.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Update Contracts.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Upload Contracts.png" alt="" heigth="200px">
+<img src="/public/images/wireframes/Status Contract.png" alt="" heigth="200px">
+
+
 
 
 ## Links
