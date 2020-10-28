@@ -8,16 +8,16 @@ const { findOne } = require("./models/user-model");
 const User = require('./models/user-model');
 
 router.get('/',(req,res,next)=>{
-    if (req.session!==undefined) {
-        next();
-    } else {
+    // if (req.session!==undefined) {
+    //     res.render('contracts');
+    // } else {
         res.render('login-register/login');
-    }
+    // }
 })
 
 router.get('/register',(req,res,next)=>{
     // if (req.session!==undefined) {
-    //     next();
+    //     res.render('contracts');
     // } else {
         res.render('login-register/register');
     // }
@@ -52,6 +52,9 @@ router.post('/register',async (req,res,next)=>{
     }
 
     //PENDING
+    // const validEmail = validateEmail(email);
+    // console.log(validEmail)
+    // if (validEmail===false){errorMsg.push('Invalid Email.')}
     // How to chack that it have capital leters and special characters?
     // How to check that an email is really an email?
 
@@ -81,9 +84,15 @@ router.post('/register',async (req,res,next)=>{
             role
         });
         formData.succesMsg="User succesfully created.";
-        res.render('login-register/login',{formData});
-    } else {
+        //FALTA QUE AL CREAR EL USUARIO APAREZCA EL MENSAJE DE USUARIO CREADO Y REDIRECCIONE AL LOGIN
+    //     res.render('login-register/login',{formData});
+    // } else {
         res.render("login-register/register",{formData});
+        // await setTimeout(async function(){
+
+        //    await  res.redirect("/") 
+        // },3000);
+        
     }
 })
 
@@ -95,12 +104,6 @@ router.post('/', async(req,res,next)=>{
     //Validates that the fields are not empty
     if (email=== ""||email ==null){errorMsg.push('Insert email.')}
     if (password=== ""||password ==null){errorMsg.push('Insert your password.')}
-    // try{
-    //     const user = await User.findOne({ email: email });
-    //     if (!user){errorMsg.push("This emails doesn't exist.")}
-    // } catch(error){
-    //     next(error);
-    // }
 
     if (errorMsg.length===0){
         const bcryptSalt = 10;
@@ -130,3 +133,8 @@ router.post('/', async(req,res,next)=>{
 //SESSION NOT WORKING
 
 module.exports=router;
+
+function validateEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
