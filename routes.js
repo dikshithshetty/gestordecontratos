@@ -88,7 +88,7 @@ router.post('/register',async (req,res,next)=>{
         //FALTA QUE AL CREAR EL USUARIO APAREZCA EL MENSAJE DE USUARIO CREADO Y REDIRECCIONE AL LOGIN
     //     res.render('login-register/login',{formData});
     // } else {
-        res.render("login-register/register",{formData});
+        res.render("login-register/login",{formData});
         // await setTimeout(async function(){
 
         //    await  res.redirect("/") 
