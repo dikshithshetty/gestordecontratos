@@ -8,11 +8,12 @@ const { findOne } = require("./models/user-model");
 const User = require('./models/user-model');
 
 router.get('/',(req,res,next)=>{
-    // if (req.session!==undefined) {
-    //     res.render('contracts');
-    // } else {
+    // console.log(req.session)
+    if (req.session.currentUser) {
+        res.render('contracts');
+    } else {
         res.render('login-register/login');
-    // }
+    }
 })
 
 router.get('/register',(req,res,next)=>{
@@ -98,32 +99,38 @@ router.post('/register',async (req,res,next)=>{
 
 
 router.post('/', async(req,res,next)=>{
+    console.log("postLogin")
     const{email, password} = req.body;
     var errorMsg = [];
 
     //Validates that the fields are not empty
     if (email=== ""||email ==null){errorMsg.push('Insert email.')}
     if (password=== ""||password ==null){errorMsg.push('Insert your password.')}
-
     if (errorMsg.length===0){
-        const bcryptSalt = 10;
-        const salt = bcrypt.genSaltSync(bcryptSalt);
-        const hashPass = bcrypt.hashSync(password, salt);
+        console.log(errorMsg)
+        // const bcryptSalt = 10;
+        // const salt = bcrypt.genSaltSync(bcryptSalt);
+        // const hashPass = bcrypt.hashSync(password, salt);
 
         try{
             const user = await User.findOne({ email: email });
-            console.log(user)
             if (!user){errorMsg.push("This emails doesn't exist.")}
             if (errorMsg.length===0){
-                if (bcrypt.compareSync(hashPass, user.password)) {
+                if (bcrypt.compareSync(password, user.password)) {
                     req.session.currentUser = user;
+                    // formData={
+                    //     succesMsg:"Succesfully Logged In",
+                    // }
+                    res.redirect("/")
                 }else{
                     errorMsg.push('Incorrect email or password.')
                     formData={
                         errorMsg:errorMsg,
                     }
                 }
+                console.log(formData)
                 res.render("login-register/login",formData);
+
             }
         } catch(error){
             next(error);
@@ -131,6 +138,14 @@ router.post('/', async(req,res,next)=>{
     }
 })
 //SESSION NOT WORKING
+
+
+router.get('/logout', (req, res, next) => {
+    req.session.destroy((err) => {
+        res.redirect('/')
+    })
+})
+
 
 module.exports=router;
 

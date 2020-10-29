@@ -3,8 +3,8 @@
     <input type="password" placeholder="Password" name="password">
     <button type="submit">Enter</button>
     Don't have an account? <a href="register">Create one here</a>
-    {{#if formData.succesMsg}}
-    <div class="success-message">{{formData.succesMsg}}</div>
+    {{#if succesMsg}}
+    <div class="success-message">{{succesMsg}}</div>
     
     {{/if}}
     {{#if formData.errorMsg}}

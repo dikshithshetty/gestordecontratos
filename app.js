@@ -34,7 +34,7 @@ app.use(session({
       ttl: 180
     }),
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: false
   }));
 
 const index = require('./routes');
