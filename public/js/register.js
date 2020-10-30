@@ -1,4 +1,4 @@
-function addRoleSelector(addButton){
+function addRoleSelectorBtn(addButton){
     console.log(addButton)
     const selector =`<select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
     <option hidden selected>Select Your Role</option>
@@ -13,3 +13,4 @@ function addRoleSelector(addButton){
 </select>`
     addButton.insertBefore(selector)
 }
+document.getElementById(addRoleSelectorBtn).addEventListener('onclick',addRoleSelector(this))

@@ -10,6 +10,9 @@ const path = require('path');
 const MongoStore = require("connect-mongo")(session);
 const app_name = require('./package.json').name;
 
+const fs=require('fs');
+// const fileUpload = require('express-fileupload');
+
 const app = express();
 
 // require database configuration
@@ -24,7 +27,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+// app.use(fileUpload())
 app.use(session({
     secret: "basic-auth-secret",
     cookie: { maxAge: 60000 },
@@ -38,6 +41,7 @@ app.use(session({
   }));
 
 const index = require('./routes');
+
 app.use('/', index);
 
 module.exports = app;
