@@ -1,0 +1,148 @@
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 200;
+    font-stretch: normal;
+    src: url(/fonts/AAVESLGT.otf);
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 200;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESLIT.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 300;
+    font-stretch: normal;
+    src: url(/fonts/AAVESREG.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 300;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESITA.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 400;
+    font-stretch: normal;
+    src: url(/fonts/AAVESBOL.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESBIT.otf) format("otf");
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-white: #FFFFFF; /*main white*/
+    --color-black: #303030; /*main black & text*/
+    --color-blue-light: #52BEDD; /*shadow light blue*/
+    --color-shadow-blue: rgba(0,162,209,15); /*shadow selected cards*/
+    --color-blue: #00A2D1; /*main blue*/
+    --color-red: #CE6D6D; /*reject & red status & notifications*/
+    --color-yellow: #FDCA6F; /*yellow status*/
+    --color-green: #7CBD43; /*accept contracts & notifications*/
+    --color-grey-light: #F7F7F7; /*background color popup*/
+    --color-grey-bg: #F4F4F4; /*background color login/register*/
+    --color-shadow-grey: #EDEDED; /*shadow cards*/
+    --color-grey-medium: #CDCDCD; /*outline cards*/
+    --color-grey: #979797; /*text forms & placeholders*/
+}
+
+html,body, input, button{
+    font-family: "ASSA Vesta", sans-serif;
+}
+
+/*H1 Styles*/
+h1{
+    font-size: 3rem;
+}
+
+.black{
+    color: var(--color-black);
+}
+
+.blue{
+    color: var(--color-blue);
+}
+
+
+/*H2 Styles*/
+h2{
+
+}
+
+/*a links*/
+a {
+    text-decoration: none;
+    color: var(--color-black);
+}
+
+/*Underline*/
+.underline-link{
+    text-decoration: underline;
+}
+
+/*btn Styles*/
+.btn{
+    width: auto;
+    padding: 10px 25px;
+    border: none;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+form .btn{
+    margin-top: 30px;
+}
+
+.btn-blue {
+    background: var(--color-blue);
+    color: var(--color-white);
+}
+
+.btn-red {
+    background: var(--color-red);
+    color: var(--color-white);
+}
+
+
+/*Inputs & Placeholders*/
+input{
+    border-radius: 5px;
+    padding: 15px 30px;
+    margin: 0 10px 20px 10px;
+    border: 1px solid var(--color-blue);
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+input::placeholder{
+    color: var(--color-black);
+    font-weight: 200;
+    font-size: 0.875rem;
+}

@@ -1,25 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Manager</title>
+    <link rel="stylesheet" href="/stylesheets/main.css">
+    <link rel="stylesheet" href="/stylesheets/login-register.css">
+    <script src="/js/register.js"></script>
+</head>
+<body>
 
-<form action="/register" method="POST">
-    
-    <input type="text" placeholder="Name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
-    <input type="text" placeholder="Surname" name="usersurname" value="{{#if formData.usersurname}}{{formData.usersurname}}{{/if}}">
-    <input type="email" placeholder="Email" name="email" value="{{#if formData.email}}{{formData.email}}{{/if}}">
-    <input type="email" placeholder="Repeat Email" name="repeatemail" value="{{#if formData.repeatemail}}{{formData.repeatemail}}{{/if}}">
-    <input type="password" placeholder="Password" name="password" value="{{#if formData.password}}{{formData.password}}{{/if}}">
-    <input type="password" placeholder="Password" name="repeatedpassword" value="{{#if formData.repeatedpassword}}{{formData.repeatedpassword}}{{/if}}">
-    <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
-        <option hidden selected>Select Your Role</option>
-        <option value="comercial-autorizado">Comercial - Autorizado</option>
-        <option value="comercial-director">Comercial - Director</option>
-        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
-        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
-        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
-        <option value="operaciones-director">Operaciones - Director</option>
-        <option value="prl-autorizado">PRL - Autorizado</option>
-        <option value="prl-director">PRL - Director</option>
-    </select>
-    <button href="" onclick=addRoleSelector(this)>Add more roles</button>
-    <button type="submit">Register</button>
+<form class="bg-register-login register-container" action="/register" method="POST">
+    <h1 class="black">Signup</h1>
+         <div class="form-label">
+            <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
+            <input type="text" placeholder="Last name" name="usersurname" value="{{#if formData.usersurname}}{{formData.usersurname}}{{/if}}">
+        </div>
+
+        <div class="form-label">
+            <input type="email" placeholder="Your email here" name="email" value="{{#if formData.email}}{{formData.email}}{{/if}}">
+            <input type="email" placeholder="Repeat your email" name="repeatemail" value="{{#if formData.repeatemail}}{{formData.repeatemail}}{{/if}}">
+        </div>
+
+        <div class="form-label">
+            <input type="password" placeholder="Introduce a password" name="password" value="{{#if formData.password}}{{formData.password}}{{/if}}">
+            <input type="password" placeholder="Repeat your password" name="repeatedpassword" value="{{#if formData.repeatedpassword}}{{formData.repeatedpassword}}{{/if}}">
+        </div>
+
+        <div class="select">
+            <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
+                <option hidden selected>Select your Role/Department</option>
+                <option value="comercial-autorizado">Comercial - Autorizado</option>
+                <option value="comercial-director">Comercial - Director</option>
+                <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
+                <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
+                <option value="operaciones-autorizado">Operaciones - Autorizado</option>
+                <option value="operaciones-director">Operaciones - Director</option>
+                <option value="prl-autorizado">PRL - Autorizado</option>
+                <option value="prl-director">PRL - Director</option>
+            </select>
+        </div>
+
+    <p class="underline-link forgot-password"  onclick=addRoleSelector(this)>Add more roles/departments</p>
+    <button class="btn btn-blue" type="submit">Signup</button>
+
     {{#if formData.errorMsg}}
     <div class="error-message">
         <ul>
@@ -29,8 +53,12 @@
         </ul>
     </div>
     {{/if}}
+
     {{#if formData.succesMsg}}
     <div class="success-message">{{formData.succesMsg}}</div>
     <a href="/">Go to Login</a>
     {{/if}}
+
 </form>
+</body>
+</html>

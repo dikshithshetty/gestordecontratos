@@ -9,10 +9,13 @@ const User = require('./models/user-model');
 
 router.get('/',(req,res,next)=>{
     // console.log(req.session)
+    let template = {
+        layout: false
+    }
     if (req.session.currentUser) {
         res.render('contracts');
     } else {
-        res.render('login-register/login');
+        res.render('login-register/login', template);
     }
 })
 
@@ -20,7 +23,10 @@ router.get('/register',(req,res,next)=>{
     // if (req.session!==undefined) {
     //     res.render('contracts');
     // } else {
-        res.render('login-register/register');
+        let template = {
+            layout: false
+        }
+        res.render('login-register/register', template);
     // }
 })
 
