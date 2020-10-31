@@ -163,31 +163,13 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
         noFileSelected="No se ha seleccionado ningún contrato.";
         res.render("contract-actions/create-contract.hbs",{noFileSelected});
     }else {
-        // console.log("req.file.path: "+req.file.path)
-        //Create folder "temporaryFiles" if it doesnt exists already.
-        // let tempFilesFolderName="temporaryFiles"; 
-        let tempFolder = path.join(__dirname,"temporaryFiles");   //console.log("tempFilesPath: "+tempFilesPath)
-        // console.log("Time to: Create Temporary Folder")
-        // if (!fs.existsSync(tempFolder)){fs.mkdirSync(tempFolder);}   
-        // await createDirectory(tempFolder)
-        // console.log("--> Temporary Folder Created")
+   
         //Save document to "temporaryFiles" folder
+        let tempFolder = path.join(__dirname,"temporaryFiles");
         let tempFile = path.join(tempFolder,req.file.originalname);  //console.log("tempFile: "+tempFile)
-        console.log(req.file)
-        console.log(tempFile)
         await saveFile(req.file.path,tempFile)
-        // console.log("Time to: Save Temporary File in Temporary Folder")
-        // if (fs.existsSync(tempFile)){
-        //     // console.log("Time to: Delete Previous Temporary File")
-        //     fs.unlinkSync(tempFile)
-        //     // console.log("--> Previous Temporary File Deleted")
-        // }
-        // fs.rename(req.file.path, tempFile, err => {if (err) {console.log(err);}});
-        // console.log("--> Temporary File saved in Temporary Folder")
-
         
         //Reads Excel File Variables
-        // console.log(tempFile)
         const pq=readExcel(tempFile,'V7');
         const pqFolderName = editPQ(pq)
         const comercial=readExcel(tempFile,'F7');
@@ -200,59 +182,26 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
         const fechaRecepcion=readExcel(tempFile,'U19');
         console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
 
-        
         var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
         
         if (errorMsg.length>0){
-            deleteFile(tempfile)
-            // console.log("Time to: Delete Temporary File from Temporary Folder")
-            // fs.unlinkSync(tempFile)
-            // console.log("--> Temporary File Deleted From Temporary Folder")
-            // console.log("Time to render Create-Contracts.hbs with Error Message")
+            deleteFile(tempFile)
             res.render("contract-actions/create-contract.hbs",{errorMsg});
         } else {
 
             //Create folder "contracts" if it doesnt exists already.
-            // let contractsFolderName = "contracts";
             let contractsFolder = path.join(__dirname, "contracts");   //console.log("contractsFolder: "+contractsFolder)
-            // console.log("Time to: Create Contracts Folder")
-            // if (!fs.existsSync(contractsFolder)){fs.mkdirSync(contractsFolder)} // console.log(req.file)
-            // console.log("--> Contracts Folder Created")
             const pqFolder=path.join(contractsFolder,pqFolderName);  //console.log("contractPath: " + contractPath);
-            // console.log("Time to: Create Contracts/PQ-XXXXXX-X Folder")
-            // if (!fs.existsSync(pqFolder)){fs.mkdirSync(pqFolder);}
-            // console.log("--> Contracts/PQ-XXXXXX-X Folder Created")
-            // console.log("Time to: Save Uploaded Form File in Contracts/PQ-XXXXXX-X")
-            // console.log("req.file.originalname: "+req.file.originalname)
             const pqExcelFile = path.join(pqFolder,req.file.originalname);  //console.log("contractExcelFile: " + contractExcelFile);
-
-            // if (fs.existsSync(pqExcelFile)){
-            //     // console.log("Time to: Delete Previous Contract File")
-            //     fs.unlinkSync(pqExcelFile)
-            //     // console.log("--> Previous Contract File Deleted")
-            // }
             saveFile(tempFile,pqExcelFile)
-            // fs.rename(tempFile, pqExcelFile, err => {if (err) {console.log(err)}})
-            // console.log("--> Uploaded Form File saved in Contracts/PQ-XXXXXX-X")
-            // console.log("Time to: Delete Temporary File from Temporary Folder")
-            // fs.unlinkSync(tempFile)
-            deleteFile(tempfile)
-
-            // console.log("--> Temporary File Deleted From Temporary Folder")
-
-
-
-
-
-
-
+            deleteFile(tempFile)
             succesMsg = "Contrato Creado Correctamente.";
-            // console.log("Time to render Create-Contracts.hbs with Success Message")
             res.render("contract-actions/create-contract.hbs",{succesMsg});
         }
     }
-    
 });
+
+
 async function deleteFile (filePath) {
     try {
       await fs.remove(filePath)
@@ -278,7 +227,7 @@ async function saveFile(src,dest){
     }
 }
 function editPQ(pq){
-    return pq.split('-')[0] + "-"+pq.split('-')[1];
+    if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
 }
 function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion){
     var errorMsg = [];
