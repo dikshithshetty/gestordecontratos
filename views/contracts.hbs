@@ -1,3 +1,16 @@
+ <div id="container">       
+        <div class="second-nav">
+            <ul>
+                <li><a href="/" class="cool-link">Contracts</a></li>
+                <li><a href="" class="cool-link">Alerts</a></li>
+                <li><a href="" class="cool-link">Indicators</a></li>
+                <li><a href="" class="cool-link">Permissions</a></li>
+            </ul>
+         
+            <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button>
+            
+        </div>
+
 <div class="contracts-container">
     <div class="title-container">
         <h2 class="blue" onclick="">Pending contracts</h2><span>/</span><h2 class="grey" onclick="">Closed contracts</h2>
@@ -34,3 +47,39 @@
             {{/each}}
     </div>
 </div>
+</div>
+
+{{!-- popups --}}
+<div id="myModal" class="modal">
+        <div class="modal-content modal-blue">
+            <span class="close-btn">&times;</span>
+
+            {{!-- partials here --}}
+            {{> add-contract}}
+        </div>
+</div>
+
+
+
+
+
+
+<script>
+var modal = document.getElementById("myModal");
+var addbtn = document.getElementById("add-btn");
+var blurred = document.getElementById("container");
+var closebtn = document.querySelector(".close-btn");
+addbtn.onclick = function() {
+  modal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtn.onclick = function() {
+  modal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>

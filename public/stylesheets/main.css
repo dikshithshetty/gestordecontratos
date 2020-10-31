@@ -87,6 +87,10 @@ h1{
 
 
 /*H2 Styles*/
+h2{
+    font-size: 2.5rem;
+}
+
 
 
 /*a links*/
@@ -162,7 +166,7 @@ input::placeholder{
 
 .nav li a {
     text-align: center;
-    background-color: var(--color-blue);
+    background-color: var(--color-black);
     color:#fff;
     text-decoration:none;
     padding:10px 12px;
@@ -172,13 +176,13 @@ input::placeholder{
 }
 
 .nav li a:hover {
-    background-color: var(--color-blue-light);
+    background-color: var(--color-grey);
 }
 
 .nav li ul{
     display:none;
     position:absolute;
-    right: 12px;
+    right: 16px;
     min-width:140px;
 }
 
@@ -301,3 +305,68 @@ input::placeholder{
 .contract-card:active{
     border: 1px solid var(--color-blue);
 }
+
+
+/* ---------------------- POPUP TEMPLATE ----------------------*/
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--color-white);
+    background-color: rgba(var(--color-white), 0.8); 
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+  
+
+  .modal-content {
+    background-color: var(--color-white);
+    margin: auto;
+    padding: 20px;
+    border: 2px solid;
+    border-radius: 15px;
+    width: 40%;
+    min-height: 10%;
+    height: auto;
+    position: relative;
+    box-shadow: 0px 0px 10px 9px rgba(var(--color-shadow-grey), 1); 
+  }
+
+  .modal-blue{
+    border-color: var(--color-blue);
+  }
+
+  .modal-red{
+    border-color: var(--color-red);
+    }
+  
+  .close-btn {
+    color: var(--color-black);
+    position: absolute;
+    right: 0;
+    padding-right: 15px;
+    font-size: 2.5rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .close-btn:hover,
+  .close-btn:focus {
+    color: var(--color-blue);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  #container.blurred{
+    -webkit-filter: blur(3px);
+	filter: blur(3px);
+	-webkit-transition: .3s ease-in-out;
+	transition: .3s ease-in-out;
+  }
