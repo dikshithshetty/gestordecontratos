@@ -8,11 +8,12 @@ const fs = require('fs-extra')
 
 const { findOne } = require("./models/user-model");
 const User = require('./models/user-model');
+const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"/uploadedContracts"})
 const path = require("path");
 // const fileUpload = require('express-fileupload');
-
+const SSF=require("SSF")
 var XLSX = require('xlsx');
 const { Console } = require('console');
 
@@ -149,11 +150,6 @@ router.post('/', async(req,res,next)=>{
         }
     }
 })
-
-
-//SESSION NOT WORKING
-
-
 router.get('/logout', (req, res, next) => {
     req.session.destroy((err) => {
         res.redirect('/');
@@ -166,10 +162,9 @@ router.get('/createContract',(req,res,next)=>{
         res.render('contract-actions/create-contract.hbs');
     // }
 })
-
-router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=>{
+router.post("/uploadNewContractToDB",upload.single('excelFile'), async (req,res)=>{
     console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-    // console.log("req.file: ", req.file)
+    console.log("req.file: ", req.file)
     if (req.file===undefined){
         noFileSelected="No se ha seleccionado ningún contrato.";
         res.render("contract-actions/create-contract.hbs",{noFileSelected});
@@ -206,6 +201,19 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
             const pqExcelFile = path.join(pqFolder,req.file.originalname);  //console.log("contractExcelFile: " + contractExcelFile);
             saveFile(tempFile,pqExcelFile)
             deleteFile(tempFile)
+
+            await Contract.create({
+                pq,
+                comercial,
+                cliente,
+                obra,
+                usuarioFinal,
+                nPedido,
+                importe,
+                fechaStatusWon,
+                fechaRecepcion
+            });
+
             succesMsg = "Contrato Creado Correctamente.";
             res.render("contract-actions/create-contract.hbs",{succesMsg});
         }
@@ -216,15 +224,15 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
 async function deleteFile (filePath) {
     try {
       await fs.remove(filePath)
-      console.log('File Removed: '+filePath)
+    //   console.log('File Removed: '+filePath)
     } catch (err) {
       console.error(err)
     }
-  }
+}
 async function createDirectory(dir){
     try{
         await fs.ensureDir(dir)
-        console.log("Directory Created: " +dir)
+        // console.log("Directory Created: " +dir)
     } catch (err){
         console.error(err)
     }
@@ -232,7 +240,7 @@ async function createDirectory(dir){
 async function saveFile(src,dest){
     try{
         await fs.ensureLink(src,dest)
-        console.log("File Saved from: " + src + " to " + dest)
+        // console.log("File Saved from: " + src + " to " + dest)
     } catch (err){
         console.error(err)
     }
@@ -257,14 +265,45 @@ function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,
 function readExcel(excelPath,cell){
     var workbook = XLSX.readFile(excelPath);
     var first_sheet_name = workbook.SheetNames[0];
+    
     var address_of_cell = cell;
     var worksheet = workbook.Sheets[first_sheet_name];
     var desired_cell = worksheet[address_of_cell];
+    
     var desired_value = (desired_cell  ? desired_cell.v : undefined);
+    if (cell==='H19' || cell==="U19"){
+        // console.log("Previous Value: " +desired_value)
+        if(desired_value!==undefined){desired_value=ExcelDateToJSDate(desired_value).toLocaleString().split(' ')[0]}
+        // desired_value=SSF.format(fmt:Number,val:desired_value)
+        // console.log("After Value: " + desired_value)
+    }
+    // console.log(desired_value)
     return desired_value;
 }
 function validateEmail(email) {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
+function ExcelDateToJSDate(serial) {
+    var utc_days  = Math.floor(serial - 25569);
+    var utc_value = utc_days * 86400;                                        
+    var date_info = new Date(utc_value * 1000);
+    // var fractional_day = serial - Math.floor(serial) + 0.0000001;
+    // var total_seconds = Math.floor(86400 * fractional_day);
+    // var seconds = total_seconds % 60;
+    // total_seconds -= seconds;
+    // var hours = Math.floor(total_seconds / (60 * 60));
+    // var minutes = Math.floor(total_seconds / 60) % 60;
+    returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+    returnDate=returnDate.toLocaleString().split(' ')[0]
+
+    var year=returnDate.split('-')[0]
+    var month=returnDate.split('-')[1]
+    var day=returnDate.split('-')[2]
+    if (month.length===1){month='0'+month}
+    returnDate=day+"/"+month+"/"+year
+    // console.log(returnDate)
+
+    return returnDate;
+ }
 module.exports=router;
