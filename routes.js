@@ -12,15 +12,11 @@ const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"/uploadedContracts"})
 
-// const storage = multer.memoryStorage()
-// const upload=multer({storage:storage})
-
 const path = require("path");
-// const fileUpload = require('express-fileupload');
 const SSF=require("SSF")
 var XLSX = require('xlsx');
 const { Console } = require('console');
-
+const nodemailer=require('nodemailer')
 
 router.get('/',(req,res,next)=>{
     // console.log(req.session)
@@ -216,6 +212,24 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
             //Create Contract to DB
             await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
 
+            let transporter = nodemailer.createTransport({
+                host:"smtp-mail.outlook.com",
+                port:587,
+                secure:false,
+                auth: {
+                    user: "",
+                    pass: ""
+                  },
+            })
+
+            let info=await transporter.sendMail({
+                from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
+                to:"esteve.martin@mpasolutions.es",
+                subject:"Test Email",
+                html: "<b> NO ME CREO QUE HAYA LLEGADO </b>"
+            })
+
+
             succesMsg = "Contrato Creado Correctamente.";
             res.render("contract-actions/create-contract.hbs",{succesMsg});
         }
@@ -308,5 +322,5 @@ function ExcelDateToJSDate(serial) {
     // console.log(returnDate)
 
     return returnDate;
- }
+}
 module.exports=router;
