@@ -11,6 +11,10 @@ const User = require('./models/user-model');
 const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"/uploadedContracts"})
+
+// const storage = multer.memoryStorage()
+// const upload=multer({storage:storage})
+
 const path = require("path");
 // const fileUpload = require('express-fileupload');
 const SSF=require("SSF")
@@ -162,18 +166,18 @@ router.get('/createContract',(req,res,next)=>{
         res.render('contract-actions/create-contract.hbs');
     // }
 })
-router.post("/uploadNewContractToDB",upload.single('excelFile'), async (req,res)=>{
+router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
     console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-    console.log("req.file: ", req.file)
-    if (req.file===undefined){
+    console.log(req.files)
+    if (req.files.length===0){
         noFileSelected="No se ha seleccionado ningún contrato.";
         res.render("contract-actions/create-contract.hbs",{noFileSelected});
     }else {
-   
-        //Save document to "temporaryFiles" folder
+        
+        //Save Excel document to "temporaryFiles" folder to read it
         let tempFolder = path.join(__dirname,"temporaryFiles");
-        let tempFile = path.join(tempFolder,req.file.originalname);  //console.log("tempFile: "+tempFile)
-        await saveFile(req.file.path,tempFile)
+        let tempFile = path.join(tempFolder,req.files[0].originalname);
+        await saveFile(req.files[0].path,tempFile)
         
         //Reads Excel File Variables
         const pq=readExcel(tempFile,'V7');
@@ -187,6 +191,7 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'), async (req,res)
         const fechaStatusWon=readExcel(tempFile,'H19');
         const fechaRecepcion=readExcel(tempFile,'U19');
         console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
+        await deleteFile(tempFile)
 
         var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
         
@@ -194,25 +199,22 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'), async (req,res)
             deleteFile(tempFile)
             res.render("contract-actions/create-contract.hbs",{errorMsg});
         } else {
+            //Create PQ Folder
+            let contractsFolder = path.join(__dirname, "contracts");
+            const pqFolder=path.join(contractsFolder,pqFolderName);
+            let uploadedFiles=[]
 
-            //Create folder "contracts" if it doesnt exists already.
-            let contractsFolder = path.join(__dirname, "contracts");   //console.log("contractsFolder: "+contractsFolder)
-            const pqFolder=path.join(contractsFolder,pqFolderName);  //console.log("contractPath: " + contractPath);
-            const pqExcelFile = path.join(pqFolder,req.file.originalname);  //console.log("contractExcelFile: " + contractExcelFile);
-            saveFile(tempFile,pqExcelFile)
-            deleteFile(tempFile)
 
-            await Contract.create({
-                pq,
-                comercial,
-                cliente,
-                obra,
-                usuarioFinal,
-                nPedido,
-                importe,
-                fechaStatusWon,
-                fechaRecepcion
-            });
+            //Save all the files to PQ Folder
+            for (i=0;i<req.files.length;i++){
+                let uploadedFile=req.files[i]
+                let fileToSave = path.join(pqFolder,uploadedFile.originalname)
+                await saveFile(uploadedFile.path,fileToSave)
+                uploadedFiles.push(fileToSave)
+            }
+
+            //Create Contract to DB
+            await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
 
             succesMsg = "Contrato Creado Correctamente.";
             res.render("contract-actions/create-contract.hbs",{succesMsg});
@@ -223,6 +225,7 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'), async (req,res)
 
 async function deleteFile (filePath) {
     try {
+        // console.log(filePath)
       await fs.remove(filePath)
     //   console.log('File Removed: '+filePath)
     } catch (err) {
