@@ -2,4 +2,21 @@
     <input type="file" name="excelFile">
     {{!-- <input type="file" name="otherFiles" multiple> --}}
     <input type="submit" value="Create Contract">
+    {{#if errorMsg}}
+    <div class="error-message">
+        Los siguientes campos se encuentran vacíos en la hoja de firmas y se deben rellenar para dar de alta el contrato:
+        <ul>
+            {{#each errorMsg}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    {{else if noFileSelected}}
+    <div class="error-message">
+        {{noFileSelected}}
+    </div>
+    {{else}}
+    <div class="success-message">{{succesMsg}}</div>
+    {{!-- <a href="/">Go to Login</a> --}}
+    {{/if}}
 </form>
