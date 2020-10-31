@@ -9,7 +9,7 @@ const fs = require('fs-extra')
 const { findOne } = require("./models/user-model");
 const User = require('./models/user-model');
 const multer=require('multer')
-const upload=multer({dest:"/uploadedContracts"})
+const upload=multer({dest:"uploadedContracts"})
 const path = require("path");
 // const fileUpload = require('express-fileupload');
 
@@ -90,6 +90,7 @@ router.post('/register',async (req,res,next)=>{
         const bcryptSalt = 10;
         const salt = bcrypt.genSaltSync(bcryptSalt);
         const hashPass = bcrypt.hashSync(password, salt);
+
         await User.create({
             name:username,
             surname:usersurname,
@@ -101,7 +102,7 @@ router.post('/register',async (req,res,next)=>{
         //FALTA QUE AL CREAR EL USUARIO APAREZCA EL MENSAJE DE USUARIO CREADO Y REDIRECCIONE AL LOGIN
     //     res.render('login-register/login',{formData});
     // } else {
-        res.render("login-register/login",{formData});
+        res.render("login-register/login",{formData, layout: false});
         // await setTimeout(async function(){
 
         //    await  res.redirect("/") 
@@ -137,11 +138,12 @@ router.post('/', async(req,res,next)=>{
                     errorMsg.push('Incorrect email or password.')
                     formData={
                         errorMsg:errorMsg,
+                        layout:false
                     }
                 }
                 // console.log(formData);
                 res.render("login-register/login",formData);
-                //MUESTRA LA NAVBAR Y NO DEBERIA
+                
 
             }
         } catch(error){
