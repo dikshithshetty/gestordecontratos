@@ -1,0 +1,31 @@
+                <h2>Upload files</h2>
+               
+                <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
+                    <input id="file" class="upload-files" type="file" name="excelFile">
+                    <label for="file">Please select your files </label>
+                    <p class="underline-link note-text">Your file should be in .xlm, .pdf</p>
+                    {{!-- <input type="file" name="otherFiles" multiple> --}}
+                    <input class="create-contracts-btn" type="submit" value="Create Contract">
+                    {{#if errorMsg}}
+                        <div class="error-message">
+                            Los siguientes campos se encuentran vacíos en la hoja de firmas y se deben rellenar para dar de alta el contrato:
+                            <ul>
+                                {{#each errorMsg}}
+                                <li>{{this}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+
+                        {{else}}
+                            {{#if noFileSelected}}
+                                <div class="error-message">
+                                    {{noFileSelected}}
+                                </div>
+                                {{else}}
+                                    {{#if succesMsg}}
+                                    <div class="success-message">{{succesMsg}}</div>
+                                {{!-- <a href="/">Go to Login</a> --}}
+                                    {{/if}}
+                            {{/if}}
+                    {{/if}}
+                </form>
