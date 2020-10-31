@@ -9,7 +9,6 @@
 @font-face {
     font-display: swap;
     font-family: "ASSA Vesta";
-    font-weight: 200;
     font-style: italic;
     font-stretch: normal;
     src: url(/fonts/AAVESLIT.otf) format("otf");
@@ -18,7 +17,6 @@
 @font-face {
     font-display: swap;
     font-family: "ASSA Vesta";
-    font-weight: 300;
     font-stretch: normal;
     src: url(/fonts/AAVESREG.otf) format("otf");
 }
@@ -26,7 +24,6 @@
 @font-face {
     font-display: swap;
     font-family: "ASSA Vesta";
-    font-weight: 300;
     font-style: italic;
     font-stretch: normal;
     src: url(/fonts/AAVESITA.otf) format("otf");
@@ -35,15 +32,15 @@
 @font-face {
     font-display: swap;
     font-family: "ASSA Vesta";
-    font-weight: 400;
     font-stretch: normal;
+    font-weight: bold;
     src: url(/fonts/AAVESBOL.otf) format("otf");
 }
 
 @font-face {
     font-display: swap;
     font-family: "ASSA Vesta";
-    font-weight: 400;
+    font-weight: bold;
     font-style: italic;
     font-stretch: normal;
     src: url(/fonts/AAVESBIT.otf) format("otf");
@@ -64,7 +61,7 @@
     --color-red: #CE6D6D; /*reject & red status & notifications*/
     --color-yellow: #FDCA6F; /*yellow status*/
     --color-green: #7CBD43; /*accept contracts & notifications*/
-    --color-grey-light: #F7F7F7; /*background color popup*/
+    --color-grey-light: #E6E8F1; /*background color popup*/
     --color-grey-bg: #F4F4F4; /*background color login/register*/
     --color-shadow-grey: #EDEDED; /*shadow cards*/
     --color-grey-medium: #CDCDCD; /*outline cards*/
@@ -90,9 +87,7 @@ h1{
 
 
 /*H2 Styles*/
-h2{
 
-}
 
 /*a links*/
 a {
@@ -145,4 +140,164 @@ input::placeholder{
     color: var(--color-black);
     font-weight: 200;
     font-size: 0.875rem;
+}
+
+
+
+
+/* ---------------------- LAYOUT ----------------------*/
+
+
+
+.first-nav{
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 5% 15px 5%;
+    border-bottom: 1px solid var(--color-grey-light);
+}
+
+.nav ul{
+    list-style: none;
+}
+
+.nav li a {
+    text-align: center;
+    background-color: var(--color-blue);
+    color:#fff;
+    text-decoration:none;
+    padding:10px 12px;
+    display:block;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.nav li a:hover {
+    background-color: var(--color-blue-light);
+}
+
+.nav li ul{
+    display:none;
+    position:absolute;
+    right: 12px;
+    min-width:140px;
+}
+
+.nav li:hover > ul {
+    display:block;
+}
+
+.nav li ul li {
+    position:relative;
+    margin: 5px 0;
+}
+
+.nav li ul li ul {
+    right:-140px;
+    top:0px;
+}
+
+.nav li img{
+    width: 35px;
+    height: auto;
+}
+
+.nav .first-nav span{
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+
+.second-nav{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 60px 10% 30px 10%;
+}
+
+.second-nav ul li {
+    display: inline-block;
+}
+
+.second-nav li a{
+    padding: 0 20px;
+}
+
+.second-nav .btn{
+    margin: 0;
+}
+
+
+
+
+
+
+/* ---------------------- CONTRACT PAGE / HOME ----------------------*/
+
+.contracts-container{
+    display: block;
+    margin: 10px 5%;
+}
+
+.title-container h2{ 
+    cursor: pointer;
+}
+
+.title-container{
+    display: inline-flex;
+    justify-content: flex-start;
+    margin: 30px 0;
+}
+
+.title-container span{
+    font-size: 1.5rem;
+    color: var(--color-grey);
+    padding: 0 20px;
+}
+
+
+.nav-contract,
+.contract-card{
+    display: flex;
+    margin: 40px;
+    justify-content: space-between;
+    padding: 10px;
+
+}
+
+
+.nav-contract-items td,
+.nav-contract-actions td{
+    padding: 0 15px;
+    width: 90px;
+}
+
+.nav-contract-items td{
+    padding: 0 60px;
+}
+
+.cards{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 40px;
+}
+
+/* ---------------------- CONTRACT CARD ----------------------*/
+
+.nav-contract-actions img{
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.contract-card{
+    align-items: center;
+    border: 1px solid var(--color-grey-medium);
+    background-color: var(--color-white);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.contract-card:active{
+    border: 1px solid var(--color-blue);
 }

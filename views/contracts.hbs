@@ -1,4 +1,36 @@
 <div class="contracts-container">
-    <h2 class="blue">Contracts</h1>
+    <div class="title-container">
+        <h2 class="blue" onclick="">Pending contracts</h2><span>/</span><h2 class="grey" onclick="">Closed contracts</h2>
+    </div>
+ 
+    <div class="nav-contract">
+        <div class="nav-contract-items">
 
+            <table>
+                <th>
+                    <td>PQ</td>
+                    <td>Amount</td>
+                    <td>Commercial</td>
+                    <td>Client</td>
+                </th>
+            </table>
+        </div>
+        <div class="nav-contract-actions">
+            <table>
+                <th>
+                    <td>Accept</td>
+                    <td>Reject</td>
+                    <td>Delete</td>
+                    <td>Edit</td>
+                </th>
+            </table>
+        </div>
+    </div>
+
+{{!-- contracts cards here --}}
+    <div class="cards">
+            {{#each ----}}
+            {{> contract-card this}}
+            {{/each}}
+    </div>
 </div>
