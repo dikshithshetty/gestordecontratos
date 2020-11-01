@@ -13,4 +13,4 @@ function addRoleSelectorBtn(addButton){
 </select>`
     addButton.insertBefore(selector)
 }
-document.getElementById(addRoleSelectorBtn).addEventListener('onclick',addRoleSelector(this));
+document.querySelector("#addRoleSelectorBtn").addEventListener('onclick',addRoleSelector(this));
