@@ -11,7 +11,6 @@ const User = require('./models/user-model');
 const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"uploadedContracts"})
-const path = require("path");
 // const fileUpload = require('express-fileupload');
 
 const SSF=require("SSF")

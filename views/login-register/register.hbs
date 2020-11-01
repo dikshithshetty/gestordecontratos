@@ -43,7 +43,7 @@
 
     <p class="underline-link forgot-password"  id ="addRoleSelectorBtn" onclick="addRoleSelectorBtn()">Add more roles/departments</p>
     <button class="btn btn-blue" type="submit">Signup</button>
-
+    
     {{#if formData.errorMsg}}
     <div class="error-message">
         <ul>
@@ -58,6 +58,15 @@
     <div class="success-message">{{formData.succesMsg}}</div>
     <a href="/">Go to Login</a>
     {{/if}}
+    
+    <!-- register section -->
+    <div class="devided-block">
+        <div class="devided"></div>
+        <span>or</span>
+        <div class="devided"></div>
+    </div>
+
+        <a class="create-account-link" href="/">Go to Login</a>
 
 </form>
 </body>
