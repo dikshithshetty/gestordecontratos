@@ -1,4 +1,4 @@
- <div id="container">       
+<div id="container">       
         <div class="second-nav">
             <ul>
                 <li><a href="/" class="cool-link">Contracts</a></li>
@@ -64,7 +64,7 @@
 {{!-- contracts cards here --}}
     <div class="cards">
             {{#each formData.contractList}}
-            <div class="contract-card">
+            <div class="contract-card" >
                 <div class="nav-contract-items">
 
                     <table>
@@ -81,7 +81,9 @@
                         <tr>
                             <td><img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})"></td>
                             <td><img src="images/icons/reject.png" alt="reject" onclick=""></td>
-                            <td><img src="images/icons/delete-Icon.png" alt="delete" onclick=""></td>
+                            <td><img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></td>
+                            {{!-- <td><a href="/deleteContract/{{_id}}"><img src="images/icons/delete-Icon.png" alt="delete"></a></td> --}}
+
                             <td><img src="images/icons/edit.png" alt="edit" onclick=""></td>
                         </tr>
                     </table>
@@ -120,6 +122,7 @@
 
 {{!-- popups --}}
 
+
 {{!-- Add / create contracts --}}
 <div id="addModal" class="modal">
         <div class="modal-content modal-blue">
@@ -138,9 +141,9 @@
                 </form>
         </div>
 </div>
-
+{{#each formData.contractList}}
 {{!-- Accept contracts --}}
-<div id="acceptModal" class="modal">
+<div id="acceptModal-{{_id}}" class="modal">
         <div class="modal-content modal-blue">
             <span id="close-btn-accept" class="close-btn">&times;</span>
                 <h2 class="blue">Accept contract</h2>
@@ -174,7 +177,7 @@
 </div>
 
 {{!-- Reject contracts --}}
-<div id="rejectModal" class="modal">
+<div id="rejectModal-{{_id}}" class="modal">
         <div class="modal-content modal-red">
             <span id="close-btn-reject" class="close-btn">&times;</span>
                 <h2 class="red">Reject contract</h2>
@@ -210,7 +213,7 @@
 </div>
 
 {{!-- Delete contracts --}}
-<div id="deleteModal" class="modal">
+<div id="deleteModal-{{_id}}" class="modal">
         <div class="modal-content modal-red">
             <span id="close-btn-delete" class="close-btn">&times;</span>
                 <h2 class="red">Delete contract</h2>
@@ -219,26 +222,38 @@
 
                 <div class="selectors-options">
                     <div class="accept">
-                        <img src="images/icons/reject.png" alt="reject" onclick="">
+                        <a href="/deleteContract/{{_id}}"><img src="images/icons/approve.png" alt="reject" onclick=""  ></a>
                     </div>
                     <div class="reject">
-                        <img src="images/icons/approve.png" alt="accept" onclick="">
+                        <img src="images/icons/reject.png" alt="accept" onclick="">
                     </div>
 
                 </div>
         </div>
 </div>
-
-
+{{/each}}
 
 
 <script>
+function showDeleteModal(element){
+    let id =element.id.split("-")[1];
+    console.log(id);
+    let deleteModal = document.getElementById("deleteModal-"+id);
+        console.log(deleteModal);
 
+    deleteModal.style.display = "block";
+    let blurred = document.getElementById("container");
+        console.log(blurred);
+
+    blurred.classList.add('blurred');
+}
 /*CREATE CONTRACTS*/
 var addModal = document.getElementById("addModal"); /*Ventana emergente*/
 var addbtn = document.getElementById("add-btn"); /*Boton add contracts*/
 var closebtnAdd = document.getElementById("close-btn-add");
 
+//var deleteIconEsteve = document.getElementsByClassName("deleteIconEsteve");
+//console.log(deleteIconEsteve)
 var blurred = document.getElementById("container"); /*Blurred window*/
 
 addbtn.onclick = function() {
@@ -268,6 +283,10 @@ closebtnAccept.onclick = function() {
 var rejectModal = document.getElementById("rejectModal"); /*Ventana emergente*/
 var rejectbtn = document.getElementById("reject-btn"); /*Boton reject contracts*/
 var closebtnReject = document.getElementById("close-btn-reject");
+deleteIconEsteve.onclick = function() {
+  rejectModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
 
 rejectbtn.onclick = function() {
   rejectModal.style.display = "block";
@@ -282,6 +301,15 @@ closebtnReject.onclick = function() {
 var deleteModal = document.getElementById("deleteModal"); /*Ventana emergente*/
 var deletebtn = document.getElementById("delete-btn"); /*Boton delete contracts*/
 var closebtnDelete = document.getElementById("close-btn-delete");
+//deleteIconEsteve.forEach(element=>{element.addEventListener('onclick',showModal(this))})
+/*deleteIconEsteve.onclick = function() {
+  deleteModal.style.display = "block";
+  blurred.classList.add('blurred');
+}*/
+/*function showModal(element){
+    element.style.display = "block";
+    blurred.classList.add('blurred');
+}*/
 
 deletebtn.onclick = function() {
   deleteModal.style.display = "block";

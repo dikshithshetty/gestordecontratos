@@ -248,6 +248,19 @@ router.get("/displayPendingContracts", async (req,res)=>{
         res.render("contracts.hbs",{formData});
     }
 })
+router.get("/deleteContract/:id",async(req,res)=>{
+    // console.log(req.params.id)
+    const id=req.params.id
+    // console.log("GET INSIDE ID: ", id)
+    await Contract.findByIdAndUpdate({_id:id},{visible:false})
+    res.redirect("/displayPendingContracts")
+})
+
+router.get("/rejectContract/:id",async(req,res)=>{
+    const id=req.params.id
+    const userName = req.session.currentUser.userName
+    const userSurname = req.session.currentUser.userSurname
+})
 
 async function sendEmail(emailParams){
     let attachmentsObj = []
