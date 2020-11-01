@@ -11,7 +11,6 @@ const User = require('./models/user-model');
 const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"uploadedContracts"})
-const path = require("path");
 // const fileUpload = require('express-fileupload');
 
 const path = require("path");
@@ -140,12 +139,12 @@ router.post('/', async(req,res,next)=>{
                 }else{
                     errorMsg.push('Incorrect email or password.')
                     formData={
-                        errorMsg:errorMsg,
-                        layout:false
+                        layout:false,
+                        errorMsg:errorMsg
                     }
                 }
                 // console.log(formData);
-                res.render("login-register/login",formData);
+                res.render("login-register/login", formData);
                 
 
             }
