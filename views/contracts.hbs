@@ -13,7 +13,7 @@
 
 <div class="contracts-container">
     <div class="title-container">
-        <h2 class="blue" onclick="">Pending contracts</h2><span>/</span><h2 class="grey" onclick="">Closed contracts</h2>
+        <h2 class="blue" onclick="">Pending contracts</h2><h2 class="grey">/</h2><h2 class="grey" onclick="">Closed contracts</h2>
     </div>
  
     <div class="nav-contract">
@@ -42,9 +42,35 @@
 
 {{!-- contracts cards here --}}
     <div class="cards">
-            {{#each ----}}
-            {{> contract-card this}}
-            {{/each}}
+            {{!-- {{#each ----}}
+            {{!-- {{> contractCard this}} --}}
+            {{!-- {{/each}} --}}
+
+                <div class="contract-card">
+        <div class="nav-contract-items">
+
+            <table>
+                <tr>
+                    <td>{{pq}}</td>
+                    <td>{{importe}}</td>
+                    <td>{{comercial}}</td>
+                    <td>{{cliente}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="nav-contract-actions">
+            <table>
+                <tr>
+                    <td><img id="accept-btn" src="images/icons/approve.png" alt="accept"></td>
+                    <td><img id="reject-btn" src="images/icons/reject.png" alt="reject"></td>
+                    <td><img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete"></td>
+                    <td><img id="edit-btn" src="images/icons/edit.png" alt="edit"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
     </div>
 </div>
 </div>
@@ -52,13 +78,12 @@
 {{!-- popups --}}
 
 
-<div id="myModal" class="modal">
+<div id="addModal" class="modal">
         <div class="modal-content modal-blue">
             <span class="close-btn">&times;</span>
-     
+                 {{> createContract}}
         </div>
 </div>
-
 
 
 
@@ -67,8 +92,13 @@
 <script>
 
 /*CREATE CONTRACTS*/
-var modal = document.getElementById("myModal");
+var modal = document.getElementById("addModal");
+
 var addbtn = document.getElementById("add-btn");
+/*var acceptbtn = document.getElementById("accept-btn");
+var rejectbtn = document.getElementById("reject-btn");
+var deletebtn = document.getElementById("delete-btn");*/
+
 var blurred = document.getElementById("container");
 var closebtn = document.querySelector(".close-btn");
 addbtn.onclick = function() {

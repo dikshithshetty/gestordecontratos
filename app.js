@@ -19,31 +19,28 @@ const app = express();
 require('./cfg/db-cfg');
 
 
-// hbs.registerPartial('partial', fs.readFileSync(__dirname + '/views/partial', 'utf8'));
-hbs.registerPartials(__dirname + '/views/partials');
-
+// hbs.registerPartial('partial', fs.readFileSync(__dirname + '/views/partials/', 'utf8'));
+// hbs.registerPartials(__dirname + "/views/partials");
+// hbs.registerPartials(__dirname + '/views/partials');
+// hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-// hbs.registerPartials(__dirname + '/views/partials');
-// hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
-
-
-//Registrar varis arxius
-// var partialsDir = __dirname + '/views/partials';
-// var filenames = fs.readdirSync(partialsDir);
-// filenames.forEach(function (filename) {
-// var matches = /^([^.]+).hbs$/.exec(filename);
-// if (!matches) {
-// return;
-// }
-// var name = matches[1];
-// var template = fs.readFileSync(partialsDir + '/' + filename, 'utf8');
-// hbs.registerPartial(name, template);
-// });
+//Registrar varis partials
+var partialsDir = __dirname + '/views/partials';
+var filenames = fs.readdirSync(partialsDir);
+filenames.forEach(function (filename) {
+var matches = /^([^.]+).hbs$/.exec(filename);
+if (!matches) {
+return;
+}
+var name = matches[1];
+var template = fs.readFileSync(partialsDir + '/' + filename, 'utf8');
+hbs.registerPartial(name, template);
+});
 
 
 

@@ -86,6 +86,10 @@ h1{
     color: var(--color-blue);
 }
 
+.grey{
+    color: var(--color-grey);
+}
+
 
 /*H2 Styles*/
 h2{
@@ -357,6 +361,7 @@ input::placeholder{
     border-radius: 15px;
     width: 60%;
     min-height: 10%;
+    max-width: 60%;
     height: auto;
     position: relative;
     box-shadow: 0px 0px 10px 9px rgba(var(--color-shadow-grey), 1); 
@@ -396,14 +401,19 @@ input::placeholder{
 	transition: .3s ease-in-out;
   }
 
-  /* ---------------------- CREATE TEMPLATE ----------------------*/
+  /* ---------------------- CREATE / UPLOAD FILES ----------------------*/
 
 .add-contracts-form input{
     border: none;
     margin: 0 auto;
-    width: 50%;
+    width: 150px;
     display: flex;
     justify-content: center;
+}
+
+.create-contracts-btn{
+    background-color: var(--color-blue);
+    color: var(--color-white);
 }
 
 .add-contracts-form{
