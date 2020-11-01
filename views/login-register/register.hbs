@@ -11,7 +11,7 @@
 <body>
 
 <form class="bg-register-login register-container" id="registerForm" action="/register" method="POST">
-    <h1 class="black">Signup</h1>
+    <h1 class="black">Register</h1>
          <div class="form-label">
             <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
             <input type="text" placeholder="Last name" name="usersurname" value="{{#if formData.usersurname}}{{formData.usersurname}}{{/if}}">
@@ -42,7 +42,7 @@
         </div>
 
     <p class="underline-link forgot-password"  id ="addRoleSelectorBtn" onclick="addRoleSelectorBtn()">Add more roles/departments</p>
-    <button class="btn btn-blue" type="submit">Signup</button>
+    <button class="btn btn-blue" type="submit">Create Account</button>
     
     {{#if formData.errorMsg}}
     <div class="error-message">

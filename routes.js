@@ -1,22 +1,17 @@
 /*jshint -W033 */
 const express = require('express');
 const router = express.Router();
-// const User=require('../models/user-model')
 const bcrypt = require("bcryptjs");
-// const fs=require('fs');
 const fs = require('fs-extra')
-
-const { findOne } = require("./models/user-model");
-const User = require('./models/user-model');
-const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"uploadedContracts"})
-// const fileUpload = require('express-fileupload');
-
-const SSF=require("SSF")
-var XLSX = require('xlsx');
-const { Console } = require('console');
+const path=require('path')
+const XLSX = require('xlsx');
 const nodemailer=require('nodemailer')
+const User = require('./models/user-model');
+const Contract = require('./models/contract-model');
+const { Console } = require('console');
+const { findOne } = require("./models/user-model");
 
 router.get('/',(req,res,next)=>{
     // console.log(req.session)
@@ -60,29 +55,13 @@ router.post('/register',async (req,res,next)=>{
         role:role
     };
 
-
     if (errorMsg.length===0){
         const bcryptSalt = 10;
         const salt = bcrypt.genSaltSync(bcryptSalt);
         const hashPass = bcrypt.hashSync(password, salt);
-
-        await User.create({
-            name:username,
-            surname:usersurname,
-            email,
-            password:hashPass,
-            role
-        });
+        await User.create({name:username,surname:usersurname,email,password:hashPass,role});
         formData.succesMsg="User succesfully created.";
-        //FALTA QUE AL CREAR EL USUARIO APAREZCA EL MENSAJE DE USUARIO CREADO Y REDIRECCIONE AL LOGIN
-    //     res.render('login-register/login',{formData});
-    // } else {
         res.render("login-register/login",{formData, layout: false});
-        // await setTimeout(async function(){
-
-        //    await  res.redirect("/") 
-        // },3000);
-        
     } else{
         res.render("login-register/register",{formData, layout: false});
     }
@@ -116,6 +95,7 @@ router.post('/', async(req,res,next)=>{
                                                                         //User Exists.
             if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                 req.session.currentUser = user;                         //Save User Session.
+                // await deleteDir(path.join(__dirname,"uploadedContracts"))
                 res.redirect("/")                                       //Redirect to home.
             }else{
                 errorMsg="Incorrect email or password."                 //Password is inccorrect.
@@ -131,97 +111,143 @@ router.get('/logout', (req, res, next) => {
     })
 })
 router.get('/createContract',(req,res,next)=>{
-    // if (req.session!==undefined) {
-    //     res.render('contracts');
-    // } else {
-        res.render('contract-actions/create-contract.hbs');
-    // }
+    if (req.session!==undefined) {
+        res.render('contracts');
+    } else {
+        res.redirect('/');
+    }
 })
 router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
-    console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-    // console.log(req.files)
-    if (req.files.length===0){
-        noFileSelected="No se ha seleccionado ningún contrato.";
-        res.render("contracts.hbs",{noFileSelected});
-    }else {
-        
-        //Save Excel document to "temporaryFiles" folder to read it
-        let tempFolder = path.join(__dirname,"temporaryFiles");
-        let tempFile = path.join(tempFolder,req.files[0].originalname);
-        let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
-        console.log("Extensión: " ,ext)
-        if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
-            noFileSelected="La hoja de firmas no se encuentra en formato Excel."
+    
+    if (req.session===undefined) {
+        res.redirect("/")
+    }else{
+        console.log("--------------- UPLOADING NEW CONTRACT ---------------");
+        // console.log(req.files)
+        if (req.files.length===0){
+            noFileSelected="No se ha seleccionado ningún contrato.";
             res.render("contracts.hbs",{noFileSelected});
-        }
-        
-        await saveFile(req.files[0].path,tempFile)
-        
-        //Reads Excel File Variables
-        const pq=readExcel(tempFile,'V7');
-        const pqFolderName = editPQ(pq)
-        const comercial=readExcel(tempFile,'F7');
-        const cliente=readExcel(tempFile,'F9');
-        const obra=readExcel(tempFile,'E11');
-        const usuarioFinal=readExcel(tempFile,'G13');
-        const nPedido=readExcel(tempFile,'W11');
-        const importe=readExcel(tempFile,'G17');
-        const fechaStatusWon=readExcel(tempFile,'H19');
-        const fechaRecepcion=readExcel(tempFile,'U19');
-        // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
-        // await deleteFile(tempFile)
-
-        var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
-
-        //Check that the contract doesn't exists in the DB.
-        const contract = await Contract.findOne({ pq: pq });
-        if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
-
-        if (errorMsg.length>0){
-            deleteFile(tempFile)
-            res.render("contracts.hbs",{errorMsg});
-        } else {
-            //Create PQ Folder
-            let contractsFolder = path.join(__dirname, "contracts");
-            const pqFolder=path.join(contractsFolder,pqFolderName);
-            let uploadedFiles=[]
-
-
-            //Save all the files to PQ Folder
-            for (i=0;i<req.files.length;i++){
-                let uploadedFile=req.files[i]
-                let fileToSave = path.join(pqFolder,uploadedFile.originalname)
-                await saveFile(uploadedFile.path,fileToSave)
-                uploadedFiles.push(fileToSave)
+        }else {
+            
+            //Save Excel document to "temporaryFiles" folder to read it
+            let tempFolder = path.join(__dirname,"temporaryFiles");
+            let tempFile = path.join(tempFolder,req.files[0].originalname);
+            let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
+            console.log("Extensión: " ,ext)
+            if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
+                noFileSelected="La hoja de firmas no se encuentra en formato Excel."
+                res.render("contracts.hbs",{noFileSelected});
             }
-            await deleteDir(path.join(__dirname,"uploadedContracts"))
+            
+            await saveFile(req.files[0].path,tempFile)
+            
+            //Reads Excel File Variables
+            const pq=readExcel(tempFile,'V7');
+            const pqFolderName = editPQ(pq)
+            const comercial=readExcel(tempFile,'F7');
+            const cliente=readExcel(tempFile,'F9');
+            const obra=readExcel(tempFile,'E11');
+            const usuarioFinal=readExcel(tempFile,'G13');
+            const nPedido=readExcel(tempFile,'W11');
+            const importe=readExcel(tempFile,'G17');
+            const fechaStatusWon=readExcel(tempFile,'H19');
+            const fechaRecepcion=readExcel(tempFile,'U19');
+            // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
+            // await deleteFile(tempFile)
 
-            //Create Contract to DB
-            // await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
+            var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
 
-            emailParams={
-                host:"smtp-mail.outlook.com",
-                port:587,
-                secure:false,
-                auth: {
-                    user: "",
-                    pass: ""
-                },
-                from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
-                to:"esteve.martin@mpasolutions.es",
-                subject:"Test Email",
-                html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
-                attachments:uploadedFiles
+            //Check that the contract doesn't exists in the DB.
+            const contract = await Contract.findOne({ pq: pq });
+            if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
+
+            if (errorMsg.length>0){
+                deleteFile(tempFile)
+                res.render("contracts.hbs",{errorMsg});
+            } else {
+                //Create PQ Folder
+                let contractsFolder = path.join(__dirname, "contracts");
+                const pqFolder=path.join(contractsFolder,pqFolderName);
+                let uploadedFiles=[]
+
+
+                //Save all the files to PQ Folder
+                for (i=0;i<req.files.length;i++){
+                    let uploadedFile=req.files[i]
+                    let fileToSave = path.join(pqFolder,uploadedFile.originalname)
+                    await saveFile(uploadedFile.path,fileToSave)
+                    uploadedFiles.push(fileToSave)
+                }
+                
+
+                //Create Contract to DB
+                await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
+
+                emailParams={
+                    host:"smtp-mail.outlook.com",
+                    port:587,
+                    secure:false,
+                    auth: {
+                        user: "",
+                        pass: ""
+                    },
+                    from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
+                    to:"esteve.martin@mpasolutions.es",
+                    subject:"Test Email",
+                    html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
+                    attachments:uploadedFiles
+                }
+
+                const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+                console.log(contractList)
+                // //Send Email
+                // await sendEmail(emailParams)
+                formData={
+                    succesMsg:"Contrato "+pq+" Creado Correctamente.",
+                    contractList:contractList
+                }
+                res.render("contracts.hbs",{formData});
             }
-
-            // //Send Email
-            // await sendEmail(emailParams)
-
-            succesMsg = "Contrato Creado Correctamente.";
-            res.render("contracts.hbs",{succesMsg});
         }
     }
 });
+
+router.get("/displayClosedContracts", async (req,res)=>{
+    
+    if (req.session===undefined) {
+        res.redirect("/")
+    }else{
+        const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
+        // console.log(contractList)
+        contractList.forEach(pq=>{
+            pq.importe = numberToCurrency(pq.importe)
+        })
+        // contractList.importe=numberToCurrency(contractList.importe)
+        // console.log(contractList)
+        formData={
+            contractList:contractList
+        }
+        res.render("contracts.hbs",{formData});
+    }
+})
+router.get("/displayPendingContracts", async (req,res)=>{
+    await deleteDir(path.join(__dirname,"uploadedContracts"))
+
+    if (req.session===undefined) {
+        res.redirect("/")
+    }else{
+        const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+        // console.log(contractList)
+        contractList.forEach(pq=>{
+            pq.importe = numberToCurrency(pq.importe)
+        })
+        // console.log(contractList)
+        formData={
+            contractList:contractList
+        }
+        res.render("contracts.hbs",{formData});
+    }
+})
 
 async function sendEmail(emailParams){
     let attachmentsObj = []
@@ -434,9 +460,18 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     }
 
     //Validates Password Lenght
-    if (password.length<6){resultErrorMsg.push("The password must have at least 6 characters.")}
+    if (password.length<6  && !repeatErrorMsgOutPut.includes('password') && !insertErrorMsgOutPut.includes('password')){resultErrorMsg.push("The password must have at least 6 characters.")}
     // console.log(resultErrorMsg)
 
     return resultErrorMsg
 }
+
+function numberToCurrency(number){
+    // console.log(number)
+    result = new Intl.NumberFormat("de-DE" ,{style: "currency", currency: "EUR"}).format(number)
+    result = result.slice(2)+"€"
+    result = result.replace(".","!").replace(",",".").replace("!",",").replace(",00","")
+    // console.log(result)
+    return result
+  }
 module.exports=router;
