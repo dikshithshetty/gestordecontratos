@@ -13,7 +13,6 @@ const multer=require('multer')
 const upload=multer({dest:"uploadedContracts"})
 // const fileUpload = require('express-fileupload');
 
-const path = require("path");
 const SSF=require("SSF")
 var XLSX = require('xlsx');
 const { Console } = require('console');
@@ -25,6 +24,9 @@ router.get('/',(req,res,next)=>{
         layout: false
     }
     if (req.session.currentUser) {
+
+
+
         res.render('contracts');
     } else {
         res.render('login-register/login', template);
@@ -43,37 +45,8 @@ router.get('/register',(req,res,next)=>{
 router.post('/register',async (req,res,next)=>{
     const{username, usersurname, email, repeatemail, password, repeatedpassword, role} = req.body;
     var errorMsg = [];
-    //Validates that the fields are not empty
-    if (username=== ""||username ==null){errorMsg.push('Insert your name.')}
-    if (usersurname=== ""||usersurname ==null){errorMsg.push('Insert your surname.')}
-    if (email=== ""||email ==null){errorMsg.push('Insert your email.')}
-    if (repeatemail=== ""||repeatemail ==null){errorMsg.push('Repeat your email.')}
-    if (password=== ""||password ==null){errorMsg.push('Insert your password.')}
-    if (repeatedpassword=== ""||repeatedpassword ==null){errorMsg.push('Repeat your password.')}
-    if (role=== ""||role ==null || role === "Select Your Role"){errorMsg.push('Select your Role.')}
 
-    //Validdates email and passwords match
-    if (email!==repeatemail){errorMsg.push("The emails doesn't match.")}
-    if (password!==repeatedpassword){errorMsg.push("The passwords doesn't match.")}
-
-    //Validates Password Lenght
-    if (password.length<6){errorMsg.push("The password must have at least 6 characters.")}
-    
-    //Validate if email already exists.
-    try {
-        const user = await User.findOne({ email: email });
-        if (user!==null){errorMsg.push("This email already exists. Click here to log in.")}
-    }catch (error){
-        next(error);
-    }
-
-    //PENDING
-    // const validEmail = validateEmail(email);
-    // console.log(validEmail)
-    // if (validEmail===false){errorMsg.push('Invalid Email.')}
-    // How to chack that it have capital leters and special characters?
-    // How to check that an email is really an email?
-
+    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, role)
     
     formData={
         errorMsg:errorMsg,
@@ -110,46 +83,45 @@ router.post('/register',async (req,res,next)=>{
         //    await  res.redirect("/") 
         // },3000);
         
+    } else{
+        res.render("login-register/register",{formData, layout: false});
     }
 })
 router.post('/', async(req,res,next)=>{
-    console.log("postLogin")
+    console.log("Entering Login POST Method")
     const{email, password} = req.body;
-    var errorMsg = [];
+    var errorMsg = '';
 
     //Validates that the fields are not empty
-    if (email=== ""||email ==null){errorMsg.push('Insert email.')}
-    if (password=== ""||password ==null){errorMsg.push('Insert your password.')}
-    if (errorMsg.length===0){
-        console.log(errorMsg)
-        // const bcryptSalt = 10;
-        // const salt = bcrypt.genSaltSync(bcryptSalt);
-        // const hashPass = bcrypt.hashSync(password, salt);
 
-        try{
-            const user = await User.findOne({ email: email });
-            if (!user){errorMsg.push("This emails doesn't exist.")}
-            if (errorMsg.length===0){
-                if (bcrypt.compareSync(password, user.password)) {
-                    req.session.currentUser = user;
-                    // formData={
-                    //     succesMsg:"Succesfully Logged In",
-                    // }
-                    res.redirect("/")
-                }else{
-                    errorMsg.push('Incorrect email or password.')
-                    formData={
-                        layout:false,
-                        errorMsg:errorMsg
-                    }
-                }
-                // console.log(formData);
-                res.render("login-register/login", formData);
-                
-
+    if (email==="" && password ===""){
+        errorMsg = "You forgot to write your email and password."       //Email and Password not Filled.
+        formData={errorMsg:errorMsg,layout:false}
+        res.render("login-register/login",formData);                    //Render Login and Error Message.
+    }else if (email===""){
+        errorMsg = "You forgot to write your email."                    //Email not Filled.
+        formData={errorMsg:errorMsg,layout:false}
+        res.render("login-register/login",formData);                    //Render Login and Error Message.
+    }else if (password ===""){
+        errorMsg = "You forgot to write your password."                 //Password not Filled.
+        formData={errorMsg:errorMsg,email:email,layout:false}
+        res.render("login-register/login",formData);                    //Render Login and Error Message.
+    } else {
+        const user = await User.findOne({ email: email });              //Search User to BD by Email.
+        if (!user){
+            errorMsg="This email doesn't exist."                        //User doesn't exists.
+            formData={errorMsg:errorMsg,email:email,layout:false}
+            res.render("login-register/login",formData);
+        } else{
+                                                                        //User Exists.
+            if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
+                req.session.currentUser = user;                         //Save User Session.
+                res.redirect("/")                                       //Redirect to home.
+            }else{
+                errorMsg="Incorrect email or password."                 //Password is inccorrect.
+                formData={errorMsg:errorMsg,email:email,layout:false}
+                res.render("login-register/login",formData);            //Render Login and Error Message.
             }
-        } catch(error){
-            next(error);
         }
     }
 })
@@ -193,7 +165,11 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
         await deleteFile(tempFile)
 
         var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
-        
+
+        //Check that the contract doesn't exists in the DB.
+        const contract = await Contract.findOne({ pq: pq });
+        if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
+
         if (errorMsg.length>0){
             deleteFile(tempFile)
             res.render("contract-actions/create-contract.hbs",{errorMsg});
@@ -215,6 +191,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
             //Create Contract to DB
             await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
 
+            //Send Email
             let transporter = nodemailer.createTransport({
                 host:"smtp-mail.outlook.com",
                 port:587,
@@ -270,17 +247,36 @@ function editPQ(pq){
 }
 function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion){
     var errorMsg = [];
+    //Check Empty Variables.
+    if (pq===undefined){errorMsg.push('PQ');}
+    if (comercial ==undefined){errorMsg.push('nombre del comercial');}
+    if (cliente ==undefined){errorMsg.push('cliente');}
+    if (obra ==undefined){errorMsg.push('obra');}
+    if (usuarioFinal ==undefined){errorMsg.push('usuario final');}
+    if (nPedido ==undefined){errorMsg.push('Nº de pedido');}
+    if (importe ==undefined){errorMsg.push('importe');}
+    if (fechaStatusWon ==undefined){errorMsg.push('fecha de status Won');}
+    if (fechaRecepcion ==undefined){errorMsg.push('fecha de recepción del contrato');}
+    //Create the Error Message Parts.
+    let errorMsgStart = "Los campos "
+    let emptyFields = ""
+    let errorMsgEnd = " se encuentran vacíos en la hoja de firmas." 
+    //Concatenates empty fields.
+    for(i=0;i<errorMsg.length;i++){
+        if (i!== errorMsg.length){
+            emptyFields += errorMsg[i]+", "
+        }else{
+            emptyFields += errorMsg[i]
+        }
+    }
+    //Create the error message to be returned.
+    if(emptyFields!==""){
+        returnErrorMsg = [errorMsgStart+emptyFields+errorMsgEnd]
+    } else {
+        returnErrorMsg = []
+    }
     
-    if (pq===undefined){errorMsg.push('PQ.');}
-    if (comercial ==undefined){errorMsg.push('Nombre del Comercial.');}
-    if (cliente ==undefined){errorMsg.push('Cliente.');}
-    if (obra ==undefined){errorMsg.push('Obra.');}
-    if (usuarioFinal ==undefined){errorMsg.push('Usuario Final.');}
-    if (nPedido ==undefined){errorMsg.push('Nº de Pedido.');}
-    if (importe ==undefined){errorMsg.push('Importe.');}
-    if (fechaStatusWon ==undefined){errorMsg.push('Fecha de Status Won.');}
-    if (fechaRecepcion ==undefined){errorMsg.push('Fecha de Recepción del Contrato.');}
-    return errorMsg;
+    return returnErrorMsg;
 }
 function readExcel(excelPath,cell){
     var workbook = XLSX.readFile(excelPath);
@@ -325,5 +321,79 @@ function ExcelDateToJSDate(serial) {
     // console.log(returnDate)
 
     return returnDate;
+}
+async function createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, role){
+    let resultErrorMsg=[]
+    
+    //INSERT ERRORS  (Validates that the fields are not empty).
+    let insertErrorMsg = []
+    let insertErrorMsgOutPut=''
+    if (username=== ""||username ==null){insertErrorMsg.push('name')}
+    if (usersurname=== ""||usersurname ==null){insertErrorMsg.push('surname')}
+    if (email=== ""||email ==null){insertErrorMsg.push('email')}
+    if (password=== ""||password ==null){insertErrorMsg.push('password')}
+    if (role=== ""||role ==null || role === "Select your Role and Department"){insertErrorMsg.push('role/department')}
+ 
+    switch (insertErrorMsg.length){
+        case 1:
+            insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + "."
+            break;
+        case 2:
+            insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + " and " + insertErrorMsg[1] + "."
+            break;
+        case 3:
+            insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + ", " + insertErrorMsg[1] + " and " + insertErrorMsg[2] + "."
+            break;
+        case 4:
+            insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + ", " + insertErrorMsg[1] + ", " + insertErrorMsg[2] + " and " + insertErrorMsg[3] + "."
+            break;
+        case 5:
+            insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + ", " + insertErrorMsg[1] + ", " + insertErrorMsg[2] + ", " + insertErrorMsg[3] + " and " + insertErrorMsg[4] + "."
+            break;
+    }
+    if (insertErrorMsgOutPut!==''){
+        resultErrorMsg.push(insertErrorMsgOutPut)
+    }
+
+    //REPEAT ERRORS (Validates that you repeated email and password).
+    let repeatErrorMsgOutPut=''
+    let repeatErrorMsg=[]
+    if (repeatemail=== "" && !insertErrorMsgOutPut.includes('email')){repeatErrorMsg.push('email')}
+    if (repeatedpassword=== ""  && !insertErrorMsgOutPut.includes('password')){repeatErrorMsg.push('password')}
+    switch (repeatErrorMsg.length){
+        case 1:
+            repeatErrorMsgOutPut = "You forgot to repeat your " + repeatErrorMsg[0] + "."
+            break;
+        case 2:
+            repeatErrorMsgOutPut = "You forgot to repeat your " + repeatErrorMsg[0] + " and " + repeatErrorMsg[1] + "."
+            break;
+    }
+    if (repeatErrorMsgOutPut!==''){
+        resultErrorMsg.push(repeatErrorMsgOutPut)
+    }
+
+    //MATCH ERRORS (Validdates email and passwords match).
+    let matchErrorMsgOutPut=''
+    let matchErrorMsg=[]
+    if (email!==repeatemail && !repeatErrorMsgOutPut.includes('email') && !insertErrorMsgOutPut.includes('email')){matchErrorMsg.push('emails')}
+    if (password!==repeatedpassword && !repeatErrorMsgOutPut.includes('password') && !insertErrorMsgOutPut.includes('password')){matchErrorMsg.push('passwords')}
+    switch (matchErrorMsg.length){
+        case 1:
+            matchErrorMsgOutPut = "The " + matchErrorMsg[0] + " doesn't match."
+            break;
+
+        case 2:
+            matchErrorMsgOutPut = "The " + matchErrorMsg[0] + " and the " + matchErrorMsg[1] + " doesn't match."
+            break;
+    }
+    if (matchErrorMsgOutPut!==''){
+        resultErrorMsg.push(matchErrorMsgOutPut)
+    }
+
+    //Validates Password Lenght
+    if (password.length<6){resultErrorMsg.push("The password must have at least 6 characters.")}
+    // console.log(resultErrorMsg)
+
+    return resultErrorMsg
 }
 module.exports=router;

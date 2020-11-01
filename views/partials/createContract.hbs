@@ -2,8 +2,10 @@
                
                 <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
                     <input id="file" class="upload-files" type="file" name="excelFile">
-                    <label for="file">Please select your files </label>
-                    <p class="underline-link note-text">Your file should be in .xlm, .pdf</p>
+                    <label for="file">Please select the Excel file </label>
+                    <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
+                    <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
+                    <label for="otherFiles">Please selectthe rest of the files </label>
                     {{!-- <input type="file" name="otherFiles" multiple> --}}
                     <input class="create-contracts-btn" type="submit" value="Create Contract">
                     {{#if errorMsg}}
