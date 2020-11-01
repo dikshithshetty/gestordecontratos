@@ -8,14 +8,17 @@ const fs = require('fs-extra')
 
 const { findOne } = require("./models/user-model");
 const User = require('./models/user-model');
+const Contract = require('./models/contract-model');
 const multer=require('multer')
 const upload=multer({dest:"uploadedContracts"})
 const path = require("path");
 // const fileUpload = require('express-fileupload');
 
+const path = require("path");
+const SSF=require("SSF")
 var XLSX = require('xlsx');
 const { Console } = require('console');
-
+const nodemailer=require('nodemailer')
 
 router.get('/',(req,res,next)=>{
     // console.log(req.session)
@@ -151,11 +154,6 @@ router.post('/', async(req,res,next)=>{
         }
     }
 })
-
-
-//SESSION NOT WORKING
-
-
 router.get('/logout', (req, res, next) => {
     req.session.destroy((err) => {
         res.redirect('/');
@@ -168,19 +166,18 @@ router.get('/createContract',(req,res,next)=>{
         res.render('contract-actions/create-contract.hbs');
     // }
 })
-
-router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=>{
+router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
     console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-    // console.log("req.file: ", req.file)
-    if (req.file===undefined){
+    console.log(req.files)
+    if (req.files.length===0){
         noFileSelected="No se ha seleccionado ningún contrato.";
         res.render("contract-actions/create-contract.hbs",{noFileSelected});
     }else {
-   
-        //Save document to "temporaryFiles" folder
+        
+        //Save Excel document to "temporaryFiles" folder to read it
         let tempFolder = path.join(__dirname,"temporaryFiles");
-        let tempFile = path.join(tempFolder,req.file.originalname);  //console.log("tempFile: "+tempFile)
-        await saveFile(req.file.path,tempFile)
+        let tempFile = path.join(tempFolder,req.files[0].originalname);
+        await saveFile(req.files[0].path,tempFile)
         
         //Reads Excel File Variables
         const pq=readExcel(tempFile,'V7');
@@ -194,6 +191,7 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
         const fechaStatusWon=readExcel(tempFile,'H19');
         const fechaRecepcion=readExcel(tempFile,'U19');
         console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
+        await deleteFile(tempFile)
 
         var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
         
@@ -201,13 +199,41 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
             deleteFile(tempFile)
             res.render("contract-actions/create-contract.hbs",{errorMsg});
         } else {
+            //Create PQ Folder
+            let contractsFolder = path.join(__dirname, "contracts");
+            const pqFolder=path.join(contractsFolder,pqFolderName);
+            let uploadedFiles=[]
 
-            //Create folder "contracts" if it doesnt exists already.
-            let contractsFolder = path.join(__dirname, "contracts");   //console.log("contractsFolder: "+contractsFolder)
-            const pqFolder=path.join(contractsFolder,pqFolderName);  //console.log("contractPath: " + contractPath);
-            const pqExcelFile = path.join(pqFolder,req.file.originalname);  //console.log("contractExcelFile: " + contractExcelFile);
-            saveFile(tempFile,pqExcelFile)
-            deleteFile(tempFile)
+
+            //Save all the files to PQ Folder
+            for (i=0;i<req.files.length;i++){
+                let uploadedFile=req.files[i]
+                let fileToSave = path.join(pqFolder,uploadedFile.originalname)
+                await saveFile(uploadedFile.path,fileToSave)
+                uploadedFiles.push(fileToSave)
+            }
+
+            //Create Contract to DB
+            await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
+
+            let transporter = nodemailer.createTransport({
+                host:"smtp-mail.outlook.com",
+                port:587,
+                secure:false,
+                auth: {
+                    user: "",
+                    pass: ""
+                  },
+            })
+
+            let info=await transporter.sendMail({
+                from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
+                to:"esteve.martin@mpasolutions.es",
+                subject:"Test Email",
+                html: "<b> NO ME CREO QUE HAYA LLEGADO </b>"
+            })
+
+
             succesMsg = "Contrato Creado Correctamente.";
             res.render("contract-actions/create-contract.hbs",{succesMsg});
         }
@@ -217,16 +243,17 @@ router.post("/uploadNewContractToDB",upload.single('excelFile'),async (req,res)=
 
 async function deleteFile (filePath) {
     try {
+        // console.log(filePath)
       await fs.remove(filePath)
-      console.log('File Removed: '+filePath)
+    //   console.log('File Removed: '+filePath)
     } catch (err) {
       console.error(err)
     }
-  }
+}
 async function createDirectory(dir){
     try{
         await fs.ensureDir(dir)
-        console.log("Directory Created: " +dir)
+        // console.log("Directory Created: " +dir)
     } catch (err){
         console.error(err)
     }
@@ -234,7 +261,7 @@ async function createDirectory(dir){
 async function saveFile(src,dest){
     try{
         await fs.ensureLink(src,dest)
-        console.log("File Saved from: " + src + " to " + dest)
+        // console.log("File Saved from: " + src + " to " + dest)
     } catch (err){
         console.error(err)
     }
@@ -259,14 +286,45 @@ function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,
 function readExcel(excelPath,cell){
     var workbook = XLSX.readFile(excelPath);
     var first_sheet_name = workbook.SheetNames[0];
+    
     var address_of_cell = cell;
     var worksheet = workbook.Sheets[first_sheet_name];
     var desired_cell = worksheet[address_of_cell];
+    
     var desired_value = (desired_cell  ? desired_cell.v : undefined);
+    if (cell==='H19' || cell==="U19"){
+        // console.log("Previous Value: " +desired_value)
+        if(desired_value!==undefined){desired_value=ExcelDateToJSDate(desired_value).toLocaleString().split(' ')[0]}
+        // desired_value=SSF.format(fmt:Number,val:desired_value)
+        // console.log("After Value: " + desired_value)
+    }
+    // console.log(desired_value)
     return desired_value;
 }
 function validateEmail(email) {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
+}
+function ExcelDateToJSDate(serial) {
+    var utc_days  = Math.floor(serial - 25569);
+    var utc_value = utc_days * 86400;                                        
+    var date_info = new Date(utc_value * 1000);
+    // var fractional_day = serial - Math.floor(serial) + 0.0000001;
+    // var total_seconds = Math.floor(86400 * fractional_day);
+    // var seconds = total_seconds % 60;
+    // total_seconds -= seconds;
+    // var hours = Math.floor(total_seconds / (60 * 60));
+    // var minutes = Math.floor(total_seconds / 60) % 60;
+    returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+    returnDate=returnDate.toLocaleString().split(' ')[0]
+
+    var year=returnDate.split('-')[0]
+    var month=returnDate.split('-')[1]
+    var day=returnDate.split('-')[2]
+    if (month.length===1){month='0'+month}
+    returnDate=day+"/"+month+"/"+year
+    // console.log(returnDate)
+
+    return returnDate;
 }
 module.exports=router;

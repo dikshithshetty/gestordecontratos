@@ -17,7 +17,8 @@ const contractSchema = new Schema(
         fechaCreaccionApp:{type:String,default:timeStamp},
         visible:{type:Boolean,default:true},
         mainStatus:{type:String,default:"Pending"},
-        historico:{type:Array,default:[]}
+        historico:{type:Array,default:[]},
+        uploadedFiles:{type:Array,default:[]}
     }
   );
 
