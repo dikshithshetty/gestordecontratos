@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<form class="bg-register-login register-container" action="/register" method="POST">
+<form class="bg-register-login register-container" id="registerForm" action="/register" method="POST">
     <h1 class="black">Signup</h1>
          <div class="form-label">
             <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
@@ -41,7 +41,7 @@
             </select>
         </div>
 
-    <p class="underline-link forgot-password"  onclick=addRoleSelector(this)>Add more roles/departments</p>
+    <p class="underline-link forgot-password"  id ="addRoleSelectorBtn" onclick="addRoleSelectorBtn()">Add more roles/departments</p>
     <button class="btn btn-blue" type="submit">Signup</button>
 
     {{#if formData.errorMsg}}

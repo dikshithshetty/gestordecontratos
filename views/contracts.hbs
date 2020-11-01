@@ -10,6 +10,27 @@
             <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button>
             
         </div>
+        {{#if errorMsg}}
+            <div class="error-message">
+                <ul>
+                    {{#each errorMsg}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            {{else}}
+                {{#if noFileSelected}}
+                    <div class="error-message">
+                        {{noFileSelected}}
+                    </div>
+                    {{else}}
+                        {{#if succesMsg}}
+                        <div class="success-message">{{succesMsg}}</div>
+                    {{!-- <a href="/">Go to Login</a> --}}
+                        {{/if}}
+                {{/if}}
+        {{/if}}
 
 <div class="contracts-container">
     <div class="title-container">
@@ -91,28 +112,7 @@
                     <label for="otherFiles">Please selectthe rest of the files </label>
                     {{!-- <input type="file" name="otherFiles" multiple> --}}
                     <input class="create-contracts-btn" type="submit" value="Create Contract">
-                    {{#if errorMsg}}
-                        <div class="error-message">
-                            Los siguientes campos se encuentran vacíos en la hoja de firmas y se deben rellenar para dar de alta el contrato:
-                            <ul>
-                                {{#each errorMsg}}
-                                <li>{{this}}</li>
-                                {{/each}}
-                            </ul>
-                        </div>
-
-                        {{else}}
-                            {{#if noFileSelected}}
-                                <div class="error-message">
-                                    {{noFileSelected}}
-                                </div>
-                                {{else}}
-                                    {{#if succesMsg}}
-                                    <div class="success-message">{{succesMsg}}</div>
-                                {{!-- <a href="/">Go to Login</a> --}}
-                                    {{/if}}
-                            {{/if}}
-                    {{/if}}
+                    
                 </form>
         </div>
 </div>
