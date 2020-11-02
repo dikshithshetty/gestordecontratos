@@ -177,6 +177,20 @@ input::placeholder{
     font-size: 0.875rem;
 }
 
+input, textarea {
+    outline: none;
+  }
+
+input:focus, textarea:focus {
+    box-shadow: 0 0 10px rgba(81, 203, 238, 1);
+    border: 1px solid rgba(81, 203, 238, 1);
+  }
+
+  .second-nav a.disabled {
+    pointer-events: none;
+    cursor: default;
+    color: var(--color-grey-medium);
+  }
 
 /* ---------------------- MESSAGES ----------------------*/
 .error-message{
@@ -187,6 +201,7 @@ input::placeholder{
     border-radius: 5px;
     padding: 10px 20px;
     margin: 20px auto 2px auto;
+    max-width: 500px;
 }
 
 .success-message{
@@ -197,6 +212,7 @@ input::placeholder{
     border-radius: 5px;
     padding: 10px 20px;
     margin: 20px auto 2px auto;
+    max-width: 500px;
 }
 
 .success-message ul,
@@ -323,7 +339,7 @@ input::placeholder{
     appearance: button;
     outline: none;
     font-family: "ASSA Vesta", sans-serif;
-    margin: 0 10px 20px 10px;
+    margin: 0 auto 20px auto;
     width: 100%;
     font-size: 1rem;
   }
@@ -383,10 +399,17 @@ input::placeholder{
 }
 
 .nav-contract-actions{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, 40px);
+    grid-gap: 43px;
     padding: 2px;
+}
+
+.nav-contract-actions1{
+    display: grid;
+    grid-template-columns: repeat(4, 40px);
+    grid-gap: 40px;
+    padding: 2px 0 2px 13px;
 }
 
 .nav-contract-items{
@@ -394,6 +417,7 @@ input::placeholder{
     text-align: left;
     grid-template-columns: repeat(3, 20%) 1fr;
     padding: 2px;
+    margin: 0 10px;
 }
 
 .titulos{
@@ -401,7 +425,7 @@ input::placeholder{
     padding-left: 20px;
 }
 
-.nav-contract-actions img{
+.nav-contract-actions1 img{
     width: 35px;
     height: 35px;
     object-fit: cover;
@@ -498,6 +522,7 @@ input::placeholder{
     display: flex;
     justify-content: center;
     font-size: 1rem;
+    outline: var(--color-blue);
 }
 
 .create-contracts-btn{
@@ -577,6 +602,16 @@ input::placeholder{
 .text-popup{
     margin: 30px auto 40px auto;
     font-size: 1.5rem;
+}
+
+textarea{
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 1px solid var(--color-blue);
+    resize: none;
+    width: 100%;
+    /* margin: 0 10px; */
+    padding: 10px 30px;
 }
 
 .textarea-reject::placeholder{
@@ -765,6 +800,7 @@ input::placeholder{
     .departments-alerts-btn .department-btn{
         margin: 10px 0;
         height: 50px;
+        width: 190px;
     }
 
     .department-btn:nth-child(1){
@@ -829,6 +865,7 @@ input::placeholder{
         width: 100%;
         /* margin: 0 10px; */
         padding: 10px 30px;
+        margin: 20px 0 0 0;
     }
 
     .mess-container input{

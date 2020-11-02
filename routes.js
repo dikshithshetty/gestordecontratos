@@ -239,7 +239,7 @@ router.get("/displayPendingContracts", async (req,res)=>{
     const errorMsg = req.query.errorMsg
     const successMsg = req.query.successMsg
     console.log("ERROR MESSAGE THROUGH QUERY: ", errorMsg)
-    await deleteDir(path.join(__dirname,"uploadedContracts"))
+    // await deleteDir(path.join(__dirname,"uploadedContracts"))
 
     if (req.session===undefined) {
         res.redirect("/")
@@ -251,13 +251,13 @@ router.get("/displayPendingContracts", async (req,res)=>{
         })
         // console.log("CONTRACT LIST:")
         // console.log(contractList[0].historico)
-        const canReject=getCanReject(contractList[0].historico)
+        // const canReject=getCanReject(contractList[0].historico)
         formData={
             errorMsg:errorMsg,
             showClosed:false,
             successMsg:successMsg,
             contractList:contractList,
-            canReject:canReject
+            // canReject:canReject
         }
         res.render("contracts.hbs",{formData});
     }
@@ -640,8 +640,10 @@ function getPersonaHistorico(name,surname,dept){
     
     surnameInicial=surname.charAt(0)
     
+    let minidept = ""
+
     if (dept === "Comercial"){
-        minidept = "Comerc."
+         minidept = "Comerc."
     }else if (dept === "Control de Riesgos"){
         minidept="C. Riesgos"
     }else if (dept === "Operaciones"){

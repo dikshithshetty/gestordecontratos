@@ -1,34 +1,33 @@
         <div class="second-nav">
             <ul>
-                <li><a href="/" class="cool-link">Contracts</a></li>
-                <li><a href="/alertsContracts" class="cool-link">Alerts</a></li>
-                <li><a href="" class="cool-link">Indicators</a></li>
-                <li><a href="" class="cool-link">Permissions</a></li>
+                <li><a href="/">Contracts</a></li>
+                <li><a href="/alertsContracts">Alerts</a></li>
+                <li><a href="" class="disabled">Indicators</a></li>
+                <li><a href="" class="disabled">Permissions</a></li>
             </ul>
         </div>
 
 <div class="alertas-container">
     <div class="nav-alertas">
-        <h3>Configurar nuevos avisos</h3>
-        <img id="back-btn" class="back-btn-alerts" src="/images/icons/back-btn.png">    
+        <h3>Alerts configuration</h3>
     </div>
 <div class="alertsContainer">
         <div class="second-nav-alerts">
             <div id="myDIV" class="departments-alerts-btn">
-                <button id="newContractBtn" class="btn btn-blue department-btn">Nuevo Contrato</button>
-                <button id="rejectContractBtn" class="btn department-btn ">Contrato Rechazado</button>
-                <button id="actualizadoContractBtn" class="btn department-btn">Contrato Actualizado</button>
-                <button id="acceptContractBtn" class="btn department-btn">Contrato Aceptado</button>
-                <button id="recordatorioContractBtn" class="btn department-btn">Recordatorios</button>
+                <button id="newContractBtn" class="btn btn-blue department-btn">New Contract</button>
+                <button id="rejectContractBtn" class="btn department-btn ">Reject Contract</button>
+                <button id="actualizadoContractBtn" class="btn department-btn">Update Contract</button>
+                <button id="acceptContractBtn" class="btn department-btn">Approve Contract</button>
+                <button id="recordatorioContractBtn" class="btn department-btn">Reminders</button>
                 <button id="escaladoContractBtn" class="btn department-btn">Escalado</button>
             </div>
         </div>
 
         <div class="mess-container">
                 <form class="form-alertas" action="" method="post">
-                    <input id="email-list" type="email" placeholder="Para:">
+                    <input id="email-list" type="email" placeholder="For:">
                     <input type="email" placeholder="Cc:">
-                    <input type="text" placeholder="Asunto:">
+                    <input type="text" placeholder="Subject:">
                     <textarea placeholder="Message...." rows ="10" name="message"></textarea>
                     <button class="btn btn-blue btn-save" type="submit">Save</button>
                 </form>

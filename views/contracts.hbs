@@ -1,10 +1,10 @@
 <div id="container">       
         <div class="second-nav">
             <ul>
-                <li><a href="/" class="cool-link">Contracts</a></li>
-                <li><a href="/alertsContracts" class="cool-link">Alerts</a></li>
-                <li><a href="" class="cool-link">Indicators</a></li>
-                <li><a href="" class="cool-link">Permissions</a></li>
+                <li><a href="/">Contracts</a></li>
+                <li><a href="/alertsContracts">Alerts</a></li>
+                <li><a href="" class="disabled">Indicators</a></li>
+                <li><a href="" class="disabled">Permissions</a></li>
             </ul>
         </div>
 
@@ -72,7 +72,7 @@
                             <div class="card-box">{{comercial}}</div>
                             <div class="card-box">{{cliente}}</div>
                 </div>
-                <div class="nav-contract-actions">
+                <div class="nav-contract-actions1">
                     <img src="images/icons/approve.png" alt="accept" onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
                     <img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
                     <img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
@@ -129,7 +129,7 @@
         <div class="modal-content modal-blue">
             <span id="close-btn-accept-{{_id}}" class="close-btn" onclick="closeApproveModal(this)">&times;</span>
                 <h2 class="blue">Accept contract</h2>
-                
+                <form method="POST" action="/approveContract/{{_id}}" >
                 <div class="select select-box">
                     <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
                         <option hidden selected>Select your Role and Department</option>
@@ -143,19 +143,9 @@
                         <option value="PRL - Director">PRL - Director</option>
                     </select>
                 </div>
-
-                
                 <textarea  class="textarea-reject" placeholder="Additional information...." rows ="10" name="approveInfo"></textarea>
-                <p class="text-popup">Do you want to approve the contract?</p>
-                <div class="selectors-options">
-                    <div class="accept">
-                        <a href="/approveContract/{{_id}}"><img src="images/icons/approve.png" alt="approve" onclick=""></a>
-                    </div>
-                    <div class="reject">
-                        <a href="/displayPendingContracts"><img src="images/icons/reject.png" alt="reject" onclick=""></a>
-                    </div>
-
-                </div>
+                <button type="submit" class="btn btn-blue">Approve</button> 
+                </form>
         </div>
 </div>
 
