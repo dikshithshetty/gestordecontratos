@@ -217,7 +217,8 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
 });
 
 router.get("/displayClosedContracts", async (req,res)=>{
-    
+    if (!req.session.currentUser){res.redirect("/")}
+
     if (req.session===undefined) {
         res.redirect("/")
     }else{
@@ -226,6 +227,8 @@ router.get("/displayClosedContracts", async (req,res)=>{
         contractList.forEach(pq=>{
             pq.importe = numberToCurrency(pq.importe)
         })
+
+
         // contractList.importe=numberToCurrency(contractList.importe)
         // console.log(contractList)
         formData={
@@ -236,6 +239,8 @@ router.get("/displayClosedContracts", async (req,res)=>{
     }
 })
 router.get("/displayPendingContracts", async (req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+
     const errorMsg = req.query.errorMsg
     const successMsg = req.query.successMsg
     console.log("ERROR MESSAGE THROUGH QUERY: ", errorMsg)
@@ -263,22 +268,57 @@ router.get("/displayPendingContracts", async (req,res)=>{
     }
 })
 router.post("/approveContract/:id",async(req,res)=>{
-    // console.log("ENTERED APPROVE CONTRACT / ID")
+    if (!req.session.currentUser){res.redirect("/")}
+    console.log("ENTERED APPROVE CONTRACT / ID")
     const {role,approveInfo}=req.body
-    const fullRole=role
     const sesionEmail = req.session.currentUser.email
     const id=req.params.id
+    // const role=req.params.role
+    const fullRole=role
+    // const approveInfo=req.params.approveInfo
+    console.log(req.params)
+    console.log(id,role,approveInfo)
+    // console.log(id)
     //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
     let currentUser = await User.find({email:sesionEmail})
-    // console.og(currentUser)
-    
+    // console.log(currentUser)
+    console.log(fullRole)
+
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
+    console.log(dept)
+    console.log(role)
+    errorMsg = createErrorMsgApprove(role)
+    nuevaAccion={
+        accion:"Aprobado",
+        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
+        icono:"Pulgar Arriba",
+        fecha: getCurrentDate(),
+        observaciones:approveInfo
+    }
+    let contract = await Contract.find({_id:id})
+    let historico = contract[0].historico
+    // console.log("HISTORICO EN DB: ",historico)
+    console.log(nuevaAccion)
+    if (errorMsg!==""){
+        res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
+    }else{
 
-    errorMsg = createErrorMsgApprove(splitRole,reason)
-    
+        //Save Reject Action
+        historico.push(nuevaAccion)
+        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+
+        //Send Approve Email (if needed)
+        // await sendEmail(emailParams)
+        console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
+        successMsg = "Contrato Aprobado Correctamente"
+        res.redirect('/displayPendingContracts?successMsg='+successMsg)
+    }
+
 })
 router.get("/deleteContract/:id",async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+
     // console.log(req.params.id)
     const id=req.params.id
     // console.log("GET INSIDE ID: ", id)
@@ -286,6 +326,8 @@ router.get("/deleteContract/:id",async(req,res)=>{
     res.redirect("/displayPendingContracts")
 })
 router.post("/rejectContract/:id",async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+
     // console.log("ENTERED REJECT CONTRACT / ID")
     const {role,reason,rejectInfo}=req.body
     const fullRole=role
@@ -297,8 +339,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
     
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
-
-    errorMsg = createErrorMsgReject(splitRole,reason)
+    errorMsg = createErrorMsgReject(fullRole,reason)
     
     nuevaAccion={
         accion:"Rechazado (" +reason+")",
@@ -569,12 +610,23 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     return resultErrorMsg
 }
 function createErrorMsgReject(role,reason){
+    console.log(role)
+    console.log(reason)
     if(role === "Select your Role and Department" && reason ==="Select a reason"){
         errorMsg = "Select a role and a reason."
     } else if (role === "Select your Role and Department"){
         errorMsg = "Select a role."
     } else if (reason ==="Select a reason"){
         errorMsg = "Select a reason."
+    } else {
+        errorMsg = ""
+    }
+    console.log(errorMsg)
+    return errorMsg;
+}
+function createErrorMsgApprove(role){
+    if(role === "Select your Role and Department"){
+        errorMsg = "Select a role."
     } else {
         errorMsg = ""
     }
@@ -630,26 +682,30 @@ function getStatusRejection(dept){
     return status
 }
 function getPersonaHistorico(name,surname,dept){
+    // let name1=""
+    // let name2=""
+    // let minidept=""
+    // let result=""
     if (name.includes(" ")){
-        name1 = name.split(" ")[0]
-        name2 = name.split(" ")[1].charAt(0)
+        var name1 = name.split(" ")[0]
+        var name2 = name.split(" ")[1].charAt(0)
         name1 = name1 + " " + name2 + "."
     } else {
-        name1=name
+        var name1=name
     }
     
-    surnameInicial=surname.charAt(0)
+    let surnameInicial=surname.charAt(0)
     
     if (dept === "Comercial"){
-        minidept = "Comerc."
+        var minidept = "Comerc."
     }else if (dept === "Control de Riesgos"){
-        minidept="C. Riesgos"
+        var minidept="C. Riesgos"
     }else if (dept === "Operaciones"){
-        minidept = "Oper."
+        var minidept = "Oper."
     }else if (dept === "PRL"){
-        minidept = "PRL"
+        var minidept = "PRL"
     }
-    result = name1 + " " + surnameInicial+". (" + minidept +")"
+    let result = name1 + " " + surnameInicial+". (" + minidept +")"
     
     return result
 }
