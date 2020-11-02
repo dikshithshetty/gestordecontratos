@@ -18,14 +18,14 @@ app.use((err, req, res, next) => {
   // only render if the error ocurred before sending the response
   if (!res.headersSent) {
     res.status(500);
-    // res.render('error');
+    res.render('error');
   }
 });
 
 let server = http.createServer(app);
 
 server.on('error', error => {
-  if (error.syscall !== 'listen') { throw error }
+  if (error.syscall !== 'listen') { throw error; }
 
   // handle specific listen errors with friendly messages
   switch (error.code) {

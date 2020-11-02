@@ -1,0 +1,91 @@
+/*LOGIN & REGISTER*/
+
+html,body{
+    background-color: var(--color-grey-bg);
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+
+
+/*LOGIN & REGISTER*/
+.bg-register-login{
+    border-radius: 15px;
+    background: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    max-width: 700px;
+    padding: 50px 60px;
+    margin: 40px auto;
+    border: 1px solid var(--color-grey-medium);
+}
+
+.register{
+    width: 600px;
+}
+
+.login-container h1, .register-container h1{
+    text-align: center;
+    margin: 0 auto 30px auto;
+}
+
+.forgot-password{
+    text-align: right;
+    font-size: 0.875rem;
+}
+
+.devided-block{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    margin: 40px auto;
+}
+
+.devided{
+    width: 120px;
+    border-bottom: 1px solid var(--color-grey-medium);
+}
+
+.devided-block span{
+    color: var(--color-grey);
+    font-size: 0.875rem;
+    margin: 0 10px;
+}
+
+.create-account-link{
+    text-align: center;
+}
+.form-label input{
+    margin-bottom: 15px;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.form-label{
+    display: inline-flex;
+}
+
+.form-label:nth-child(4){
+    margin-bottom: 10px;
+}
+
+.select-register{
+    display: flex;
+    justify-content: center;  
+  
+}
+
+.select-register select{
+    width: 100%;
+    margin-bottom: 20px;
+    font-size: 0.9375rem;
+}

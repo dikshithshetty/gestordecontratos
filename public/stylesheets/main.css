@@ -1,0 +1,719 @@
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: 200;
+    font-stretch: normal;
+    src: url(/fonts/AAVESLGT.otf);
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESLIT.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-stretch: normal;
+    src: url(/fonts/AAVESREG.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESITA.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-stretch: normal;
+    font-weight: bold;
+    src: url(/fonts/AAVESBOL.otf) format("otf");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "ASSA Vesta";
+    font-weight: bold;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(/fonts/AAVESBIT.otf) format("otf");
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-white: #FFFFFF; /*main white*/
+    --color-black: #303030; /*main black & text*/
+    --color-blue-light: #52BEDD; /*shadow light blue*/
+    --color-shadow-blue: rgba(0,162,209,15); /*shadow selected cards*/
+    --color-blue: #00A2D1; /*main blue*/
+    --color-red: #CE6D6D; /*reject & red status & notifications*/
+    --color-yellow: #FDCA6F; /*yellow status*/
+    --color-green: #7CBD43; /*accept contracts & notifications*/
+    --color-grey-light: #E6E8F1; /*background color popup*/
+    --color-grey-soft: #F7F7F7; /*background popup*/ 
+    --color-grey-bg: #F4F4F4; /*background color login/register*/
+    --color-shadow-grey: #EDEDED; /*shadow cards*/
+    --color-grey-medium: #CDCDCD; /*outline cards*/
+    --color-grey: #979797; /*text forms & placeholders*/
+}
+
+html,body, input, button{
+    font-family: "ASSA Vesta", sans-serif;
+}
+
+/*H1 Styles*/
+h1{
+    font-size: 3rem;
+}
+
+.black{
+    color: var(--color-black);
+}
+
+.blue{
+    color: var(--color-blue);
+}
+
+.grey{
+    color: var(--color-grey);
+}
+
+.red{
+    color: var(--color-red);
+}
+
+/*H2 Styles*/
+h2{
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+h3{
+    font-size: 2rem;
+}
+
+/*a links*/
+a {
+    text-decoration: none;
+    color: var(--color-black);
+}
+
+/*Underline*/
+.underline-link{
+    text-decoration: underline;
+}
+
+/*btn Styles*/
+.btn{
+    width: auto;
+    padding: 10px 25px;
+    border: none;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-align: center;
+    margin: 0 auto;
+    cursor: pointer;
+}
+
+form .btn{
+    margin-top: 30px;
+}
+
+.btn-blue {
+    background: var(--color-blue);
+    color: var(--color-white);
+}
+
+.btn-red {
+    background: var(--color-red);
+    color: var(--color-white);
+}
+
+
+/*Inputs & Placeholders*/
+input{
+    border-radius: 5px;
+    padding: 15px 30px;
+    margin: 0 10px 20px 10px;
+    border: 1px solid var(--color-blue);
+    font-size: 0.875rem;
+}
+
+input::placeholder{
+    color: var(--color-black);
+    font-weight: 200;
+    font-size: 0.875rem;
+}
+
+
+/* ---------------------- MESSAGES ----------------------*/
+.error-message{
+    text-align: center;
+    border: 1px solid var(--color-red);
+    background-color: #F6BEBE;
+    color: #A40C0C;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 20px auto 2px auto;
+}
+
+.success-message{
+    text-align: center;
+    border: 1px solid var(--color-green);
+    background-color: #D9EFBE;
+    color: #5A891F;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 20px auto 2px auto;
+}
+
+.success-message ul,
+.error-message ul{
+    list-style: none;
+}
+
+.success-message ul li,
+.error-message ul li{
+    margin: 10px 0;
+    text-align: left;
+    word-break: keep-all;
+}
+
+
+/* ---------------------- LAYOUT ----------------------*/
+
+
+
+.first-nav{
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 5% 15px 5%;
+    border-bottom: 1px solid var(--color-grey-light);
+}
+
+.nav ul{
+    list-style: none;
+}
+
+.nav li a {
+    text-align: center;
+    background-color: var(--color-black);
+    color:#fff;
+    text-decoration:none;
+    padding:10px 12px;
+    display:block;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.nav li a:hover {
+    background-color: var(--color-grey);
+}
+
+.nav li ul{
+    display:none;
+    position:absolute;
+    right: 16px;
+    min-width:140px;
+}
+
+.nav li:hover > ul {
+    display:block;
+}
+
+.nav li ul li {
+    position:relative;
+    margin: 5px 0;
+}
+
+.nav li ul li ul {
+    right:-140px;
+    top:0px;
+}
+
+.nav li img{
+    width: 35px;
+    height: auto;
+}
+
+.nav .first-nav span{
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+
+.second-nav{
+    display: flex;
+    width: 100%;
+    align-content: center;
+    justify-content: space-between;
+    padding: 60px 10% 30px 10%;
+}
+
+.second-nav ul li {
+    display: inline-block;
+}
+
+.second-nav li a{
+    padding: 0 20px;
+}
+
+.second-nav .btn{
+    margin: 0;
+}
+
+
+/*----------------------- SELECT BOX OPTIONS ------------------------*/
+
+  
+  .select select {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-blue);
+    border-radius: 5px;
+    padding: 12px;
+    -webkit-appearance: button;
+    appearance: button;
+    outline: none;
+    font-family: "ASSA Vesta", sans-serif;
+    margin: 0 10px 20px 10px;
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .select-box{
+      margin: 40px auto 0 auto;
+  }
+
+/* ---------------------- CONTRACT PAGE / HOME ----------------------*/
+
+.contracts-container{
+    display: block;
+    margin: 10px 5%;
+}
+
+.title-container h2{ 
+    cursor: pointer;
+}
+
+.title-container{
+    display: inline-flex;
+    justify-content: flex-start;
+    margin: 30px 0;
+}
+
+.title-container span{
+    font-size: 1.5rem;
+    color: var(--color-grey);
+    padding: 0 20px;
+}
+
+
+.nav-contract,
+.contract-card{
+    display: grid;
+    grid-template-columns: 1fr 300px;
+}
+
+.actions{
+    padding: 0 5px;
+}
+
+.cards{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 40px;
+}
+
+
+
+/* ---------------------- CONTRACT CARD ----------------------*/
+.contract-card,
+.nav-contract{
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    padding: 10px;
+}
+
+.nav-contract-actions{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 2px;
+}
+
+.nav-contract-items{
+    display: grid;
+    text-align: left;
+    grid-template-columns: repeat(3, 20%) 1fr;
+    padding: 2px;
+}
+
+.titulos{
+    text-align: left;
+    padding-left: 20px;
+}
+
+.nav-contract-actions img{
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.contract-card{
+    align-items: center;
+    border: 1px solid var(--color-grey-medium);
+    background-color: var(--color-white);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.contract-card:active{
+    border: 1px solid var(--color-blue);
+}
+
+
+/* ---------------------- POPUP TEMPLATE ----------------------*/
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--color-white);
+    background-color: rgba(var(--color-white), 0.8); 
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+  
+
+  .modal-content {
+    background-color: var(--color-grey-soft);
+    margin: auto;
+    padding: 50px 70px;
+    border: 2px solid;
+    border-radius: 15px;
+    width: 600px;
+    min-height: 10%;
+    max-width: 600px;
+    height: auto;
+    position: relative;
+    box-shadow: 0px 0px 10px 9px rgba(var(--color-shadow-grey), 1); 
+    text-align: center;
+  }
+
+  .modal-blue{
+    border-color: var(--color-blue);
+  }
+
+  .modal-red{
+    border-color: var(--color-red);
+    }
+  
+  .close-btn {
+    color: var(--color-black);
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding-top: 8px;
+    padding-right: 15px;
+    font-size: 2.5rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .close-btn:hover,
+  .close-btn:focus {
+    color: var(--color-blue);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  #container.blurred{
+    -webkit-filter: blur(3px);
+	filter: blur(3px);
+	-webkit-transition: .3s ease-in-out;
+	transition: .3s ease-in-out;
+  }
+
+  /* ---------------------- CREATE / UPLOAD FILES ----------------------*/
+
+.add-contracts-form input{
+    border: none;
+    margin: 0 auto;
+    width: 150px;
+    display: flex;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.create-contracts-btn{
+    background-color: var(--color-blue);
+    color: var(--color-white);
+}
+
+.add-contracts-form{
+    margin: 30px 0 10px 0;
+}
+
+.note-text{
+    font-size: 0.8125rem;
+    margin-bottom: 40px;
+    margin-top: -20px;
+    text-align: left;
+}
+
+.upload-file{
+    width: 100%;
+}
+
+[type="file"] {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  [type="file"] + label {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid var(--color-blue);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: 50px auto 40px auto;
+    background-color: var(--color-white);
+
+}
+  
+  /* [type="file"]:focus + label,
+  [type="file"] + label:hover {
+  }
+  
+  [type="file"]:focus + label {
+  } */
+
+
+  
+/* hacer que flote */
+  .add-contrat-messages{
+      width: 700px;
+  }
+
+
+    /* ---------------------- SELECT YES/NO OPTIONS ----------------------*/
+
+.selectors-options{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 30px auto;
+    width: 300px;
+}
+
+.selectors-options img{
+    width: 50px;
+}
+
+.text-popup{
+    margin: 30px auto 40px auto;
+    font-size: 1.5rem;
+}
+
+.textarea-reject::placeholder{
+    font-size: 1rem;
+    color: var(--color-black);
+}
+
+    /* ---------------------- EDIT PAGE ----------------------*/
+
+    #back-btn{
+        width: auto;
+        height: 35px;
+        cursor: pointer;
+    }
+
+    .info-container{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin: 10px 50px;
+        padding: 20px 50px;
+    }
+
+    .border{
+        border: 1px solid var(--color-grey-medium);
+        border-radius: 5px;
+        width: auto;
+    }
+
+    .block li{
+        list-style: none;
+        padding: 10px 0;
+    }
+
+    .archivos-preview-container{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 30px;
+        margin: 30px 50px;
+    }
+
+    .archivos,
+    .preview-status-edit{
+        display: flex;
+        justify-content: flex-start;
+        align-content: flex-end;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 30px;
+        width: 100%;
+    }
+
+    .archivos-nav{
+        display: inline-flex;
+        justify-content: space-between;
+        margin: 0 0 20px 0;
+    }
+
+    .archivos button{
+        margin: 0;
+    }
+
+    .document-card{
+        border: 1px solid var(--color-grey);
+        background-color: var(--color-white);
+        border-radius: 5px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 15px;
+        margin: 8px 0;
+    }
+
+    .icons-files img{
+        width: 25px;
+        height: 25px;
+        margin: 0 8px;
+        object-fit: cover;
+    }
+
+    .status-bloque{
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding: 30px;
+    }
+
+    h4{
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .status-department li{
+        list-style: none;
+        padding: 5px 0 5px 30px;
+    }
+
+
+
+
+    /* ---------------------- ALERT PAGE ----------------------*/
+    .alertas-container{
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-gap: 30px;
+        padding: 60px;
+        align-items: center;
+    }
+
+    .departments-alerts-btn{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mess-container input{
+        width: 100%;
+    }
+
+    .departments-alerts-btn .department-btn{
+        margin: 20px 0;
+        height: 50px;
+    }
+
+    .second-nav-alerts{
+        justify-content: center;
+    }
+
+    .back-btn-alerts{
+        margin: 2rem 2rem 0 0;
+        float: right;
+    }
+
+
+    .mess-container{
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        margin: 0 auto;
+        max-width: 650px;
+    }
+
+    .form-alertas{
+        margin: 30px auto 0 auto;
+    }
+/* 
+    .btn-blue-border{
+        border: 1px solid var(--color-blue);
+        background-color: var(--color-white);
+        color: var(--color-black);
+    } */
+
+    .btn-save{
+        display: flex;
+        margin: auto;
+    }
+
+    textarea {
+        line-height: 1.5;
+        border-radius: 5px;
+        border: 1px solid var(--color-blue);
+        resize: none;
+        width: 100%;
+        margin: 0 10px;
+        padding: 10px 30px;
+    }
+
+    .mess-container textarea::placeholder{
+        font-size: 0.9375rem;
+        color: var(--color-black);
+    }
+
+    textarea::placeholder{
+        font-family: "ASSA Vesta", sans-serif;
+    }
+
+    /* ---------------------- CONTRACT STATUS ----------------------*/
