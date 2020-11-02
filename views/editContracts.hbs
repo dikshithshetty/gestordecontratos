@@ -2,7 +2,7 @@
         <div class="second-nav">
             <ul>
                 <li><a href="/" class="cool-link">Contracts</a></li>
-                <li><a href="" class="cool-link">Alerts</a></li>
+                <li><a href="/alertsContracts" class="cool-link">Alerts</a></li>
                 <li><a href="" class="cool-link">Indicators</a></li>
                 <li><a href="" class="cool-link">Permissions</a></li>
             </ul>
@@ -10,35 +10,87 @@
         </div>
 </div>
 
-<div class="second-nav">
-    <h2 class="blue">Contract details</h2>
-    <img id="back-btn" src="/images/icons/back-btn.png">
-</div>
+<div class="edit-container">
 
+{{!-- Detalles Contrato --}}
+<div class="contract-details">
+<div class="nav3">
+<h2 class="blue">Contract details</h2>
+<img id="back-btn" src="/images/icons/back-btn.png">
+</div>
 <div class="info-container border">
     <div class="block">
-        <li><strong>PQ: </strong></li>
-        <li><strong>Client: </strong></li>
-        <li><strong>Commercial: </strong></li>
+        <li><strong>PQ: </strong>{{pq}}</li>
+        <li><strong>Client: </strong>{{cliente}}</li>
+        <li><strong>Commercial: </strong>{{comercial}}</li>
     </div>
 
     <div class="block">
-        <li><strong>Work: </strong></li>
-        <li><strong>Amount: </strong></li>
-        <li><strong>Final user: </strong></li>
+        <li><strong>Work: </strong>{{obra}}</li>
+        <li><strong>Amount: </strong>{{importe}}</li>
+        <li><strong>Final user: </strong>{{usuarioFinal}}</li>
     </div>
 
     <div class="block">
-        <li><strong>WON date: </strong></li>
-        <li><strong>Reception date: </strong></li>
-        <li><strong>App creation date: </strong></li>
+        <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
+        <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
+        <li><strong>App creation date: </strong>{{fechaCreaccionApp}}</li>
     </div>
 </div>
+</div>
 
+{{!-- Firmas Necesarias --}}
+<div class="contract-details">
+<h2 class="blue">Signatures required</h2>
+<div class="info-container border">
+    <div class="block">
+        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
+        <li><span class="btn1 btn-grey">Comercial: </span></li>
+        <li><span class="btn1 btn-grey">Operaciones: </span></li>
+        <li><span class="btn1 btn-grey">Control de Riesgos: </span></li>
+        <li><span class="btn1 btn-grey">Prev.Riesgos.Lab: </span></li>
+
+    </div>
+
+    <div class="block">
+        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
+        <li><span class="btn1 btn-grey">Comercial: </span></li>
+        <li><span class="btn1 btn-grey">Operaciones: </span></li>
+        <li><span class="btn1 btn-grey">Control de Riesgos: </span></li>
+        <li><span class="btn1 btn-grey">Prev.Riesgos.Lab: </span></li>
+    </div>
+
+    <div class="block">
+        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
+    </div>
+</div>
+</div>
+
+
+{{!-- Historia de alertas enviadas y archivos --}}
 <div class="archivos-preview-container">
-    <div class="archivos border">
+    <div class="email-status archivos border">
         <div class="archivos-nav">
-            <h3 class="blue">Archivos</h3>
+            <h3 class="blue">Contract history</h3>
+        </div>
+           
+           <div class="email-status-card">
+                <div class="titulos-avisos">
+                    <div class="icon-alert">mail</div>
+                    <div class="tipo-aviso">Primer recordatorio</div>
+                    <div class="tipo-aviso-nombre">Monica D. (Oper.)</div>
+                    <div class="tipo-aviso-fecha">02/11/2020</div>
+                </div>
+                <div class="info-avisos">
+                    <p></p>
+                    <p>Aviso contrato creado...</p>
+                </div>
+            </div>
+    </div>
+
+    <div class="archivos-upload archivos border">
+        <div class="archivos-nav">
+            <h3 class="blue">Contract files</h3>
             <button id="upload-btn" class="btn btn-blue">upload files</button>
         </div>
    
@@ -55,8 +107,8 @@
         
     </div>
 
-
-    <div class="preview-status-edit border">
+{{!-- preview status --}}
+    {{!-- <div class="preview-status-edit border">
         <h3 class="blue">Preview Status</h3>
         <div class="status-bloque">
             <h4><strong>Main status: </strong></h4>
@@ -68,8 +120,7 @@
             </div>
         </div>
         <button class="btn btn-blue">Show more details</button>
-    </div>
-
+    </div> --}}
 </div>
 
 {{!-- UPLOAD FILE --}}
@@ -109,7 +160,7 @@
                 </div>
         </div>
 </div>
-
+</div>
 
 <script>
     /*CREATE CONTRACTS*/

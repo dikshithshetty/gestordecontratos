@@ -1,25 +1,59 @@
-<img id="back-btn" class="back-btn-alerts" src="/images/icons/back-btn.png">
+        <div class="second-nav">
+            <ul>
+                <li><a href="/" class="cool-link">Contracts</a></li>
+                <li><a href="/alertsContracts" class="cool-link">Alerts</a></li>
+                <li><a href="" class="cool-link">Indicators</a></li>
+                <li><a href="" class="cool-link">Permissions</a></li>
+            </ul>
+        </div>
 
 <div class="alertas-container">
-    <div class="second-nav second-nav-alerts">
-        <div class="departments-alerts-btn">
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Nuevo Contrato</button>
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Contrato Rechazado</button>
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Contrato Actualizado</button>
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Contrato Aceptado</button>
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Recordatorios</button>
-            <button class="btn btn-blue btn-blue-border department-btn">Alerta Escalado</button>
+    <div class="nav-alertas">
+        <h3>Configurar nuevos avisos</h3>
+        <img id="back-btn" class="back-btn-alerts" src="/images/icons/back-btn.png">    
+    </div>
+<div class="alertsContainer">
+        <div class="second-nav-alerts">
+            <div id="myDIV" class="departments-alerts-btn">
+                <button id="newContractBtn" class="btn btn-blue department-btn">Nuevo Contrato</button>
+                <button id="rejectContractBtn" class="btn department-btn ">Contrato Rechazado</button>
+                <button id="actualizadoContractBtn" class="btn department-btn">Contrato Actualizado</button>
+                <button id="acceptContractBtn" class="btn department-btn">Contrato Aceptado</button>
+                <button id="recordatorioContractBtn" class="btn department-btn">Recordatorios</button>
+                <button id="escaladoContractBtn" class="btn department-btn">Escalado</button>
+            </div>
         </div>
-    </div>
 
-<div class="mess-container">
-        <h2 class="blue">Alerta Nuevo Contrato</h2>
-        <form class="form-alertas" action="" method="post">
-            <input id="email-list" type="email" placeholder="Para:">
-            <input type="email" placeholder="Cc:">
-            <input type="text" placeholder="Asunto:">
-            <textarea placeholder="Message...." rows ="10" name="message"></textarea>
-            <button  class="btn btn-blue btn-save" type="submit">Save</button>
-        </form>
-    </div>
+        <div class="mess-container">
+                <form class="form-alertas" action="" method="post">
+                    <input id="email-list" type="email" placeholder="Para:">
+                    <input type="email" placeholder="Cc:">
+                    <input type="text" placeholder="Asunto:">
+                    <textarea placeholder="Message...." rows ="10" name="message"></textarea>
+                    <button class="btn btn-blue btn-save" type="submit">Save</button>
+                </form>
+        </div>
 </div>
+</div>
+
+<script>
+/*let newContractBtn = document.querySelector('#newContractBtn');
+let rejectContractBtn = document.querySelector('#rejectContractBtn');
+let actualizadoContractBtn = document.querySelector('#actualizadoContractBtn');
+let acceptContractBtn = document.querySelector('#acceptContractBtn');
+let recordatorioContractBtn = document.querySelector('#recordatorioContractBtn');
+let escaladoContractBtn = document.querySelector('#escaladoContractBtn');*/
+
+
+var header = document.getElementById("myDIV");
+var btns = header.getElementsByClassName("department-btn");
+for (var i = 0; i < btns.length; i++) {
+  btns[i].addEventListener("click", function() {
+  var current = document.getElementsByClassName("btn-blue");
+  current[0].className = current[0].className.replace(" btn-blue", "");
+  this.className += " btn-blue";
+  });
+}
+
+
+</script>

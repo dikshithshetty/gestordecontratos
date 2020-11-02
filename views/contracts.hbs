@@ -2,12 +2,10 @@
         <div class="second-nav">
             <ul>
                 <li><a href="/" class="cool-link">Contracts</a></li>
-                <li><a href="" class="cool-link">Alerts</a></li>
+                <li><a href="/alertsContracts" class="cool-link">Alerts</a></li>
                 <li><a href="" class="cool-link">Indicators</a></li>
                 <li><a href="" class="cool-link">Permissions</a></li>
             </ul>
-         
-            <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button> 
         </div>
 
         {{#if errorMsg}}
@@ -36,7 +34,9 @@
                     {{formData.errorMsg}}
             </div>
         {{/if}}
+
 <div class="contracts-container">
+    <div class="first-nav1">
     <div class="title-container">
         {{#if formData.showClosed}}
             <a href="/displayPendingContracts"><h2 class="grey" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
@@ -44,7 +44,8 @@
             <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
         {{/if}}
     </div>
- 
+        <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button> 
+</div>
     <div class="nav-contract">
         <div class="nav-contract-items">
                     <div class="card-box titulos">PQ</div>
@@ -66,54 +67,24 @@
             {{#each formData.contractList}}
             <div class="contract-card" >
                 <div class="nav-contract-items">
-
-                    <table>
-                        <tr>
-                            <td>{{pq}}</td>
-                            <td>{{importe}}</td>
-                            <td>{{comercial}}</td>
-                            <td>{{cliente}}</td>
-                        </tr>
-                    </table>
+                            <div class="card-box">{{pq}}</div>
+                            <div class="card-box">{{importe}}</div>
+                            <div class="card-box">{{comercial}}</div>
+                            <div class="card-box">{{cliente}}</div>
                 </div>
                 <div class="nav-contract-actions">
-                    <table>
-                        <tr>
-                            <td><img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})"></td>
-                            <td><img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}"></td>
-                            <td><img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></td>
-                            {{!-- <td><a href="/deleteContract/{{_id}}"><img src="images/icons/delete-Icon.png" alt="delete"></a></td> --}}
-
-                            <td><img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}"></td>
-                        </tr>
-                    </table>
+                            <img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})">
+                            <img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
+                            <img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
+                            <img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}">
                 </div>
             </div>
             {{/each}}
-{{!-- 
-        <div class="contract-card">
-        <div class="nav-contract-items">
-                    <div class="card-box">numero</div>
-                    <div class="card-box">nombree</div>
-                    <div class="card-box nav-item">textooo</div>
-                    <div class="card-box">lo que sea que es</div>
-        </div>
-        <div class="nav-contract-actions">
-                    <img id="accept-btn" src="images/icons/approve.png" alt="accept">
-                    <img id="reject-btn" src="images/icons/reject.png" alt="reject">
-                    <img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete">
-                    <img id="edit-btn" src="images/icons/edit.png" alt="edit">
-        </div>
-    </div>
-
-
     </div>
 </div>
-</div>
 
+</div>
 {{!-- popups --}}
-
-
 {{!-- Add / create contracts --}}
 <div id="addModal" class="modal">
         <div class="modal-content modal-blue">
@@ -200,11 +171,6 @@
                 </div>
 
                 <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="message"></textarea>
-    
-                <button class="btn btn-red">Reject</button> 
-
-                
-    
                 <button type="submit" class="btn btn-red">Reject</button> 
                 </form>
                 
