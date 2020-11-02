@@ -1,4 +1,4 @@
- <div id="container">       
+<div id="container">       
         <div class="second-nav">
             <ul>
                 <li><a href="/" class="cool-link">Contracts</a></li>
@@ -7,66 +7,102 @@
                 <li><a href="" class="cool-link">Permissions</a></li>
             </ul>
          
-            <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button>
-            
+            <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button> 
         </div>
 
+        {{#if errorMsg}}
+            <div class="error-message">
+                <ul>
+                    {{#each errorMsg}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            {{else}}
+                {{#if noFileSelected}}
+                    <div class="error-message">
+                        {{noFileSelected}}
+                    </div>
+                    {{else}}
+                        {{#if succesMsg}}
+                        <div class="success-message">{{succesMsg}}</div>
+                    {{!-- <a href="/">Go to Login</a> --}}
+                        {{/if}}
+                {{/if}}
+        {{/if}}
+        {{#if formData.errorMsg}}
+             <div class="error-message">
+                    {{formData.errorMsg}}
+            </div>
+        {{/if}}
 <div class="contracts-container">
     <div class="title-container">
-        <h2 class="blue" onclick="">Pending contracts</h2><h2 class="grey">/</h2><h2 class="grey" onclick="">Closed contracts</h2>
+        {{#if formData.showClosed}}
+            <a href="/displayPendingContracts"><h2 class="grey" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
+        {{else}}
+            <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
+        {{/if}}
     </div>
  
     <div class="nav-contract">
         <div class="nav-contract-items">
-
-            <table>
-                <th>
-                    <td>PQ</td>
-                    <td>Amount</td>
-                    <td>Commercial</td>
-                    <td>Client</td>
-                </th>
-            </table>
+                    <div class="card-box titulos">PQ</div>
+                    <div class="card-box">Amount</div>
+                    <div class="card-box nav-item">Commercial</div>
+                    <div class="card-box">Client</div>
+            
         </div>
         <div class="nav-contract-actions">
-            <table>
-                <th>
-                    <td>Accept</td>
-                    <td>Reject</td>
-                    <td>Delete</td>
-                    <td>Edit</td>
-                </th>
-            </table>
+                    <div class="actions">Accept</div>
+                    <div class="actions">Reject</div>
+                    <div class="actions">Delete</div>
+                    <div class="actions">Edit</div>
         </div>
     </div>
 
 {{!-- contracts cards here --}}
     <div class="cards">
-            {{!-- {{#each ----}}
-            {{!-- {{> contractCard this}} --}}
-            {{!-- {{/each}} --}}
+            {{#each formData.contractList}}
+            <div class="contract-card" >
+                <div class="nav-contract-items">
 
-                <div class="contract-card">
+                    <table>
+                        <tr>
+                            <td>{{pq}}</td>
+                            <td>{{importe}}</td>
+                            <td>{{comercial}}</td>
+                            <td>{{cliente}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="nav-contract-actions">
+                    <table>
+                        <tr>
+                            <td><img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})"></td>
+                            <td><img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}"></td>
+                            <td><img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></td>
+                            {{!-- <td><a href="/deleteContract/{{_id}}"><img src="images/icons/delete-Icon.png" alt="delete"></a></td> --}}
+
+                            <td><img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {{/each}}
+{{!-- 
+        <div class="contract-card">
         <div class="nav-contract-items">
-
-            <table>
-                <tr>
-                    <td>{{pq}}</td>
-                    <td>{{importe}}</td>
-                    <td>{{comercial}}</td>
-                    <td>{{cliente}}</td>
-                </tr>
-            </table>
+                    <div class="card-box">numero</div>
+                    <div class="card-box">nombree</div>
+                    <div class="card-box nav-item">textooo</div>
+                    <div class="card-box">lo que sea que es</div>
         </div>
         <div class="nav-contract-actions">
-            <table>
-                <tr>
-                    <td><img id="accept-btn" src="images/icons/approve.png" alt="accept"></td>
-                    <td><img id="reject-btn" src="images/icons/reject.png" alt="reject"></td>
-                    <td><img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete"></td>
-                    <td><img id="edit-btn" src="images/icons/edit.png" alt="edit"></td>
-                </tr>
-            </table>
+                    <img id="accept-btn" src="images/icons/approve.png" alt="accept">
+                    <img id="reject-btn" src="images/icons/reject.png" alt="reject">
+                    <img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete">
+                    <img id="edit-btn" src="images/icons/edit.png" alt="edit">
         </div>
     </div>
 
@@ -78,35 +114,246 @@
 {{!-- popups --}}
 
 
+{{!-- Add / create contracts --}}
 <div id="addModal" class="modal">
         <div class="modal-content modal-blue">
-            <span class="close-btn">&times;</span>
-                 {{> createContract}}
+            <span id="close-btn-add" class="close-btn">&times;</span>
+                 <h2 class="blue">Upload files</h2>
+               
+                <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
+                    <input id="file" class="upload-files" type="file" name="excelFile">
+                    <label for="file">Please select the Excel file </label>
+                    <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
+                    <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
+                    <label for="otherFiles">Please select the rest of the files </label>
+                    {{!-- <input type="file" name="otherFiles" multiple> --}}
+                    <input class="create-contracts-btn" type="submit" value="Create Contract">
+                    
+                </form>
+        </div>
+</div>
+{{#each formData.contractList}}
+{{!-- Accept contracts --}}
+<div id="acceptModal-{{_id}}" class="modal">
+        <div class="modal-content modal-blue">
+            <span id="close-btn-accept" class="close-btn">&times;</span>
+                <h2 class="blue">Accept contract</h2>
+                
+                <div class="select select-box">
+                    <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
+                        <option hidden selected>Select your Role and Department</option>
+                        <option value="comercial-autorizado">Comercial - Autorizado</option>
+                        <option value="comercial-director">Comercial - Director</option>
+                        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
+                        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
+                        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
+                        <option value="operaciones-director">Operaciones - Director</option>
+                        <option value="prl-autorizado">PRL - Autorizado</option>
+                        <option value="prl-director">PRL - Director</option>
+                    </select>
+                </div>
+
+                <p class="text-popup">Do you want to approve the contract?</p>
+
+                <div class="selectors-options">
+                    <div class="accept">
+                        <img src="images/icons/reject.png" alt="reject" onclick="">
+                    </div>
+                    <div class="reject">
+                        <img src="images/icons/approve.png" alt="accept" onclick="">
+                    </div>
+
+                </div>
         </div>
 </div>
 
+{{!-- Reject contracts --}}
+<div id="rejectModal-{{_id}}" class="modal">
+        <div class="modal-content modal-red">
+            <span id="close-btn-reject-{{_id}}" class="close-btn" onclick="closeRejectModal(this)">&times;</span>
+                <h2 class="red">Reject contract</h2>
+                <form method="POST" action="/rejectContract/{{_id}}" >
+                <div class="select select-box">
+                    <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
+                        <option hidden selected>Select your Role and Department</option>
+                        <option value="comercial-autorizado">Comercial - Autorizado</option>
+                        <option value="comercial-director">Comercial - Director</option>
+                        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
+                        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
+                        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
+                        <option value="operaciones-director">Operaciones - Director</option>
+                        <option value="prl-autorizado">PRL - Autorizado</option>
+                        <option value="prl-director">PRL - Director</option>
+                    </select>
+                </div>
 
+                <div class="select">
+                    <select name="reason">
+                        <option hidden selected>Select a reason</option>
+                        <option value="Alcance">Alcance</option>
+                        <option value="Condiciones de Facturación">Condiciones de Factruación</option>
+                        <option value="Coste">Coste</option>
+                        <option value="Penalizaciones">Penalizaciones</option>
+                        <option value="Tiempo">Tiempo</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
 
+                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="message"></textarea>
+    
+                <button class="btn btn-red">Reject</button> 
+
+                
+    
+                <button type="submit" class="btn btn-red">Reject</button> 
+                </form>
+                
+        </div>
+</div>
+
+{{!-- Delete contracts --}}
+<div id="deleteModal-{{_id}}" class="modal">
+        <div class="modal-content modal-red">
+            <span id="close-btn-delete-{{_id}}" class="close-btn" onclick="closeDeleteModal(this)">&times;</span>
+                <h2 class="red">Delete contract</h2>
+
+                <p class="text-popup">Are you sure you wish to delete this file?</p>
+
+                <div class="selectors-options">
+                    <div class="accept">
+                        <a href="/deleteContract/{{_id}}"><img src="images/icons/approve.png" alt="reject" onclick=""></a>
+                    </div>
+                    <div class="reject">
+                        <a href="/displayPendingContracts"><img src="images/icons/reject.png" alt="accept" onclick=""></a>
+                    </div>
+
+                </div>
+        </div>
+</div>
+{{!-- Details contracts --}}
+<div id="detailsModal-{{_id}}" class="modal">
+
+</div>
+{{/each}}
 
 
 <script>
+//REJECT MODAL
+function showRejectModal(element){
+    let id =element.id.split("-")[1];
+    let rejectModal = document.getElementById("rejectModal-"+id);
+    rejectModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeRejectModal(element){
+    let id = element.id.split('-')[3]
+    let rejectModal = document.getElementById("rejectModal-"+id);
+    rejectModal.style.display = "none";
+    let blurred = document.getElementById("container");
+    blurred.classList.remove('blurred');
+}
+//DELETE MODAL
+function showDeleteModal(element){
+    let id =element.id.split("-")[1];
+    let deleteModal = document.getElementById("deleteModal-"+id);
+    deleteModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeDeleteModal(element){
+    let id = element.id.split('-')[3]
+    let deleteModal = document.getElementById("deleteModal-"+id);
+    deleteModal.style.display = "none";
+    let blurred = document.getElementById("container");
+    blurred.classList.remove('blurred');
+}
 
+
+
+
+function showDetailsModal(element){
+    openDetailsModal
+    let id =element.id.split("-")[1];
+    console.log(id);
+    let detailsModal = document.getElementById("detailsModal-"+id);
+        console.log(detailsModal);
+    detailsModal.style.display="block";
+    let blurred = document.getElementById("container");
+        console.log(blurred);
+
+    blurred.classList.add('blurred');
+}
 /*CREATE CONTRACTS*/
-var modal = document.getElementById("addModal");
+var addModal = document.getElementById("addModal"); /*Ventana emergente*/
+var addbtn = document.getElementById("add-btn"); /*Boton add contracts*/
+var closebtnAdd = document.getElementById("close-btn-add");
 
-var addbtn = document.getElementById("add-btn");
-/*var acceptbtn = document.getElementById("accept-btn");
-var rejectbtn = document.getElementById("reject-btn");
-var deletebtn = document.getElementById("delete-btn");*/
+//var deleteIconEsteve = document.getElementsByClassName("deleteIconEsteve");
+//console.log(deleteIconEsteve)
+var blurred = document.getElementById("container"); /*Blurred window*/
 
-var blurred = document.getElementById("container");
-var closebtn = document.querySelector(".close-btn");
 addbtn.onclick = function() {
-  modal.style.display = "block";
+  addModal.style.display = "block";
   blurred.classList.add('blurred');
 }
-closebtn.onclick = function() {
-  modal.style.display = "none";
+closebtnAdd.onclick = function() {
+  addModal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+
+/*ACCEPT CONTRACTS*/
+var acceptModal = document.getElementById("acceptModal"); /*Ventana emergente*/
+var acceptbtn = document.getElementById("accept-btn"); /*Boton accept contracts*/
+var closebtnAccept = document.getElementById("close-btn-accept");
+
+acceptbtn.onclick = function() {
+  acceptModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtnAccept.onclick = function() {
+  acceptModal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+
+/*REJECT CONTRACTS*/
+var rejectModal = document.getElementById("rejectModal"); /*Ventana emergente*/
+var rejectbtn = document.getElementById("reject-btn"); /*Boton reject contracts*/
+var closebtnReject = document.getElementById("close-btn-reject");
+deleteIconEsteve.onclick = function() {
+  rejectModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+
+rejectbtn.onclick = function() {
+  rejectModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtnReject.onclick = function() {
+  rejectModal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+
+/*DELETE CONTRACTS*/
+var deleteModal = document.getElementById("deleteModal"); /*Ventana emergente*/
+var deletebtn = document.getElementById("delete-btn"); /*Boton delete contracts*/
+var closebtnDelete = document.getElementById("close-btn-delete");
+//deleteIconEsteve.forEach(element=>{element.addEventListener('onclick',showModal(this))})
+/*deleteIconEsteve.onclick = function() {
+  deleteModal.style.display = "block";
+  blurred.classList.add('blurred');
+}*/
+/*function showModal(element){
+    element.style.display = "block";
+    blurred.classList.add('blurred');
+}*/
+
+deletebtn.onclick = function() {
+  deleteModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtnDelete.onclick = function() {
+  deleteModal.style.display = "none";
   blurred.classList.remove('blurred');
 }
 

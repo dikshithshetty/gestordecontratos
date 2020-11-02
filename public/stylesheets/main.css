@@ -90,6 +90,9 @@ h1{
     color: var(--color-grey);
 }
 
+.red{
+    color: var(--color-red);
+}
 
 /*H2 Styles*/
 h2{
@@ -97,7 +100,9 @@ h2{
     text-align: center;
 }
 
-
+h3{
+    font-size: 2rem;
+}
 
 /*a links*/
 a {
@@ -119,6 +124,7 @@ a {
     border-radius: 5px;
     text-align: center;
     margin: 0 auto;
+    cursor: pointer;
 }
 
 form .btn{
@@ -142,7 +148,6 @@ input{
     padding: 15px 30px;
     margin: 0 10px 20px 10px;
     border: 1px solid var(--color-blue);
-    width: 100%;
     font-size: 0.875rem;
 }
 
@@ -173,6 +178,19 @@ input::placeholder{
     padding: 10px 20px;
     margin: 20px auto 2px auto;
 }
+
+.success-message ul,
+.error-message ul{
+    list-style: none;
+}
+
+.success-message ul li,
+.error-message ul li{
+    margin: 10px 0;
+    text-align: left;
+    word-break: keep-all;
+}
+
 
 /* ---------------------- LAYOUT ----------------------*/
 
@@ -239,6 +257,7 @@ input::placeholder{
 .second-nav{
     display: flex;
     width: 100%;
+    align-content: center;
     justify-content: space-between;
     padding: 60px 10% 30px 10%;
 }
@@ -256,9 +275,26 @@ input::placeholder{
 }
 
 
+/*----------------------- SELECT BOX OPTIONS ------------------------*/
 
+  
+  .select select {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-blue);
+    border-radius: 5px;
+    padding: 12px;
+    -webkit-appearance: button;
+    appearance: button;
+    outline: none;
+    font-family: "ASSA Vesta", sans-serif;
+    margin: 0 10px 20px 10px;
+    width: 100%;
+    font-size: 1rem;
+  }
 
-
+  .select-box{
+      margin: 40px auto 0 auto;
+  }
 
 /* ---------------------- CONTRACT PAGE / HOME ----------------------*/
 
@@ -286,22 +322,12 @@ input::placeholder{
 
 .nav-contract,
 .contract-card{
-    display: flex;
-    margin: 40px;
-    justify-content: space-between;
-    padding: 10px;
-
+    display: grid;
+    grid-template-columns: 1fr 300px;
 }
 
-
-.nav-contract-items td,
-.nav-contract-actions td{
-    padding: 0 15px;
-    width: 90px;
-}
-
-.nav-contract-items td{
-    padding: 0 60px;
+.actions{
+    padding: 0 5px;
 }
 
 .cards{
@@ -313,6 +339,31 @@ input::placeholder{
 
 
 /* ---------------------- CONTRACT CARD ----------------------*/
+.contract-card,
+.nav-contract{
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    padding: 10px;
+}
+
+.nav-contract-actions{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 2px;
+}
+
+.nav-contract-items{
+    display: grid;
+    text-align: left;
+    grid-template-columns: repeat(3, 20%) 1fr;
+    padding: 2px;
+}
+
+.titulos{
+    text-align: left;
+    padding-left: 20px;
+}
 
 .nav-contract-actions img{
     width: 35px;
@@ -359,12 +410,13 @@ input::placeholder{
     padding: 50px 70px;
     border: 2px solid;
     border-radius: 15px;
-    width: 60%;
+    width: 600px;
     min-height: 10%;
-    max-width: 60%;
+    max-width: 600px;
     height: auto;
     position: relative;
     box-shadow: 0px 0px 10px 9px rgba(var(--color-shadow-grey), 1); 
+    text-align: center;
   }
 
   .modal-blue{
@@ -409,6 +461,7 @@ input::placeholder{
     width: 150px;
     display: flex;
     justify-content: center;
+    font-size: 1rem;
 }
 
 .create-contracts-btn{
@@ -423,6 +476,8 @@ input::placeholder{
 .note-text{
     font-size: 0.8125rem;
     margin-bottom: 40px;
+    margin-top: -20px;
+    text-align: left;
 }
 
 .upload-file{
@@ -449,14 +504,216 @@ input::placeholder{
     display: flex;
     width: 100%;
     justify-content: center;
-    margin: 50px auto 10px auto;
+    margin: 50px auto 40px auto;
     background-color: var(--color-white);
 
 }
   
-  [type="file"]:focus + label,
+  /* [type="file"]:focus + label,
   [type="file"] + label:hover {
   }
   
   [type="file"]:focus + label {
+  } */
+
+
+  
+/* hacer que flote */
+  .add-contrat-messages{
+      width: 700px;
   }
+
+
+    /* ---------------------- SELECT YES/NO OPTIONS ----------------------*/
+
+.selectors-options{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 30px auto;
+    width: 300px;
+}
+
+.selectors-options img{
+    width: 50px;
+}
+
+.text-popup{
+    margin: 30px auto 40px auto;
+    font-size: 1.5rem;
+}
+
+.textarea-reject::placeholder{
+    font-size: 1rem;
+    color: var(--color-black);
+}
+
+    /* ---------------------- EDIT PAGE ----------------------*/
+
+    #back-btn{
+        width: auto;
+        height: 35px;
+        cursor: pointer;
+    }
+
+    .info-container{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin: 10px 50px;
+        padding: 20px 50px;
+    }
+
+    .border{
+        border: 1px solid var(--color-grey-medium);
+        border-radius: 5px;
+        width: auto;
+    }
+
+    .block li{
+        list-style: none;
+        padding: 10px 0;
+    }
+
+    .archivos-preview-container{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 30px;
+        margin: 30px 50px;
+    }
+
+    .archivos,
+    .preview-status-edit{
+        display: flex;
+        justify-content: flex-start;
+        align-content: flex-end;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 30px;
+        width: 100%;
+    }
+
+    .archivos-nav{
+        display: inline-flex;
+        justify-content: space-between;
+        margin: 0 0 20px 0;
+    }
+
+    .archivos button{
+        margin: 0;
+    }
+
+    .document-card{
+        border: 1px solid var(--color-grey);
+        background-color: var(--color-white);
+        border-radius: 5px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 15px;
+        margin: 8px 0;
+    }
+
+    .icons-files img{
+        width: 25px;
+        height: 25px;
+        margin: 0 8px;
+        object-fit: cover;
+    }
+
+    .status-bloque{
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding: 30px;
+    }
+
+    h4{
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .status-department li{
+        list-style: none;
+        padding: 5px 0 5px 30px;
+    }
+
+
+
+
+    /* ---------------------- ALERT PAGE ----------------------*/
+    .alertas-container{
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-gap: 30px;
+        padding: 60px;
+        align-items: center;
+    }
+
+    .departments-alerts-btn{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mess-container input{
+        width: 100%;
+    }
+
+    .departments-alerts-btn .department-btn{
+        margin: 20px 0;
+        height: 50px;
+    }
+
+    .second-nav-alerts{
+        justify-content: center;
+    }
+
+    .back-btn-alerts{
+        margin: 2rem 2rem 0 0;
+        float: right;
+    }
+
+
+    .mess-container{
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        margin: 0 auto;
+        max-width: 650px;
+    }
+
+    .form-alertas{
+        margin: 30px auto 0 auto;
+    }
+/* 
+    .btn-blue-border{
+        border: 1px solid var(--color-blue);
+        background-color: var(--color-white);
+        color: var(--color-black);
+    } */
+
+    .btn-save{
+        display: flex;
+        margin: auto;
+    }
+
+    textarea {
+        line-height: 1.5;
+        border-radius: 5px;
+        border: 1px solid var(--color-blue);
+        resize: none;
+        width: 100%;
+        margin: 0 10px;
+        padding: 10px 30px;
+    }
+
+    .mess-container textarea::placeholder{
+        font-size: 0.9375rem;
+        color: var(--color-black);
+    }
+
+    textarea::placeholder{
+        font-family: "ASSA Vesta", sans-serif;
+    }
+
+    /* ---------------------- CONTRACT STATUS ----------------------*/

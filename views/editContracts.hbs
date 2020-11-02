@@ -1,0 +1,146 @@
+ <div id="container">       
+        <div class="second-nav">
+            <ul>
+                <li><a href="/" class="cool-link">Contracts</a></li>
+                <li><a href="" class="cool-link">Alerts</a></li>
+                <li><a href="" class="cool-link">Indicators</a></li>
+                <li><a href="" class="cool-link">Permissions</a></li>
+            </ul>
+         
+        </div>
+</div>
+
+<div class="second-nav">
+    <h2 class="blue">Contract details</h2>
+    <img id="back-btn" src="/images/icons/back-btn.png">
+</div>
+
+<div class="info-container border">
+    <div class="block">
+        <li><strong>PQ: </strong></li>
+        <li><strong>Client: </strong></li>
+        <li><strong>Commercial: </strong></li>
+    </div>
+
+    <div class="block">
+        <li><strong>Work: </strong></li>
+        <li><strong>Amount: </strong></li>
+        <li><strong>Final user: </strong></li>
+    </div>
+
+    <div class="block">
+        <li><strong>WON date: </strong></li>
+        <li><strong>Reception date: </strong></li>
+        <li><strong>App creation date: </strong></li>
+    </div>
+</div>
+
+<div class="archivos-preview-container">
+    <div class="archivos border">
+        <div class="archivos-nav">
+            <h3 class="blue">Archivos</h3>
+            <button id="upload-btn" class="btn btn-blue">upload files</button>
+        </div>
+   
+        <div class="contracts-cards-items">
+
+            <div class="document-card">
+                    <p>nombre del archivo</p>
+                    <div class="icons-files">
+                        <img id="download-btn" src="/images/icons/download.png" alt="download">
+                        <img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete">
+                    </div>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <div class="preview-status-edit border">
+        <h3 class="blue">Preview Status</h3>
+        <div class="status-bloque">
+            <h4><strong>Main status: </strong></h4>
+            <div class="status-department">
+                <li><strong>Comercial: </strong></li>
+                <li><strong>Operaciones: </strong></li>
+                <li><strong>Control de Riesgos: </strong></li>
+                <li><strong>Prev.Riesgos.Lab: </strong></li>
+            </div>
+        </div>
+        <button class="btn btn-blue">Show more details</button>
+    </div>
+
+</div>
+
+{{!-- UPLOAD FILE --}}
+<div id="addModal" class="modal">
+        <div class="modal-content modal-blue">
+            <span id="close-btn-add" class="close-btn">&times;</span>
+                 <h2 class="blue">Upload files</h2>
+               
+                <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
+                    <input id="file" class="upload-files" type="file" name="excelFile">
+                    <label for="file">Please select the Excel file </label>
+                    <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
+                    <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
+                    <label for="otherFiles">Please select the rest of the files </label>
+                    {{!-- <input type="file" name="otherFiles" multiple> --}}
+                    <input class="create-contracts-btn" type="submit" value="Create Contract">
+                </form>
+        </div>
+</div>
+
+{{!-- Delete contracts --}}
+<div id="deleteModal" class="modal">
+        <div class="modal-content modal-red">
+            <span id="close-btn-delete" class="close-btn">&times;</span>
+                <h2 class="red">Delete file</h2>
+
+                <p class="text-popup">Are you sure you wish to delete this file?</p>
+
+                <div class="selectors-options">
+                    <div class="accept">
+                        <img src="images/icons/reject.png" alt="reject" onclick="">
+                    </div>
+                    <div class="reject">
+                        <img src="images/icons/approve.png" alt="accept" onclick="">
+                    </div>
+
+                </div>
+        </div>
+</div>
+
+
+<script>
+    /*CREATE CONTRACTS*/
+var addModal = document.getElementById("addModal"); /*Ventana emergente*/
+var uploadbtn = document.getElementById("upload-btn"); /*Boton add contracts*/
+var closebtnAdd = document.getElementById("close-btn-add");
+
+var blurred = document.getElementById("container"); /*Blurred window*/
+
+uploadbtn.onclick = function() {
+  addModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtnAdd.onclick = function() {
+  addModal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+
+/*DELETE CONTRACTS*/
+var deleteModal = document.getElementById("deleteModal"); /*Ventana emergente*/
+var deletebtn = document.getElementById("delete-btn"); /*Boton delete contracts*/
+var closebtnDelete = document.getElementById("close-btn-delete");
+
+deletebtn.onclick = function() {
+  deleteModal.style.display = "block";
+  blurred.classList.add('blurred');
+}
+closebtnDelete.onclick = function() {
+  deleteModal.style.display = "none";
+  blurred.classList.remove('blurred');
+}
+
+
+</script>

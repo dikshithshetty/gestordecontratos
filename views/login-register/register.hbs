@@ -10,8 +10,8 @@
 </head>
 <body>
 
-<form class="bg-register-login register-container" action="/register" method="POST">
-    <h1 class="black">Signup</h1>
+<form class="bg-register-login register-container register" action="/register" method="POST">
+    <h1 class="black">Register</h1>
          <div class="form-label">
             <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
             <input type="text" placeholder="Last name" name="usersurname" value="{{#if formData.usersurname}}{{formData.usersurname}}{{/if}}">
@@ -27,9 +27,9 @@
             <input type="password" placeholder="Repeat your password" name="repeatedpassword" value="{{#if formData.repeatedpassword}}{{formData.repeatedpassword}}{{/if}}">
         </div>
 
-        <div class="select">
+        <div class="select select-register">
             <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
-                <option hidden selected>Select your Role/Department</option>
+                <option hidden selected>Select your Role and Department</option>
                 <option value="comercial-autorizado">Comercial - Autorizado</option>
                 <option value="comercial-director">Comercial - Director</option>
                 <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
@@ -41,9 +41,9 @@
             </select>
         </div>
 
-    <p class="underline-link forgot-password"  onclick=addRoleSelector(this)>Add more roles/departments</p>
-    <button class="btn btn-blue" type="submit">Signup</button>
-
+    <p id="addRoleSelectorBtn" class="underline-link forgot-password"  onclick=addRoleSelector(this)>Add more roles/departments</p>
+    <button class="btn btn-blue" type="submit">Create Account</button>
+    
     {{#if formData.errorMsg}}
     <div class="error-message">
         <ul>
@@ -58,7 +58,29 @@
     <div class="success-message">{{formData.succesMsg}}</div>
     <a href="/">Go to Login</a>
     {{/if}}
+    
+    <!-- register section -->
+    <div class="devided-block">
+        <div class="devided"></div>
+        <span>or</span>
+        <div class="devided"></div>
+    </div>
+
+        <a class="create-account-link" href="/">Go to Login</a>
 
 </form>
+<script>
+    function addRoleSelectorBtn(){
+     
+    addbtn = document.getElementById("addRoleSelectorBtn")
+    registerForm = document.getElementById("registerForm")
+    selector = document.getElementsByClassName("select")[0]
+    console.log(selector)
+    console.log(addbtn);
+    console.log(registerForm);
+    var selector=registerForm.insertBefore(selector,addbtn)
+    //registerForm.insertBefore(selector,addbtn)
+}
+</script>
 </body>
 </html>
