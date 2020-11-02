@@ -34,6 +34,9 @@
                     {{formData.errorMsg}}
             </div>
         {{/if}}
+        {{#if formData.successMsg}}
+            <div class="success-message">{{formData.successMsg}}</div>
+        {{/if}}
 
 <div class="contracts-container">
     <div class="first-nav1">
@@ -262,91 +265,5 @@ function closeDeleteModal(element){
 }
 
 
-
-
-function showDetailsModal(element){
-    openDetailsModal
-    let id =element.id.split("-")[1];
-    console.log(id);
-    let detailsModal = document.getElementById("detailsModal-"+id);
-        console.log(detailsModal);
-    detailsModal.style.display="block";
-    let blurred = document.getElementById("container");
-        console.log(blurred);
-
-    blurred.classList.add('blurred');
-}
-/*CREATE CONTRACTS*/
-var addModal = document.getElementById("addModal"); /*Ventana emergente*/
-var addbtn = document.getElementById("add-btn"); /*Boton add contracts*/
-var closebtnAdd = document.getElementById("close-btn-add");
-
-//var deleteIconEsteve = document.getElementsByClassName("deleteIconEsteve");
-//console.log(deleteIconEsteve)
-var blurred = document.getElementById("container"); /*Blurred window*/
-
-addbtn.onclick = function() {
-  addModal.style.display = "block";
-  blurred.classList.add('blurred');
-}
-closebtnAdd.onclick = function() {
-  addModal.style.display = "none";
-  blurred.classList.remove('blurred');
-}
-
-/*ACCEPT CONTRACTS*/
-var acceptModal = document.getElementById("acceptModal"); /*Ventana emergente*/
-var acceptbtn = document.getElementById("accept-btn"); /*Boton accept contracts*/
-var closebtnAccept = document.getElementById("close-btn-accept");
-
-acceptbtn.onclick = function() {
-  acceptModal.style.display = "block";
-  blurred.classList.add('blurred');
-}
-closebtnAccept.onclick = function() {
-  acceptModal.style.display = "none";
-  blurred.classList.remove('blurred');
-}
-
-/*REJECT CONTRACTS*/
-var rejectModal = document.getElementById("rejectModal"); /*Ventana emergente*/
-var rejectbtn = document.getElementById("reject-btn"); /*Boton reject contracts*/
-var closebtnReject = document.getElementById("close-btn-reject");
-deleteIconEsteve.onclick = function() {
-  rejectModal.style.display = "block";
-  blurred.classList.add('blurred');
-}
-
-rejectbtn.onclick = function() {
-  rejectModal.style.display = "block";
-  blurred.classList.add('blurred');
-}
-closebtnReject.onclick = function() {
-  rejectModal.style.display = "none";
-  blurred.classList.remove('blurred');
-}
-
-/*DELETE CONTRACTS*/
-var deleteModal = document.getElementById("deleteModal"); /*Ventana emergente*/
-var deletebtn = document.getElementById("delete-btn"); /*Boton delete contracts*/
-var closebtnDelete = document.getElementById("close-btn-delete");
-//deleteIconEsteve.forEach(element=>{element.addEventListener('onclick',showModal(this))})
-/*deleteIconEsteve.onclick = function() {
-  deleteModal.style.display = "block";
-  blurred.classList.add('blurred');
-}*/
-/*function showModal(element){
-    element.style.display = "block";
-    blurred.classList.add('blurred');
-}*/
-
-deletebtn.onclick = function() {
-  deleteModal.style.display = "block";
-  blurred.classList.add('blurred');
-}
-closebtnDelete.onclick = function() {
-  deleteModal.style.display = "none";
-  blurred.classList.remove('blurred');
-}
 
 </script>
