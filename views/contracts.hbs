@@ -47,24 +47,17 @@
  
     <div class="nav-contract">
         <div class="nav-contract-items">
-            <table>
-                <th>
-                    <td>PQ</td>
-                    <td>Amount</td>
-                    <td>Commercial</td>
-                    <td>Client</td>
-                </th>
-            </table>
+                    <div class="card-box titulos">PQ</div>
+                    <div class="card-box">Amount</div>
+                    <div class="card-box nav-item">Commercial</div>
+                    <div class="card-box">Client</div>
+            
         </div>
         <div class="nav-contract-actions">
-            <table>
-                <th>
-                    <td>Accept</td>
-                    <td>Reject</td>
-                    <td>Delete</td>
-                    <td>Edit</td>
-                </th>
-            </table>
+                    <div class="actions">Accept</div>
+                    <div class="actions">Reject</div>
+                    <div class="actions">Delete</div>
+                    <div class="actions">Edit</div>
         </div>
     </div>
 
@@ -100,26 +93,17 @@
 {{!-- 
         <div class="contract-card">
         <div class="nav-contract-items">
-
-            <table>
-                <tr>
-                    <td>{{pq}}</td>
-                    <td>{{importe}}</td>
-                    <td>{{comercial}}</td>
-                    <td>{{cliente}}</td>
-                </tr>
-            </table>
+                    <div class="card-box">numero</div>
+                    <div class="card-box">nombree</div>
+                    <div class="card-box nav-item">textooo</div>
+                    <div class="card-box">lo que sea que es</div>
         </div>
         <div class="nav-contract-actions">
-            <table>
-                <tr>
-                    <td><img id="accept-btn" src="images/icons/approve.png" alt="accept"></td>
-                    <td><img id="reject-btn" src="images/icons/reject.png" alt="reject"></td>
-                    <td><img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete"></td>
-                    <td><img id="edit-btn" src="images/icons/edit.png" alt="edit"></td>
-                </tr>
-            </table>
-        </div> --}}
+                    <img id="accept-btn" src="images/icons/approve.png" alt="accept">
+                    <img id="reject-btn" src="images/icons/reject.png" alt="reject">
+                    <img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete">
+                    <img id="edit-btn" src="images/icons/edit.png" alt="edit">
+        </div>
     </div>
 
 
@@ -214,6 +198,10 @@
                         <option value="Otros">Otros</option>
                     </select>
                 </div>
+
+                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="message"></textarea>
+    
+                <button class="btn btn-red">Reject</button> 
 
                 
     

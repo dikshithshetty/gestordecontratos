@@ -537,4 +537,14 @@ function numberToCurrency(number){
     // console.log(result)
     return result
   }
+
+
+router.get('/editContracts',(req,res,next)=>{
+    res.render('editContracts')
+});
+
+router.get('/alertsContracts',(req,res,next)=>{
+    res.render('alertsContracts')
+});
+
 module.exports=router;
