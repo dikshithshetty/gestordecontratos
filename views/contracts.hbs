@@ -31,15 +31,22 @@
                         {{/if}}
                 {{/if}}
         {{/if}}
-
+        {{#if formData.errorMsg}}
+             <div class="error-message">
+                    {{formData.errorMsg}}
+            </div>
+        {{/if}}
 <div class="contracts-container">
     <div class="title-container">
-        <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
+        {{#if formData.showClosed}}
+            <a href="/displayPendingContracts"><h2 class="grey" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
+        {{else}}
+            <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
+        {{/if}}
     </div>
  
     <div class="nav-contract">
         <div class="nav-contract-items">
-
             <table>
                 <th>
                     <td>PQ</td>
@@ -80,11 +87,11 @@
                     <table>
                         <tr>
                             <td><img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})"></td>
-                            <td><img src="images/icons/reject.png" alt="reject" onclick=""></td>
+                            <td><img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}"></td>
                             <td><img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></td>
                             {{!-- <td><a href="/deleteContract/{{_id}}"><img src="images/icons/delete-Icon.png" alt="delete"></a></td> --}}
 
-                            <td><img src="images/icons/edit.png" alt="edit" onclick=""></td>
+                            <td><img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}"></td>
                         </tr>
                     </table>
                 </div>
@@ -179,9 +186,9 @@
 {{!-- Reject contracts --}}
 <div id="rejectModal-{{_id}}" class="modal">
         <div class="modal-content modal-red">
-            <span id="close-btn-reject" class="close-btn">&times;</span>
+            <span id="close-btn-reject-{{_id}}" class="close-btn" onclick="closeRejectModal(this)">&times;</span>
                 <h2 class="red">Reject contract</h2>
-
+                <form method="POST" action="/rejectContract/{{_id}}" >
                 <div class="select select-box">
                     <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
                         <option hidden selected>Select your Role and Department</option>
@@ -199,15 +206,19 @@
                 <div class="select">
                     <select name="reason">
                         <option hidden selected>Select a reason</option>
-                        <option value="">Comercial - Autorizado</option>
-                        <option value="">Comercial - Director</option>
-                        <option value="">Control de Riesgos - Autorizado</option>
-                        <option value="">Control de Riesgos - Director</option>
+                        <option value="Alcance">Alcance</option>
+                        <option value="Condiciones de Facturación">Condiciones de Factruación</option>
+                        <option value="Coste">Coste</option>
+                        <option value="Penalizaciones">Penalizaciones</option>
+                        <option value="Tiempo">Tiempo</option>
+                        <option value="Otros">Otros</option>
                     </select>
                 </div>
-    
-                <button class="btn btn-red">Reject</button> 
 
+                
+    
+                <button type="submit" class="btn btn-red">Reject</button> 
+                </form>
                 
         </div>
 </div>
@@ -215,33 +226,71 @@
 {{!-- Delete contracts --}}
 <div id="deleteModal-{{_id}}" class="modal">
         <div class="modal-content modal-red">
-            <span id="close-btn-delete" class="close-btn">&times;</span>
+            <span id="close-btn-delete-{{_id}}" class="close-btn" onclick="closeDeleteModal(this)">&times;</span>
                 <h2 class="red">Delete contract</h2>
 
                 <p class="text-popup">Are you sure you wish to delete this file?</p>
 
                 <div class="selectors-options">
                     <div class="accept">
-                        <a href="/deleteContract/{{_id}}"><img src="images/icons/approve.png" alt="reject" onclick=""  ></a>
+                        <a href="/deleteContract/{{_id}}"><img src="images/icons/approve.png" alt="reject" onclick=""></a>
                     </div>
                     <div class="reject">
-                        <img src="images/icons/reject.png" alt="accept" onclick="">
+                        <a href="/displayPendingContracts"><img src="images/icons/reject.png" alt="accept" onclick=""></a>
                     </div>
 
                 </div>
         </div>
 </div>
+{{!-- Details contracts --}}
+<div id="detailsModal-{{_id}}" class="modal">
+
+</div>
 {{/each}}
 
 
 <script>
+//REJECT MODAL
+function showRejectModal(element){
+    let id =element.id.split("-")[1];
+    let rejectModal = document.getElementById("rejectModal-"+id);
+    rejectModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeRejectModal(element){
+    let id = element.id.split('-')[3]
+    let rejectModal = document.getElementById("rejectModal-"+id);
+    rejectModal.style.display = "none";
+    let blurred = document.getElementById("container");
+    blurred.classList.remove('blurred');
+}
+//DELETE MODAL
 function showDeleteModal(element){
     let id =element.id.split("-")[1];
-    console.log(id);
     let deleteModal = document.getElementById("deleteModal-"+id);
-        console.log(deleteModal);
-
     deleteModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeDeleteModal(element){
+    let id = element.id.split('-')[3]
+    let deleteModal = document.getElementById("deleteModal-"+id);
+    deleteModal.style.display = "none";
+    let blurred = document.getElementById("container");
+    blurred.classList.remove('blurred');
+}
+
+
+
+
+function showDetailsModal(element){
+    openDetailsModal
+    let id =element.id.split("-")[1];
+    console.log(id);
+    let detailsModal = document.getElementById("detailsModal-"+id);
+        console.log(detailsModal);
+    detailsModal.style.display="block";
     let blurred = document.getElementById("container");
         console.log(blurred);
 

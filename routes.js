@@ -22,7 +22,7 @@ router.get('/',(req,res,next)=>{
 
 
 
-        res.render('contracts');
+        res.redirect('/displayPendingContracts');
     } else {
         res.render('login-register/login', template);
     }
@@ -96,7 +96,7 @@ router.post('/', async(req,res,next)=>{
             if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                 req.session.currentUser = user;                         //Save User Session.
                 // await deleteDir(path.join(__dirname,"uploadedContracts"))
-                res.redirect("/")                                       //Redirect to home.
+                res.redirect("/displayPendingContracts")                                       //Redirect to home.
             }else{
                 errorMsg="Incorrect email or password."                 //Password is inccorrect.
                 formData={errorMsg:errorMsg,email:email,layout:false}
@@ -225,12 +225,15 @@ router.get("/displayClosedContracts", async (req,res)=>{
         // contractList.importe=numberToCurrency(contractList.importe)
         // console.log(contractList)
         formData={
+            showClosed:true,
             contractList:contractList
         }
         res.render("contracts.hbs",{formData});
     }
 })
 router.get("/displayPendingContracts", async (req,res)=>{
+    const errorMsg = req.query.errorMsg
+    console.log("ERROR MESSAGE THROUGH QUERY: ", errorMsg)
     await deleteDir(path.join(__dirname,"uploadedContracts"))
 
     if (req.session===undefined) {
@@ -243,6 +246,8 @@ router.get("/displayPendingContracts", async (req,res)=>{
         })
         // console.log(contractList)
         formData={
+            errorMsg:errorMsg,
+            showClosed:false,
             contractList:contractList
         }
         res.render("contracts.hbs",{formData});
@@ -256,10 +261,42 @@ router.get("/deleteContract/:id",async(req,res)=>{
     res.redirect("/displayPendingContracts")
 })
 
-router.get("/rejectContract/:id",async(req,res)=>{
+router.post("/rejectContract/:id",async(req,res)=>{
+    console.log("ENTERED REJECT CONTRACT / ID")
+    const {role,reason}=req.body
     const id=req.params.id
-    const userName = req.session.currentUser.userName
-    const userSurname = req.session.currentUser.userSurname
+    // const id=req.params.id
+    // const role=req.params.role
+    // const reason=req.params.reason
+    // const userName = req.session.currentUser.userName
+    // const userSurname = req.session.currentUser.userSurname
+    // console.log(id)
+    // console.log(userName)
+    // console.log(userSurname)
+    console.log(role)
+    console.log(reason)
+    errorMsg = createErrorMsgReject(role,reason)
+    console.log(errorMsg)
+    
+    let contract = await Contract.find({_id:id})
+    let historico = contract[0].historico
+    console.log(historico)
+    if (errorMsg!==""){
+        res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
+    }else{
+
+        //Save Reject Action
+
+
+        //Send Rejection Email
+        successMsg = "Contrato Rechazado Correctamente"
+        res.redirect('/displayPendingContracts?successMsg='+successMsg)
+    }
+
+    // res.render("contracts",{errorMsg})
+    
+
+
 })
 
 async function sendEmail(emailParams){
@@ -325,6 +362,7 @@ async function deleteDir(dir){
       }
 }
 function editPQ(pq){
+    if (pq.split('-').length-1===2){return pq;}
     if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
 }
 function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion){
@@ -477,6 +515,18 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     // console.log(resultErrorMsg)
 
     return resultErrorMsg
+}
+function createErrorMsgReject(role,reason){
+    if(role === "Select your Role and Department" && reason ==="Select a reason"){
+        errorMsg = "Select a role and a reason."
+    } else if (role === "Select your Role and Department"){
+        errorMsg = "Select a role."
+    } else if (reason ==="Select a reason"){
+        errorMsg = "Select a reason."
+    } else {
+        errorMsg = ""
+    }
+    return errorMsg;
 }
 
 function numberToCurrency(number){
