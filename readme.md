@@ -2,7 +2,7 @@
 
 ## Description
 
-The main goal of this web application is to allow companies a better control and comunication system that streamlines the process of signing contracts.
+The main goal of this web application is to allow companies a better control and communication system that streamlines the process of signing contracts.
  
 ## User Stories
 

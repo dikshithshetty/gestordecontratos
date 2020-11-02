@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<form class="bg-register-login register-container register" action="/register" method="POST">
+<form class="bg-register-login register-container register" action="/register" method="POST" id="registerForm">
     <h1 class="black">Register</h1>
          <div class="form-label">
             <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
@@ -41,7 +41,7 @@
             </select>
         </div>
 
-    <p id="addRoleSelectorBtn" class="underline-link forgot-password"  onclick=addRoleSelector(this)>Add more roles/departments</p>
+    <p id="addRoleSelectorBtn" class="underline-link forgot-password"  onclick="addRoleSelectorBtn(this)">Add more roles/departments</p>
     <button class="btn btn-blue" type="submit">Create Account</button>
     
     {{#if formData.errorMsg}}
@@ -71,15 +71,16 @@
 </form>
 <script>
     function addRoleSelectorBtn(){
-     
-    addbtn = document.getElementById("addRoleSelectorBtn")
-    registerForm = document.getElementById("registerForm")
-    selector = document.getElementsByClassName("select")[0]
-    console.log(selector)
-    console.log(addbtn);
-    console.log(registerForm);
-    var selector=registerForm.insertBefore(selector,addbtn)
-    //registerForm.insertBefore(selector,addbtn)
+        addbtn = document.getElementById("addRoleSelectorBtn")
+        registerForm = document.getElementById("registerForm")
+        selector = document.getElementsByClassName("select")[0]
+        numRoles = document.getElementsByClassName("select").length
+        selectorClonado = selector.cloneNode(true)
+        if (numRoles<5){
+            selectorClonado.children[0].name="role"+numRoles
+            console.log(numRoles)
+            registerForm.insertBefore(selectorClonado,addbtn)
+        }
 }
 </script>
 </body>

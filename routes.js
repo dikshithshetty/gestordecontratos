@@ -38,10 +38,12 @@ router.get('/register',(req,res,next)=>{
     // }
 })
 router.post('/register',async (req,res,next)=>{
-    const{username, usersurname, email, repeatemail, password, repeatedpassword, role} = req.body;
+    const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
     var errorMsg = [];
-
-    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, role)
+    console.log("Role4: ",role4)
+        roleArr = createRoleArray(role,role1,role2,role3,role4)
+        console.log("Role Array", roleArr)
+    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
     
     formData={
         errorMsg:errorMsg,
@@ -56,10 +58,12 @@ router.post('/register',async (req,res,next)=>{
     };
 
     if (errorMsg.length===0){
+        
         const bcryptSalt = 10;
         const salt = bcrypt.genSaltSync(bcryptSalt);
         const hashPass = bcrypt.hashSync(password, salt);
-        await User.create({name:username,surname:usersurname,email,password:hashPass,role});
+        
+        await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
         formData.succesMsg="User succesfully created.";
         res.render("login-register/login",{formData, layout: false});
     } else{
@@ -233,25 +237,46 @@ router.get("/displayClosedContracts", async (req,res)=>{
 })
 router.get("/displayPendingContracts", async (req,res)=>{
     const errorMsg = req.query.errorMsg
+    const successMsg = req.query.successMsg
     console.log("ERROR MESSAGE THROUGH QUERY: ", errorMsg)
     await deleteDir(path.join(__dirname,"uploadedContracts"))
 
     if (req.session===undefined) {
         res.redirect("/")
     }else{
-        const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+        const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial historico')
         // console.log(contractList)
         contractList.forEach(pq=>{
             pq.importe = numberToCurrency(pq.importe)
         })
-        // console.log(contractList)
+        // console.log("CONTRACT LIST:")
+        // console.log(contractList[0].historico)
+        const canReject=getCanReject(contractList[0].historico)
         formData={
             errorMsg:errorMsg,
             showClosed:false,
-            contractList:contractList
+            successMsg:successMsg,
+            contractList:contractList,
+            canReject:canReject
         }
         res.render("contracts.hbs",{formData});
     }
+})
+router.post("/approveContract/:id",async(req,res)=>{
+    // console.log("ENTERED APPROVE CONTRACT / ID")
+    const {role,approveInfo}=req.body
+    const fullRole=role
+    const sesionEmail = req.session.currentUser.email
+    const id=req.params.id
+    //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
+    let currentUser = await User.find({email:sesionEmail})
+    // console.og(currentUser)
+    
+    const dept=fullRole.split(" - ")[0]
+    const splitRole=fullRole.split(" - ")[1]
+
+    errorMsg = createErrorMsgApprove(splitRole,reason)
+    
 })
 router.get("/deleteContract/:id",async(req,res)=>{
     // console.log(req.params.id)
@@ -260,35 +285,46 @@ router.get("/deleteContract/:id",async(req,res)=>{
     await Contract.findByIdAndUpdate({_id:id},{visible:false})
     res.redirect("/displayPendingContracts")
 })
-
 router.post("/rejectContract/:id",async(req,res)=>{
-    console.log("ENTERED REJECT CONTRACT / ID")
-    const {role,reason}=req.body
+    // console.log("ENTERED REJECT CONTRACT / ID")
+    const {role,reason,rejectInfo}=req.body
+    const fullRole=role
+    const sesionEmail = req.session.currentUser.email
     const id=req.params.id
-    // const id=req.params.id
-    // const role=req.params.role
-    // const reason=req.params.reason
-    // const userName = req.session.currentUser.userName
-    // const userSurname = req.session.currentUser.userSurname
-    // console.log(id)
-    // console.log(userName)
-    // console.log(userSurname)
-    console.log(role)
-    console.log(reason)
-    errorMsg = createErrorMsgReject(role,reason)
-    console.log(errorMsg)
+    //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
+    let currentUser = await User.find({email:sesionEmail})
+    // console.og(currentUser)
     
+    const dept=fullRole.split(" - ")[0]
+    const splitRole=fullRole.split(" - ")[1]
+
+    errorMsg = createErrorMsgReject(splitRole,reason)
+    
+    nuevaAccion={
+        accion:"Rechazado (" +reason+")",
+        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
+        icono:"Pulgar Abajo",
+        fecha: getCurrentDate(),
+        observaciones:rejectInfo
+    }
+    // console.log(nuevaAccion)
+    // observaciones={reason:reason,additionalInfo:rejectInfo}
+
     let contract = await Contract.find({_id:id})
     let historico = contract[0].historico
-    console.log(historico)
+    // console.log("HISTORICO EN DB: ",historico)
     if (errorMsg!==""){
         res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
     }else{
 
         //Save Reject Action
-
+        historico.push(nuevaAccion)
+        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
 
         //Send Rejection Email
+        // await sendEmail(emailParams)
+
+
         successMsg = "Contrato Rechazado Correctamente"
         res.redirect('/displayPendingContracts?successMsg='+successMsg)
     }
@@ -298,6 +334,13 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 
 })
+router.get("/editContracts",(req,res,next)=>{
+    res.render('editContracts')
+});
+router.get("/alertsContracts",(req,res,next)=>{
+    res.render('alertsContracts')
+});
+
 
 async function sendEmail(emailParams){
     let attachmentsObj = []
@@ -353,10 +396,10 @@ async function saveFile(src,dest){
     }
 }
 async function deleteDir(dir){
-    console.log("deleting uploadedContracts")
+    // console.log("deleting uploadedContracts")
     try {
         await fs.remove(dir)
-        console.log('Uploaded Contracts Deleted!')
+        // console.log('Uploaded Contracts Deleted!')
       } catch (err) {
         console.error(err)
       }
@@ -452,8 +495,13 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     if (usersurname=== ""||usersurname ==null){insertErrorMsg.push('surname')}
     if (email=== ""||email ==null){insertErrorMsg.push('email')}
     if (password=== ""||password ==null){insertErrorMsg.push('password')}
-    if (role=== ""||role ==null || role === "Select your Role and Department"){insertErrorMsg.push('role/department')}
- 
+    var someEmptyRole = false
+    role.forEach(role=>{
+        if(role==="Select your Role and Department"){someEmptyRole=true}
+    })
+    console.log(someEmptyRole)
+    if (someEmptyRole===true){insertErrorMsg.push('role/department')}
+    console.log(insertErrorMsg)
     switch (insertErrorMsg.length){
         case 1:
             insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + "."
@@ -513,6 +561,10 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     //Validates Password Lenght
     if (password.length<6  && !repeatErrorMsgOutPut.includes('password') && !insertErrorMsgOutPut.includes('password')){resultErrorMsg.push("The password must have at least 6 characters.")}
     // console.log(resultErrorMsg)
+    // if(email!==""){
+    //     const checkedUser = await User.findOne({email:email})
+    //     if(checkedUser){resultErrorMsg.push("This email already existst.")}
+    // }
 
     return resultErrorMsg
 }
@@ -528,7 +580,6 @@ function createErrorMsgReject(role,reason){
     }
     return errorMsg;
 }
-
 function numberToCurrency(number){
     // console.log(number)
     result = new Intl.NumberFormat("de-DE" ,{style: "currency", currency: "EUR"}).format(number)
@@ -536,15 +587,89 @@ function numberToCurrency(number){
     result = result.replace(".","!").replace(",",".").replace("!",",").replace(",00","")
     // console.log(result)
     return result
-  }
+}
+function createRoleArray(role,role1,role2,role3,role4){
+    const roleArr = []
+    console.log(role4)
+    if (role!==undefined){roleArr.push(role)}
+    if (role1!==undefined){roleArr.push(role1)}
+    if (role2!==undefined){roleArr.push(role2)}
+    if (role3!==undefined){roleArr.push(role3)}
+    if (role4!==undefined){roleArr.push(role4)}
+    return roleArr
+}
+function getWho(currentUser,role){
+    who={
+        name:currentUser[0].name,
+        surname:currentUser[0].surname,
+        email:currentUser[0].email,
+        roleDept:role,
+        department:role.split(" - ")[0],
+        role:role.split(" - ")[1]
+    }
+    return who;
+}
+function getStatusRejection(dept){
+    console.log(dept)
+    let status={
+        mainStatus:"Pending",
+        operationsStatus:"",
+        comercialStatus:"",
+        prlStatus:"",
+        controlDeRiesgosStatus:""
+        }
+    if (dept === "Comercial"){
+        status.comercialStatus = "Rejected"
+    }else if (dept === "Control de Riesgos"){
+        status.operationsStatus = "Rejected"
+    }else if (dept === "Operaciones"){
+        status.prlStatus = "Rejected"
+    }else if (dept === "PRL"){
+        status.controlDeRiesgosStatus = "Rejected"
+    }
+    return status
+}
+function getPersonaHistorico(name,surname,dept){
+    if (name.includes(" ")){
+        name1 = name.split(" ")[0]
+        name2 = name.split(" ")[1].charAt(0)
+        name1 = name1 + " " + name2 + "."
+    } else {
+        name1=name
+    }
+    
+    surnameInicial=surname.charAt(0)
+    
+    if (dept === "Comercial"){
+        minidept = "Comerc."
+    }else if (dept === "Control de Riesgos"){
+        minidept="C. Riesgos"
+    }else if (dept === "Operaciones"){
+        minidept = "Oper."
+    }else if (dept === "PRL"){
+        minidept = "PRL"
+    }
+    result = name1 + " " + surnameInicial+". (" + minidept +")"
+    
+    return result
+}
+function getCurrentDate(){
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
 
-
-router.get('/editContracts',(req,res,next)=>{
-    res.render('editContracts')
-});
-
-router.get('/alertsContracts',(req,res,next)=>{
-    res.render('alertsContracts')
-});
-
+    today = dd + '/' + mm + '/' + yyyy;
+    return today
+}
+function getCanReject(historico){
+    // const data=JSON.parse(historico)
+    canReject = historico[historico.length-1].accion.split(" ")[0]
+    if (canReject === "Rechazado"){
+        return false;
+    } else{
+        return true;
+    }
+    // console.log(canReject)
+}
 module.exports=router;

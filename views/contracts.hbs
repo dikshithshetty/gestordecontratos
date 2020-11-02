@@ -67,31 +67,24 @@
             <div class="contract-card" >
                 <div class="nav-contract-items">
 
-                    <table>
-                        <tr>
-                            <td>{{pq}}</td>
-                            <td>{{importe}}</td>
-                            <td>{{comercial}}</td>
-                            <td>{{cliente}}</td>
-                        </tr>
-                    </table>
+                    <div class="card-box">{{pq}}</div>
+                            <div class="card-box">{{importe}}</div>
+                            <div class="card-box">{{comercial}}</div>
+                            <div class="card-box">{{cliente}}</div>
                 </div>
                 <div class="nav-contract-actions">
-                    <table>
-                        <tr>
-                            <td><img src="images/icons/approve.png" alt="accept" onclick="aprove({{_id}})"></td>
-                            <td><img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}"></td>
-                            <td><img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></td>
-                            {{!-- <td><a href="/deleteContract/{{_id}}"><img src="images/icons/delete-Icon.png" alt="delete"></a></td> --}}
-
-                            <td><img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}"></td>
-                        </tr>
-                    </table>
+                    <img src="images/icons/approve.png" alt="accept" onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
+                    <img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
+                    <img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
+                    <img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}">
                 </div>
             </div>
             {{/each}}
+
+  
+
 {{!-- 
-        <div class="contract-card">
+    <div class="contract-card">
         <div class="nav-contract-items">
                     <div class="card-box">numero</div>
                     <div class="card-box">nombree</div>
@@ -104,7 +97,7 @@
                     <img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete">
                     <img id="edit-btn" src="images/icons/edit.png" alt="edit">
         </div>
-    </div>
+    </div> --}}
 
 
     </div>
@@ -134,33 +127,34 @@
 </div>
 {{#each formData.contractList}}
 {{!-- Accept contracts --}}
-<div id="acceptModal-{{_id}}" class="modal">
+<div id="approveModal-{{_id}}" class="modal">
         <div class="modal-content modal-blue">
-            <span id="close-btn-accept" class="close-btn">&times;</span>
+            <span id="close-btn-accept-{{_id}}" class="close-btn" onclick="closeApproveModal(this)">&times;</span>
                 <h2 class="blue">Accept contract</h2>
                 
                 <div class="select select-box">
                     <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
                         <option hidden selected>Select your Role and Department</option>
-                        <option value="comercial-autorizado">Comercial - Autorizado</option>
-                        <option value="comercial-director">Comercial - Director</option>
-                        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
-                        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
-                        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
-                        <option value="operaciones-director">Operaciones - Director</option>
-                        <option value="prl-autorizado">PRL - Autorizado</option>
-                        <option value="prl-director">PRL - Director</option>
+                        <option value="Comercial - Autorizado">Comercial - Autorizado</option>
+                        <option value="Comercial - Director">Comercial - Director</option>
+                        <option value="Control de Riesgos - Autorizado">Control de Riesgos - Autorizado</option>
+                        <option value="Control de Riesgos - Director">Control de Riesgos - Director</option>
+                        <option value="Operaciones - Autorizado">Operaciones - Autorizado</option>
+                        <option value="Operaciones - Director">Operaciones - Director</option>
+                        <option value="PRL - Autorizado">PRL - Autorizado</option>
+                        <option value="PRL - Director">PRL - Director</option>
                     </select>
                 </div>
 
+                
+                <textarea  class="textarea-reject" placeholder="Additional information...." rows ="10" name="approveInfo"></textarea>
                 <p class="text-popup">Do you want to approve the contract?</p>
-
                 <div class="selectors-options">
                     <div class="accept">
-                        <img src="images/icons/reject.png" alt="reject" onclick="">
+                        <a href="/approveContract/{{_id}}"><img src="images/icons/approve.png" alt="approve" onclick=""></a>
                     </div>
                     <div class="reject">
-                        <img src="images/icons/approve.png" alt="accept" onclick="">
+                        <a href="/displayPendingContracts"><img src="images/icons/reject.png" alt="reject" onclick=""></a>
                     </div>
 
                 </div>
@@ -176,14 +170,14 @@
                 <div class="select select-box">
                     <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
                         <option hidden selected>Select your Role and Department</option>
-                        <option value="comercial-autorizado">Comercial - Autorizado</option>
-                        <option value="comercial-director">Comercial - Director</option>
-                        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
-                        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
-                        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
-                        <option value="operaciones-director">Operaciones - Director</option>
-                        <option value="prl-autorizado">PRL - Autorizado</option>
-                        <option value="prl-director">PRL - Director</option>
+                        <option value="Comercial - Autorizado">Comercial - Autorizado</option>
+                        <option value="Comercial - Director">Comercial - Director</option>
+                        <option value="Control de Riesgos - Autorizado">Control de Riesgos - Autorizado</option>
+                        <option value="Control de Riesgos - Director">Control de Riesgos - Director</option>
+                        <option value="Operaciones - Autorizado">Operaciones - Autorizado</option>
+                        <option value="Operaciones - Director">Operaciones - Director</option>
+                        <option value="PRL - Autorizado">PRL - Autorizado</option>
+                        <option value="PRL - Director">PRL - Director</option>
                     </select>
                 </div>
 
@@ -199,15 +193,9 @@
                     </select>
                 </div>
 
-                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="message"></textarea>
-    
-                <button class="btn btn-red">Reject</button> 
-
-                
-    
+                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="rejectInfo"></textarea>
                 <button type="submit" class="btn btn-red">Reject</button> 
                 </form>
-                
         </div>
 </div>
 
@@ -238,6 +226,22 @@
 
 
 <script>
+//APROVE MODAL
+function showApproveModal(element){
+    let id =element.id.split("-")[1];
+    let approveModal = document.getElementById("approveModal-"+id);
+    approveModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeApproveModal(element){
+    let id = element.id.split('-')[3]
+    let approveModal = document.getElementById("approveModal-"+id);
+    approveModal.style.display = "none";
+    let blurred = document.getElementById("container");
+    blurred.classList.remove('blurred');
+} 
+
 //REJECT MODAL
 function showRejectModal(element){
     let id =element.id.split("-")[1];
