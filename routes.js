@@ -396,4 +396,14 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
 
     return resultErrorMsg
 }
+
+
+router.get('/editContracts',(req,res,next)=>{
+    res.render('editContracts')
+});
+
+router.get('/alertsContracts',(req,res,next)=>{
+    res.render('alertsContracts')
+});
+
 module.exports=router;
