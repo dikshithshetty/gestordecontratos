@@ -833,6 +833,7 @@ textarea{
 
     .mess-container{
         display: flex;
+        visibility: hidden;
         justify-content: center;
         flex-direction: column;
         /* margin: 0 auto; */

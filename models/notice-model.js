@@ -17,3 +17,11 @@ const noticeSchema = new Schema(
 const Notice = mongoose.model('Notice', noticeSchema);
 
 module.exports = Notice;
+
+// {"noticeType":"escalado",
+// "destinatario":"estevemartinmauri.escalado@hotamil.com",
+// "cc":"esteve.martin.escalado@mpasolutions.es",
+// "subject":"El contrato XXX requiere de su firma",
+// "emailBody":"El siguiente contrato ha siddo aprobado por los autorizados de todos los departamentos y ahora requiere de su revisión y firma.",
+// "attachments":[],
+// "periodicidad":""}

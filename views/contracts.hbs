@@ -47,7 +47,7 @@
             <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
         {{/if}}
     </div>
-        <button id="add-btn" class="btn btn-blue">Add <span class="btn-add">contracts</span></button> 
+        <button id="add-btn" class="btn btn-blue" onclick="showAddNewContractModal()">Add <span class="btn-add">contracts</span></button> 
 </div>
     <div class="nav-contract">
         <div class="nav-contract-items">
@@ -58,9 +58,10 @@
             
         </div>
         <div class="nav-contract-actions">
-                    <div class="actions">Accept</div>
-                    <div class="actions">Reject</div>
-                    <div class="actions">Delete</div>
+
+                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Accept</div>
+                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Reject</div>
+                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Delete</div>
                     <div class="actions">Edit</div>
         </div>
     </div>
@@ -70,15 +71,16 @@
             {{#each formData.contractList}}
             <div class="contract-card" >
                 <div class="nav-contract-items">
-                            <div class="card-box">{{pq}}</div>
-                            <div class="card-box">{{importe}}</div>
-                            <div class="card-box">{{comercial}}</div>
-                            <div class="card-box">{{cliente}}</div>
+                    <div class="card-box">{{pq}}</div>
+                    <div class="card-box">{{importe}}</div>
+                    <div class="card-box">{{comercial}}</div>
+                    <div class="card-box">{{cliente}}</div>
                 </div>
                 <div class="nav-contract-actions1">
-                    <img src="images/icons/approve.png" alt="accept" onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
-                    <img src="images/icons/reject.png" alt="reject" onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
-                    <img src="images/icons/delete-Icon.png" alt="delete" onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
+                    {{!-- {{./showClosed}} --}}
+                    <img src="images/icons/approve.png" alt="accept" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
+                    <img src="images/icons/reject.png" alt="reject"  {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
+                    <img src="images/icons/delete-Icon.png" alt="delete" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}}  onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
                     <img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}">
                 </div>
             </div>
@@ -111,7 +113,7 @@
 {{!-- Add / create contracts --}}
 <div id="addModal" class="modal">
         <div class="modal-content modal-blue">
-            <span id="close-btn-add" class="close-btn">&times;</span>
+            <span id="close-btn-add" class="close-btn" onclick="closeAddNewContractModal()">&times;</span>
                  <h2 class="blue">Upload files</h2>
                
                 <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
@@ -134,16 +136,17 @@
                 <h2 class="blue">Accept contract</h2>
                 <form method="POST" action="/approveContract/{{_id}}" >
                 <div class="select select-box">
-                    <select name="role"  value="{{#if formData.role}}{{formData.role}}{{/if}}">
-                        <option hidden selected>Select your Role and Department</option>
-                        <option value="Comercial - Autorizado">Comercial - Autorizado</option>
-                        <option value="Comercial - Director">Comercial - Director</option>
-                        <option value="Control de Riesgos - Autorizado">Control de Riesgos - Autorizado</option>
-                        <option value="Control de Riesgos - Director">Control de Riesgos - Director</option>
-                        <option value="Operaciones - Autorizado">Operaciones - Autorizado</option>
-                        <option value="Operaciones - Director">Operaciones - Director</option>
-                        <option value="PRL - Autorizado">PRL - Autorizado</option>
-                        <option value="PRL - Director">PRL - Director</option>
+                    {{!-- <select name="role"  value="{{#if ../formData.role}}{{../formData.role}}{{/if}}"> --}}
+                    <select name="role"  value="">
+                        {{#if ../formData.roleObj.singleRole}}{{else}}<option hidden selected>Select your Role and Department</option>{{#if}}
+                        {{#if ../formData.roleObj.autComercial}}<option value="Comercial - Autorizado">Comercial - Autorizado</option>{{#if}}
+                        {{#if ../formData.roleObj.dirComercial}}<option value="Comercial - Director">Comercial - Director</option>{{#if}}
+                        {{#if ../formData.roleObj.autControlRiesgos}}<option value="Control de Riesgos - Autorizado">Control de Riesgos - Autorizado</option>{{#if}}
+                        {{#if ../formData.roleObj.dirControlRiesgos}}<option value="Control de Riesgos - Director">Control de Riesgos - Director</option>{{#if}}
+                        {{#if ../formData.roleObj.autOperaciones}}<option value="Operaciones - Autorizado">Operaciones - Autorizado</option>{{#if}}
+                        {{#if ../formData.roleObj.dirOperaciones}}<option value="Operaciones - Director">Operaciones - Director</option>{{#if}}
+                        {{#if ../formData.roleObj.autPRL}}<option value="PRL - Autorizado">PRL - Autorizado</option>{{#if}}
+                        {{#if ../formData.roleObj.dirPRL}}<option value="PRL - Director">PRL - Director</option>{{#if}}
                     </select>
                 </div>
                 <textarea  class="textarea-reject" placeholder="Additional information...." rows ="10" name="approveInfo"></textarea>
@@ -217,6 +220,21 @@
 
 
 <script>
+
+//ADD NEW CONTRACT MODAL
+function showAddNewContractModal(){
+    let approveModal = document.getElementById("addModal");
+    approveModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeAddNewContractModal(){
+        let approveModal = document.getElementById("addModal");
+        approveModal.style.display = "none";
+        let blurred = document.getElementById("container");
+        blurred.classList.remove('blurred');
+}
+
 //APROVE MODAL
 function showApproveModal(element){
     let id =element.id.split("-")[1];

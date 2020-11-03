@@ -10,8 +10,10 @@ const XLSX = require('xlsx');
 const nodemailer=require('nodemailer')
 const User = require('./models/user-model');
 const Contract = require('./models/contract-model');
+const Notice = require('./models/notice-model')
 const { Console } = require('console');
 const { findOne } = require("./models/user-model");
+const { pbkdf2 } = require('crypto');
 
 router.get('/',(req,res,next)=>{
     // console.log(req.session)
@@ -137,7 +139,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
             let tempFolder = path.join(__dirname,"temporaryFiles");
             let tempFile = path.join(tempFolder,req.files[0].originalname);
             let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
-            console.log("Extensión: " ,ext)
+            // console.log("Extensión: " ,ext)
             if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
                 noFileSelected="La hoja de firmas no se encuentra en formato Excel."
                 res.render("contracts.hbs",{noFileSelected});
@@ -167,13 +169,12 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
 
             if (errorMsg.length>0){
                 deleteFile(tempFile)
-                res.render("contracts.hbs",{errorMsg});
+                res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
             } else {
                 //Create PQ Folder
                 let contractsFolder = path.join(__dirname, "contracts");
                 const pqFolder=path.join(contractsFolder,pqFolderName);
                 let uploadedFiles=[]
-
 
                 //Save all the files to PQ Folder
                 for (i=0;i<req.files.length;i++){
@@ -182,9 +183,10 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     await saveFile(uploadedFile.path,fileToSave)
                     uploadedFiles.push(fileToSave)
                 }
-                
+
 
                 //Create Contract to DB
+                console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
                 await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
 
                 emailParams={
@@ -202,70 +204,96 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     attachments:uploadedFiles
                 }
 
-                const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
-                console.log(contractList)
+                // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+                // console.log(contractList)
                 // //Send Email
                 // await sendEmail(emailParams)
-                formData={
-                    succesMsg:"Contrato "+pq+" Creado Correctamente.",
-                    contractList:contractList
-                }
-                res.render("contracts.hbs",{formData});
+                succesMsg="Contrato "+pq+" Creado Correctamente.",
+
+                // formData={
+                //     succesMsg:succesMsg,
+                //     contractList:contractList
+                // }
+                console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
+                // res.render("contracts.hbs",{formData});
+                res.redirect("/displayPendingContracts?succesMsg="+succesMsg);
             }
         }
     }
 });
 
 router.get("/displayClosedContracts", async (req,res)=>{
+    console.log("INSIDE DISPLAY CLOSED CONTRACTS")
     if (!req.session.currentUser){res.redirect("/")}
 
-    if (req.session===undefined) {
-        res.redirect("/")
-    }else{
-        const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
-        // console.log(contractList)
-        contractList.forEach(pq=>{
-            pq.importe = numberToCurrency(pq.importe)
-        })
-
-
-        // contractList.importe=numberToCurrency(contractList.importe)
-        // console.log(contractList)
-        formData={
-            showClosed:true,
-            contractList:contractList
-        }
-        res.render("contracts.hbs",{formData});
-    }
+    const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
+    // console.log(contractList)
+    contractList.forEach(pq=>{
+        pq.importe = numberToCurrency(pq.importe)
+    })
+    // console.log(contractList)
+    formData={showClosed:true,contractList:contractList}
+    res.render("contracts.hbs",{formData});
 })
 router.get("/displayPendingContracts", async (req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
 
     const errorMsg = req.query.errorMsg
     const successMsg = req.query.successMsg
-    console.log("ERROR MESSAGE THROUGH QUERY: ", errorMsg)
+    const sesionEmail = req.session.currentUser.email
+
+    let currentUser = await User.find({email:sesionEmail})
+    console.log(currentUser[0].role)
     // await deleteDir(path.join(__dirname,"uploadedContracts"))
 
-    if (req.session===undefined) {
-        res.redirect("/")
-    }else{
-        const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial historico')
-        // console.log(contractList)
-        contractList.forEach(pq=>{
-            pq.importe = numberToCurrency(pq.importe)
-        })
-        // console.log("CONTRACT LIST:")
-        // console.log(contractList[0].historico)
-        // const canReject=getCanReject(contractList[0].historico)
-        formData={
-            errorMsg:errorMsg,
-            showClosed:false,
-            successMsg:successMsg,
-            contractList:contractList,
-            // canReject:canReject
-        }
-        res.render("contracts.hbs",{formData});
+    var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial historico')
+    const roleObj = await createRoleSelector(currentUser[0].role)
+    // contractList.forEach(contract=>{
+    //     let allowAprove = canUserSign(currentUser,contract)
+    //     contract.allowAprove = allowAprove
+    //     // console.log(contract.allowAprove)
+    // })
+    // let allowAprove = canUserSign(currentUser,contract)
+
+    // const newContractList = await modifyContractList(contractList)
+    // console.log(newContractList)
+    // for (i=0;i<contractList.length;i++){
+    //     contractList[i].importe = numberToCurrency(contractList[i].importe)
+    //     contractList[i].allowAccept=true
+    //     console.log(contractList[i])
+        
+    // }
+    // // console.log("!!!!!!!!!!!!INITIAL CONTRACT LIST!!!!!!!!!!!!!")
+    // console.log(contractList)
+    // const newCL = contractList.forEach(pq=>{
+    //     console.log("!!!!!!!!!!!!  PQ START !!!!!!!!!!!!!")
+    //     pq.importe = numberToCurrency(pq.importe)
+    //     // pq['allowAccept']= true
+    //     pq.allowAccept=true
+    //     console.log(pq)
+    //     console.log(pq.allowAccept)
+    //     console.log(pq.importe)
+    //     console.log("!!!!!!!!!!!!  PQ FINISH !!!!!!!!!!!!!")
+    // })
+    // console.log("!!!!!!!!!!!!MODIFIED CONTRACT LIST!!!!!!!!!!!!!")
+    // console.log(contractList[0])
+    // console.log(contractList[0].allowAccept)
+    // console.log(newCL)
+    // console.log("!!!!!!!!!!!! NEW MODIFIED CONTRACT LIST!!!!!!!!!!!!!")
+    // console.log(newContractList)
+    // console.log("CONTRACT LIST:")
+    // console.log(contractList[0].historico)
+    // const canReject=getCanReject(contractList[0].historico)
+    formData={
+        errorMsg:errorMsg,
+        showClosed:false,
+        successMsg:successMsg,
+        contractList:contractList,
+        roleObj:roleObj
+        // canReject:canReject
     }
+    console.log(formData)
+    res.render("contracts.hbs",{formData});
 })
 router.post("/approveContract/:id",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
@@ -322,7 +350,7 @@ router.get("/deleteContract/:id",async(req,res)=>{
     // console.log(req.params.id)
     const id=req.params.id
     // console.log("GET INSIDE ID: ", id)
-    await Contract.findByIdAndUpdate({_id:id},{visible:false})
+    await Contract.deleteOne({_id:id})
     res.redirect("/displayPendingContracts")
 })
 router.post("/rejectContract/:id",async(req,res)=>{
@@ -381,8 +409,30 @@ router.get("/editContracts",(req,res,next)=>{
 router.get("/alertsContracts",(req,res,next)=>{
     res.render('alertsContracts')
 });
+router.post("/updateAlerts/:alertType",async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    const alertType=req.params.alertType;
+    const {email,cc,subject,emailBody}=req.body
+    // console.log(alertType,email,cc,subject,emailBody)
+    const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
+    console.log(newAlert)
+    // const successMsg = "Configuración Guardada"
+    res.render("alertsContracts.hbs",{successMsg})
+})
+
+function canUserSign(user,contract){
+    console.log("!!!!!!!!!!!!!!!INSIDE canUserSign!!!!!!!!!!!!!!!!")
+    // console.log(user[0])
+    userRole = user[0].role
+    historico = contract.historico
+    console.log(userRole)
+    console.log(historico)
 
 
+    result = true
+    console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
+    return result
+}
 async function sendEmail(emailParams){
     let attachmentsObj = []
     for (i=0;i<emailParams.attachments.length;i++){
@@ -446,8 +496,13 @@ async function deleteDir(dir){
       }
 }
 function editPQ(pq){
-    if (pq.split('-').length-1===2){return pq;}
-    if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
+    try{
+        if (pq.split('-').length-1===2){return pq;}
+        if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
+    } catch (error){
+        console.log(error)
+    }
+    
 }
 function createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion){
     var errorMsg = [];
@@ -609,6 +664,24 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
 
     return resultErrorMsg
 }
+async function modifyContract(pq){
+    
+        pq.importe = numberToCurrency(pq.importe)
+        // pq['allowAccept']= true
+        pq.allowAccept=true
+        console.log(pq)
+        // console.log(pq.allowAccept)
+        // console.log(pq.importe)
+        // console.log("!!!!!!!!!!!!  PQ FINISH !!!!!!!!!!!!!")
+    
+    return pq
+}
+async function modifyContractList(contractList){
+    var newContractList = contractList.forEach(async pq=>{
+        pq = await modifyContract(pq)
+    })
+    return newContractList
+}
 function createErrorMsgReject(role,reason){
     console.log(role)
     console.log(reason)
@@ -699,13 +772,13 @@ function getPersonaHistorico(name,surname,dept){
     let minidept = ""
 
     if (dept === "Comercial"){
-        var minidept = "Comerc."
+        minidept = "Comerc."
     }else if (dept === "Control de Riesgos"){
-        var minidept="C. Riesgos"
+        minidept="C. Riesgos"
     }else if (dept === "Operaciones"){
-        var minidept = "Oper."
+        minidept = "Oper."
     }else if (dept === "PRL"){
-        var minidept = "PRL"
+        minidept = "PRL"
     }
     let result = name1 + " " + surnameInicial+". (" + minidept +")"
     
@@ -730,4 +803,32 @@ function getCanReject(historico){
     }
     // console.log(canReject)
 }
+async function createRoleSelector(role){
+    // role 
+    var roleCountVariable=0
+    var roleObj={}
+    if (role.indexOf("Comercial - Autorizado")!==-1){roleObj.autComercial=true;roleCountVariable=+1}else{roleObj.autComercial=false}
+    if (role.indexOf("PRL - Autorizado")!==-1){roleObj.autPRL=true;roleCountVariable=+1}else{roleObj.autPRL=false}
+    if (role.indexOf("Operaciones - Autorizado")!==-1){roleObj.autOperaciones=true;roleCountVariable=+1}else{roleObj.autOperaciones=false}
+    if (role.indexOf("Control de Riesgos - Autorizado")!==-1){roleObj.autControlRiesgos=true;roleCountVariable=+1}else{roleObj.autControlRiesgos=false}
+    if (role.indexOf("Comercial - Director")!==-1){roleObj.dirComercial=true;roleCountVariable=+1}else{roleObj.dirComercial=false}
+    if (role.indexOf("PRL - Director")!==-1){roleObj.dirPRL=true;roleCountVariable=+1}else{roleObj.dirPRL=false}
+    if (role.indexOf("Operaciones - Director")!==-1){roleObj.dirOperaciones=true;roleCountVariable=+1}else{roleObj.dirOperaciones=false}
+    if (role.indexOf("Control de Riesgos - Director")!==-1){roleObj.dirControlRiesgos=true;roleCountVariable=+1}else{roleObj.dirControlRiesgos=false}
+    // roleObj.dirComercial
+    // roleObj.dirOperaciones
+    // roleObj.dirPRL
+    // roleObj.dirControlRiesgos
+    // roleObj.autComercial
+    // roleObj.autOperaciones
+    // roleObj.autPRL
+    // roleObj.autControlRiesgos
+    // console.log(roleCountVariable)
+    if (roleCountVariable>1){roleObj.singleRole = true}else{roleObj.singleRole = false}
+    // console.log(roleObj)
+    return roleObj
+
+    
+}
+
 module.exports=router;
