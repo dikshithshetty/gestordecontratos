@@ -83,7 +83,7 @@
                     <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Accept</div>
                     <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Reject</div>
                     <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Delete</div>
-                    <div class="actions">Edit</div>
+                    <div class="actions">View</div>
         </div>
     </div>
 
@@ -101,7 +101,7 @@
                     <img src="images/icons/approve.png" alt="accept" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowApprove}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
                     <img src="images/icons/reject.png" alt="reject"  {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowReject}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
                     <img src="images/icons/delete-Icon.png" alt="delete" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}}  onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
-                    <a  href="/editContracts/{{id}}"><img src="images/icons/edit.png" alt="edit"></a>
+                    <a  href="/editContracts/{{id}}"><img src="images/icons/view.png" alt="view"></a>
                 </div>
             </div>
             {{/each}}
