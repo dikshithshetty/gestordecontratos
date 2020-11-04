@@ -48,19 +48,19 @@
 <div class="info-container border">
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-        <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Comercial - {{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-red">Operaciones: </span></li>
-        <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
-        <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
+        <li><span class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.autComercial.person}} - {{firmas.autComercial.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.autOperaciones.person}} - {{firmas.autOperaciones.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.autCRiesgos.person}} - {{firmas.autCRiesgos.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.autPRL.person}} - {{firmas.autPRL.person}}{{/if}}</span></li>
 
     </div>
 
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
-        <li><span class="btn1 btn-red">Comercial: </span></li>
-        <li><span class="btn1 btn-red">Operaciones: </span></li>
-        <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
-        <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
+        <li><span class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.dirComercial.person}} - {{firmas.dirComercial.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.dirOperaciones.person}} - {{firmas.dirOperaciones.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.dirCRiesgos.person}} - {{firmas.dirCRiesgos.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.dirPRL.person}} - {{firmas.dirPRL.person}}{{/if}}</span></li>
     </div>
 
     <div class="block">
@@ -97,7 +97,7 @@
     <div class="archivos-upload archivos border">
         <div class="archivos-nav">
             <h3 class="blue">Contract files</h3>
-            <button id="upload-btn" class="btn btn-blue">upload files</button>
+            {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue">upload files</button>{{/if}}
         </div>
    
         <div class="contracts-cards-items">
@@ -105,8 +105,8 @@
             <div class="document-card">
                     <p>{{fileName}}</p>
                     <div class="icons-files">
-                        <img id="download-btn" src="/images/icons/download.png" alt="download">
-                        <img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete">
+                        <a href="{{filePath}}"><img id="download-btn" src="/images/icons/download.png" alt="download"></a>
+                        {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete"></a>{{/if}}
                     </div>
             </div>
             {{/each}}

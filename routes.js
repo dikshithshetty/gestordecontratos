@@ -29,51 +29,8 @@ router.get('/',(req,res,next)=>{
         res.render('login-register/login', template);
     }
 })
-router.get('/register',(req,res,next)=>{
-    // if (req.session!==undefined) {
-    //     res.render('contracts');
-    // } else {
-        let template = {
-            layout: false
-        }
-        res.render('login-register/register', template);
-    // }
-})
-router.post('/register',async (req,res,next)=>{
-    const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
-    var errorMsg = [];
-    console.log("Role4: ",role4)
-        roleArr = createRoleArray(role,role1,role2,role3,role4)
-        console.log("Role Array", roleArr)
-    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
-    
-    formData={
-        errorMsg:errorMsg,
-        succesMsg:null,
-        username:username,
-        usersurname:usersurname,
-        email:email,
-        repeatemail:repeatemail,
-        password:password,
-        repeatedpassword:repeatedpassword,
-        role:role
-    };
-
-    if (errorMsg.length===0){
-        
-        const bcryptSalt = 10;
-        const salt = bcrypt.genSaltSync(bcryptSalt);
-        const hashPass = bcrypt.hashSync(password, salt);
-        
-        await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
-        formData.succesMsg="User succesfully created.";
-        res.render("login-register/login",{formData, layout: false});
-    } else{
-        res.render("login-register/register",{formData, layout: false});
-    }
-})
 router.post('/', async(req,res,next)=>{
-    console.log("Entering Login POST Method")
+    // console.log("Entering Login POST Method")
     const{email, password} = req.body;
     var errorMsg = '';
 
@@ -111,6 +68,49 @@ router.post('/', async(req,res,next)=>{
         }
     }
 })
+router.get('/register',(req,res,next)=>{
+    // if (req.session!==undefined) {
+    //     res.render('contracts');
+    // } else {
+        let template = {
+            layout: false
+        }
+        res.render('login-register/register', template);
+    // }
+})
+router.post('/register',async (req,res,next)=>{
+    const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
+    var errorMsg = [];
+    // console.log("Role4: ",role4)
+        roleArr = createRoleArray(role,role1,role2,role3,role4)
+        // console.log("Role Array", roleArr)
+    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
+    
+    formData={
+        errorMsg:errorMsg,
+        succesMsg:null,
+        username:username,
+        usersurname:usersurname,
+        email:email,
+        repeatemail:repeatemail,
+        password:password,
+        repeatedpassword:repeatedpassword,
+        role:role
+    };
+
+    if (errorMsg.length===0){
+        
+        const bcryptSalt = 10;
+        const salt = bcrypt.genSaltSync(bcryptSalt);
+        const hashPass = bcrypt.hashSync(password, salt);
+        
+        await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
+        formData.succesMsg="User succesfully created.";
+        res.render("login-register/login",{formData, layout: false});
+    } else{
+        res.render("login-register/register",{formData, layout: false});
+    }
+})
 router.get('/logout', (req, res, next) => {
     req.session.destroy((err) => {
         res.redirect('/');
@@ -124,11 +124,12 @@ router.get('/createContract',(req,res,next)=>{
     }
 })
 router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
-    
+    if (!req.session.currentUser){res.redirect("/")}
+
     if (req.session===undefined) {
         res.redirect("/")
     }else{
-        console.log("--------------- UPLOADING NEW CONTRACT ---------------");
+        // console.log("--------------- UPLOADING NEW CONTRACT ---------------");
         // console.log(req.files)
         if (req.files.length===0){
             errorMsg="No se ha seleccionado ningún contrato.";
@@ -198,7 +199,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
 
 
                 //Create Contract to DB
-                console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
+                // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
                 await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
 
                 emailParams={
@@ -226,7 +227,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                 //     succesMsg:succesMsg,
                 //     contractList:contractList
                 // }
-                console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
+                // console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
                 // res.render("contracts.hbs",{formData});
                 res.redirect("/displayPendingContracts?successMsg="+successMsg);
             }
@@ -235,7 +236,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
 });
 
 router.get("/displayClosedContracts", async (req,res)=>{
-    console.log("INSIDE DISPLAY CLOSED CONTRACTS")
+    // console.log("INSIDE DISPLAY CLOSED CONTRACTS")
     if (!req.session.currentUser){res.redirect("/")}
 
     const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
@@ -286,48 +287,82 @@ router.get("/displayPendingContracts", async (req,res)=>{
 })
 router.post("/approveContract/:id",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
-    console.log("ENTERED APPROVE CONTRACT / ID")
+    // console.log("ENTERED APPROVE CONTRACT / ID")
     const {role,approveInfo}=req.body
     const sesionEmail = req.session.currentUser.email
     const id=req.params.id
     // const role=req.params.role
     const fullRole=role
     // const approveInfo=req.params.approveInfo
-    console.log(req.params)
-    console.log(id,role,approveInfo)
+    // console.log(req.params)
+    // console.log(id,role,approveInfo)
     // console.log(id)
     //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
     let currentUser = await User.find({email:sesionEmail})
     // console.log(currentUser)
-    console.log(fullRole)
+    // console.log(fullRole)
 
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
     console.log(dept)
-    console.log(role)
-    errorMsg = createErrorMsgApprove(role)
+    console.log(splitRole)
+    
+    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
+    console.log(personaFirma)
     nuevaAccion={
         accion:"Aprobado",
-        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
+        persona:personaFirma,
         icono:"Pulgar Arriba",
         fecha: getCurrentDate(),
         observaciones:approveInfo
     }
     let contract = await Contract.find({_id:id})
     let historico = contract[0].historico
+    let canDirectorsign=getCanDirectorSign(historico)
+    console.log(canDirectorsign)
+    errorMsg = createErrorMsgApprove(role,canDirectorsign)
     // console.log("HISTORICO EN DB: ",historico)
-    console.log(nuevaAccion)
+    // console.log(nuevaAccion)
     if (errorMsg!==""){
         res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
     }else{
-
         //Save Reject Action
         historico.push(nuevaAccion)
-        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+        switch (dept){
+            case "Control de Riesgos":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autCRiesgos.person":personaFirma,"firmas.autCRiesgos.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirCRiesgos.person":personaFirma,"firmas.dirCRiesgos.value":true})
+                }
+                break;
+            case "Operaciones":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autOperaciones.person":personaFirma,"firmas.autOperaciones.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirOperaciones.person":personaFirma,"firmas.dirOperaciones.value":true})
+                }
+                break;
+            case "Comercial":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autComercial.person":personaFirma,"firmas.autComercial.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirComercial.person":personaFirma,"firmas.dirComercial.value":true})
+                }
+                break;
+            case "PRL":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autPRL.person":personaFirma,"firmas.autPRL.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirPRL.person":personaFirma,"firmas.dirPRL.value":true})
+                }
+                break;
+        }
+        // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
 
         //Send Approve Email (if needed)
         // await sendEmail(emailParams)
-        console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
+        // console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
         successMsg = "Contrato Aprobado Correctamente"
         res.redirect('/displayPendingContracts?successMsg='+successMsg)
     }
@@ -357,10 +392,10 @@ router.post("/rejectContract/:id",async(req,res)=>{
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
     errorMsg = createErrorMsgReject(fullRole,reason)
-    
+    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
     nuevaAccion={
         accion:"Rechazado (" +reason+")",
-        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
+        persona:personaFirma,
         icono:"Pulgar Abajo",
         fecha: getCurrentDate(),
         observaciones:rejectInfo
@@ -377,7 +412,18 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
         //Save Reject Action
         historico.push(nuevaAccion)
-        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+        firmas={
+            autOperaciones:{value:false,person:""},
+            dirOperaciones:{value:false,person:""},
+            autComercial:{value:false,person:""},
+            dirComercial:{value:false,person:""},
+            autPRL:{value:false,person:""},
+            dirPRL:{value:false,person:""},
+            autCRiesgos:{value:false,person:""},
+            dirCRiesgos:{value:false,person:""}
+          }
+        
+        await Contract.findByIdAndUpdate({_id:id},{historico, firmas})
 
         //Send Rejection Email
         // await sendEmail(emailParams)
@@ -392,12 +438,9 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 
 })
-router.get("/editContracts",(req,res,next)=>{
-    res.render("editContracts");
-});
 router.get("/alertsContracts",async (req,res,next)=>{
     const notice = await Notice.find();
-    console.log(notice)
+    // console.log(notice)
 
 
     res.render('alertsContracts',{notice})
@@ -408,11 +451,12 @@ router.post("/updateAlerts/:alertType",async(req,res)=>{
     const {email,cc,subject,emailBody}=req.body
     // console.log(alertType,email,cc,subject,emailBody)
     const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
-    console.log(newAlert)
+    // console.log(newAlert)
     const successMsg = "Configuración Guardada"
     res.redirect("/alertsContracts?successMsg="+successMsg)
 })
 router.get("/editContracts/:id",async(req,res,next)=>{
+    
     // console.log("entered the edit contract function")
     if (!req.session.currentUser){res.redirect("/")}
     const id = req.params.id
@@ -420,6 +464,8 @@ router.get("/editContracts/:id",async(req,res,next)=>{
     const selectedContract = await Contract.findOne({_id:id})
     // console.log(selectedContract)
     const uploadedFiles = getFiles(selectedContract.uploadedFiles)
+    const showeditButons = getshoweditButons(selectedContract.mainStatus)
+
     contr={
         pq:selectedContract.pq,
         cliente:selectedContract.cliente,
@@ -433,16 +479,98 @@ router.get("/editContracts/:id",async(req,res,next)=>{
         fechaCreacionApp:selectedContract.fechaCreaccionApp,
         historico:selectedContract.historico,
         firmas:selectedContract.firmas,
-        uploadedFiles:uploadedFiles
+        uploadedFiles:uploadedFiles,
+        showeditButons:showeditButons
     }
     
     res.render("editContracts",contr)
     // res.redirect("/editContracts?pq="+pq)
 
 })
+router.get("/deleteFiles/:pq/:fileName",async(req,res,next)=>{
+    let pq=req.params.pq
+    let fileName = req.params.fileName
+    // console.log(pq)
+    // console.log("fileName: ",fileName)
+    let currentpq = await Contract.find({pq:pq})
+    let id = currentpq[0].id
+    // console.log("id: ",id)
+    let uploadedFiles = currentpq[0].uploadedFiles
+    // console.log(uploadedFiles)
+    var newUploadedFiles=[]
+    for (i=0;i<uploadedFiles.length;i++){
+        if(uploadedFiles[i].includes(fileName)){
+            var fileToDelete = uploadedFiles[i]
+            // newUploadedFiles = uploadedFiles.splice(i,1)
+        } else {
+            newUploadedFiles.push(uploadedFiles[i])
+        }
+    }
+    // console.log("filetoDelete: ",fileToDelete)
+    await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+    await fs.remove(fileToDelete)
+    
+    // console.log(newUploadedFiles)
+    res.redirect("/editContracts/"+id)
+})
+router.get("/profile",async(req,res,next)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    //Obtener info del Usuario actual (sesion iniciada)
+    const sesionEmail = req.session.currentUser.email
+    let currentUser = await User.find({email:sesionEmail})
+    user = currentUser[0]
+    // console.log(currentUser)
+    res.render('profile', {user})
+});
+
+
+function getCanDirectorSign(historico){
+    let indexLastRejection = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
+    }
+    console.log("indexLastRejection: -->", indexLastRejection)
+    //Cut everything previous to last rejection.
+    if (indexLastRejection===-1){
+        var historicoRelevante = historico
+    } else{
+        var historicoRelevante = historico.slice(indexLastRejection+1)
+    }
+    console.log(historicoRelevante)
+    if (countEscalados(historicoRelevante)===1){return true}else{return false}
+}
+function getshoweditButons(mainStatus){
+    if(mainStatus==="Closed"){
+        return false
+    }   else {
+        return true
+    }
+}
 function getFiles(uploadedFiles){
     const result = uploadedFiles.map(file=>{
-        return {fileName:file.split("\\")[file.split("\\").length-1],filePath:file}
+        let separator ="\\"
+        let fileName = file.split(separator)[file.split(separator).length-1]
+        // console.log("fileName:",fileName)
+        let filePathArr = file.split(separator)
+        // console.log("filePathArr:",filePathArr)
+
+        let folderNumber = filePathArr.indexOf("contractGenerator")+1
+        // console.log("folderNumber:",folderNumber)
+
+        let slicedPath = filePathArr.slice(folderNumber)
+        // console.log("slicedPath:",slicedPath)
+
+        let filePath=""
+        for (i=0;i<slicedPath.length;i++){
+            filePath = path.join(filePath,slicedPath[i])
+            // filePath=filePath+slicedPath[i]
+        }
+        // console.log(filePath)
+
+        // let filePath = path.join(slicedPath)
+        // console.log(filePath)
+        return {fileName:fileName,filePath:filePath}
     })
     // console.log(result)
     return result
@@ -470,14 +598,13 @@ function canUserSign(user,contract){
     roles.forEach(role=>{
 
         let cargo=role.split("-")[2]
-        // console.log("--->>> CURRENT ROLE:",cargo)
         let dept=role.split("-")[1]
-        // console.log("--->>> CURRENT DEPT:",dept)
+        // console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
         switch (cargo){
             case "Autorizado":
                 // console.log("---------->>>>>Soy Autorizado!")
                 if (numEscalados===0){
-                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(historico,dept)
+                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(relevantHistorico,dept)
                     // console.log("Previously Approved by My Department?",approvedByMyDepartment)
                     if (approvedByMyDepartment===false){result=true}
                 }
@@ -512,16 +639,6 @@ function canUserSign(user,contract){
     // console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
     return result
 }
-
-router.get("/profile",async(req,res,next)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    //Obtener info del Usuario actual (sesion iniciada)
-    const sesionEmail = req.session.currentUser.email
-    let currentUser = await User.find({email:sesionEmail})
-    user = currentUser[0]
-    console.log(currentUser)
-    res.render('profile', {user})
-});
 function getLastEscaladoHistorico(historico){
     let indexLastEscalado = -1
     // let historico = contract.historico
@@ -560,7 +677,7 @@ function getRelevantHistorico(historico){
     let indexLastRejection = -1
     // let historico = contract.historico
     for(i=historico.length-1;i>=0;i--){
-        if(historico[i].accion.includes("Escalado")){indexLastRejection=i;break}
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
     // console.log("indexLastRejection: -->", indexLastRejection)
     //Cut everything previous to last rejection.
@@ -614,9 +731,9 @@ async function deleteFile (filePath) {
     try {
         // console.log(filePath)
       await fs.remove(filePath)
-    //   console.log('File Removed: '+filePath)
+        // console.log('File Removed: '+filePath)
     } catch (err) {
-      console.error(err)
+        // console.error(err)
     }
 }
 async function createDirectory(dir){
@@ -624,7 +741,7 @@ async function createDirectory(dir){
         await fs.ensureDir(dir)
         // console.log("Directory Created: " +dir)
     } catch (err){
-        console.error(err)
+        // console.error(err)
     }
 }
 async function saveFile(src,dest){
@@ -632,7 +749,7 @@ async function saveFile(src,dest){
         await fs.ensureLink(src,dest)
         // console.log("File Saved from: " + src + " to " + dest)
     } catch (err){
-        console.error(err)
+        // console.error(err)
     }
 }
 async function deleteDir(dir){
@@ -641,7 +758,7 @@ async function deleteDir(dir){
         await fs.remove(dir)
         // console.log('Uploaded Contracts Deleted!')
       } catch (err) {
-        console.error(err)
+        // console.error(err)
       }
 }
 function editPQ(pq){
@@ -649,7 +766,7 @@ function editPQ(pq){
         if (pq.split('-').length-1===2){return pq;}
         if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
     } catch (error){
-        console.log(error)
+        // console.log(error)
     }
     
 }
@@ -744,9 +861,9 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     role.forEach(role=>{
         if(role==="Select your Role and Department"){someEmptyRole=true}
     })
-    console.log(someEmptyRole)
+    // console.log(someEmptyRole)
     if (someEmptyRole===true){insertErrorMsg.push('role/department')}
-    console.log(insertErrorMsg)
+    // console.log(insertErrorMsg)
     switch (insertErrorMsg.length){
         case 1:
             insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + "."
@@ -818,7 +935,7 @@ async function modifyContract(pq){
         pq.importe = numberToCurrency(pq.importe)
         // pq['allowAccept']= true
         pq.allowAccept=true
-        console.log(pq)
+        // console.log(pq)
         // console.log(pq.allowAccept)
         // console.log(pq.importe)
         // console.log("!!!!!!!!!!!!  PQ FINISH !!!!!!!!!!!!!")
@@ -832,8 +949,8 @@ async function modifyContractList(contractList){
     return newContractList
 }
 function createErrorMsgReject(role,reason){
-    console.log(role)
-    console.log(reason)
+    // console.log(role)
+    // console.log(reason)
     if(role === "Select your Role and Department" && reason ==="Select a reason"){
         errorMsg = "Select a role and a reason."
     } else if (role === "Select your Role and Department"){
@@ -843,14 +960,18 @@ function createErrorMsgReject(role,reason){
     } else {
         errorMsg = ""
     }
-    console.log(errorMsg)
+    // console.log(errorMsg)
     return errorMsg;
 }
-function createErrorMsgApprove(role){
+function createErrorMsgApprove(role,canDirectorsign){
     if(role === "Select your Role and Department"){
         errorMsg = "Select a role."
     } else {
-        errorMsg = ""
+        if (!canDirectorsign && role.includes("Director")){
+            errorMsg="You must aprove as Autorized befor approving as Director."
+        }else{
+            errorMsg=""
+        }
     }
     return errorMsg;
 }
@@ -864,7 +985,7 @@ function numberToCurrency(number){
 }
 function createRoleArray(role,role1,role2,role3,role4){
     const roleArr = []
-    console.log(role4)
+    // console.log(role4)
     if (role!==undefined){roleArr.push(role)}
     if (role1!==undefined){roleArr.push(role1)}
     if (role2!==undefined){roleArr.push(role2)}
@@ -884,7 +1005,7 @@ function getWho(currentUser,role){
     return who;
 }
 function getStatusRejection(dept){
-    console.log(dept)
+    // console.log(dept)
     let status={
         mainStatus:"Pending",
         operationsStatus:"",
