@@ -344,7 +344,7 @@ router.get("/deleteContract/:id",async(req,res)=>{
 })
 router.post("/rejectContract/:id",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
-
+   
     // console.log("ENTERED REJECT CONTRACT / ID")
     const {role,reason,rejectInfo}=req.body
     const fullRole=role
@@ -393,7 +393,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 })
 router.get("/editContracts",(req,res,next)=>{
-    res.render('editContracts')
+    res.render("editContracts");
 });
 router.get("/alertsContracts",async (req,res,next)=>{
     const notice = await Notice.find();
@@ -500,6 +500,7 @@ function canUserSign(user,contract){
                     if (approvedByMyDepartment===false){result=true}    
                 }
 
+
             break;
         }
     })
@@ -511,6 +512,16 @@ function canUserSign(user,contract){
     // console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
     return result
 }
+
+router.get("/profile",async(req,res,next)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    //Obtener info del Usuario actual (sesion iniciada)
+    const sesionEmail = req.session.currentUser.email
+    let currentUser = await User.find({email:sesionEmail})
+    user = currentUser[0]
+    console.log(currentUser)
+    res.render('profile', {user})
+});
 function getLastEscaladoHistorico(historico){
     let indexLastEscalado = -1
     // let historico = contract.historico

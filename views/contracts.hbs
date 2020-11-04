@@ -1,53 +1,71 @@
+
+
 <div id="container">       
         <div class="second-nav">
             <ul>
-                <li><a href="/">Contracts</a></li>
-                <li><a href="/alertsContracts">Alerts</a></li>
-                <li><a href="" class="disabled">Indicators</a></li>
-                <li><a href="" class="disabled">Permissions</a></li>
+                <li><a href="/" class="link-nav link-nav-active">Contracts</a></li>
+                <li><a href="/alertsContracts" class="link-nav">Alerts</a></li>
+                <li><span><a href="" class="disabled">Indicators</a></span></li>
+                <li><span><a href="" class="disabled">Permissions</a></span></li>
             </ul>
         </div>
 
+
         {{#if errorMsg}}
-            <div class="error-message">
-                <ul>
+            <div class="error-message">    
+                <span class="close closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+                <ul>     
                     {{#each errorMsg}}
                     <li>{{this}}</li>
                     {{/each}}
                 </ul>
             </div>
-
+        
             {{else}}
                 {{#if noFileSelected}}
-                    <div class="error-message">
+                    <div class="mssg error-message">
+                        <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
                         {{noFileSelected}}
                     </div>
+
                     {{else}}
-                        {{#if successMsg}}
-                        <div class="success-message">{{successMsg}}</div>
+                        {{#if succesMsg}}
+                            <div class="success-message">
+                                <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+                                 {{succesMsg}}
+                            </div>
                     {{!-- <a href="/">Go to Login</a> --}}
                         {{/if}}
                 {{/if}}
         {{/if}}
+
+
+
         {{#if formData.errorMsg}}
              <div class="error-message">
+                 <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
                     {{formData.errorMsg}}
             </div>
         {{/if}}
         {{#if formData.successMsg}}
-            <div class="success-message">{{formData.successMsg}}</div>
+            <div class="success-message">
+                 <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+                {{formData.successMsg}}
+                </div>
         {{/if}}
         {{#if successMsg}}
             <div class="success-message">{{successMsg}}</div>
         {{/if}}
 
+
+
 <div class="contracts-container">
     <div class="first-nav1">
     <div class="title-container">
         {{#if formData.showClosed}}
-            <a href="/displayPendingContracts"><h2 class="grey" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
+            <a href="/displayPendingContracts"><h2 class="grey">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
         {{else}}
-            <a href="/displayPendingContracts"><h2 class="blue" onclick="">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
+            <a href="/displayPendingContracts"><h2 class="blue">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
         {{/if}}
     </div>
         <button id="add-btn" class="btn btn-blue" onclick="showAddNewContractModal()">Add <span class="btn-add">contracts</span></button> 
@@ -88,25 +106,6 @@
             </div>
             {{/each}}
 
-  
-
-{{!-- 
-    <div class="contract-card">
-        <div class="nav-contract-items">
-                    <div class="card-box">numero</div>
-                    <div class="card-box">nombree</div>
-                    <div class="card-box nav-item">textooo</div>
-                    <div class="card-box">lo que sea que es</div>
-        </div>
-        <div class="nav-contract-actions">
-                    <img id="accept-btn" src="images/icons/approve.png" alt="accept">
-                    <img id="reject-btn" src="images/icons/reject.png" alt="reject">
-                    <img id="delete-btn" src="images/icons/delete-Icon.png" alt="delete">
-                    <img id="edit-btn" src="images/icons/edit.png" alt="edit">
-        </div>
-    </div> --}}
-
-
     </div>
 </div>
 
@@ -122,6 +121,7 @@
                     <input id="file" class="upload-files" type="file" name="excelFile">
                     <label for="file">Please select the Excel file </label>
                     <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
+                    <div id="nameFile"></div>
                     <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
                     <label for="otherFiles">Please select the rest of the files </label>
                     {{!-- <input type="file" name="otherFiles" multiple> --}}
@@ -156,6 +156,7 @@
                 </form>
         </div>
 </div>
+
 
 {{!-- Reject contracts --}}
 <div id="rejectModal-{{_id}}" class="modal">
@@ -195,6 +196,7 @@
         </div>
 </div>
 
+
 {{!-- Delete contracts --}}
 <div id="deleteModal-{{_id}}" class="modal">
         <div class="modal-content modal-red">
@@ -214,9 +216,10 @@
                 </div>
         </div>
 </div>
-{{!-- Details contracts --}}
-<div id="detailsModal-{{_id}}" class="modal">
 
+
+{{!-- Details contracts --}}
+<div id="detailsModal-{{_id}}">
 </div>
 {{/each}}
 
@@ -237,6 +240,7 @@ function closeAddNewContractModal(){
         blurred.classList.remove('blurred');
 }
 
+
 //APROVE MODAL
 function showApproveModal(element){
     let id =element.id.split("-")[1];
@@ -253,6 +257,7 @@ function closeApproveModal(element){
     blurred.classList.remove('blurred');
 } 
 
+
 //REJECT MODAL
 function showRejectModal(element){
     let id =element.id.split("-")[1];
@@ -268,6 +273,8 @@ function closeRejectModal(element){
     let blurred = document.getElementById("container");
     blurred.classList.remove('blurred');
 }
+
+
 //DELETE MODAL
 function showDeleteModal(element){
     let id =element.id.split("-")[1];
@@ -285,5 +292,36 @@ function closeDeleteModal(element){
 }
 
 
+//CLOSE MESSAGES BTN
+function closeMssgPanel(element){
+    console.log(element)
+    console.log(element.parentElement)
+    //let mssg = document.getElementById('mssg1');
+    element.style.display="none";
+}
+
+
+//Active Btn Nav
+var header = document.getElementById("second-nav");
+var btns = header.getElementsByClassName("link-nav");
+for (var i = 0; i < btns.length; i++) {
+btns[i].addEventListener("click", function() {
+var current = document.getElementsByClassName("link-nav-active");
+current[0].className = current[0].className.replace(" link-nav-active", "");
+this.className += " link-nav-active";
+});
+};
+
+
+//PREVIEW FILE NAME
+
+var fileInput = document.getElementById('file');
+var listFile = document.getElementById('nameFile');
+
+fileInput.onchange = function () {
+  var files = Array.from(this.files);
+  files = files.map(file => file.name);
+  listFile.innerHTML = files.join('<br/>');
+}
 
 </script>

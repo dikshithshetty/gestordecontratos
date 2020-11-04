@@ -1,0 +1,64 @@
+<link rel="stylesheet" href="/stylesheets/main.css">
+<style>
+body {
+  background-color: var(--color-grey-light);
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+.error-container {
+display: flex;
+justify-content: center;
+flex-direction: column;
+align-items: center;
+align-content: center;
+font-family: "ASSA Vesta Bold", sans-serif;
+font-weight: bolder;
+height: 100vh;
+}
+
+.copy-container {
+  text-align: center;
+}
+
+p {
+  color: var(--color-black);
+  font-size: 2rem;
+  letter-spacing: .2px;
+  margin: 0;
+}
+
+a.more-link {
+  text-transform: uppercase;
+  font-size: 0.8125rem;
+    background-color: #92a4ad;
+    padding: 10px 15px;
+    border-radius: 0;
+    color: #416475;
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    line-height: 1.5;
+    text-decoration: none;
+  margin-top: 50px;
+  letter-spacing: 1px;
+}
+
+a.more-link:hover {
+    background-color: var(--color-black);
+    color: var(--color-white);
+}
+</style>
+
+<div class="error-container">
+  <div class="copy-container">
+    <p>
+      404, page not found.
+    </p>
+  </div>
+  <div class="link-container">
+    <a href="/displayPendingContracts" class="more-link">Back to home</a>
+    </div>
+</div>
