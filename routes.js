@@ -327,7 +327,7 @@ router.get("/deleteContract/:id",async(req,res)=>{
 })
 router.post("/rejectContract/:id",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
-
+   
     // console.log("ENTERED REJECT CONTRACT / ID")
     const {role,reason,rejectInfo}=req.body
     const fullRole=role
@@ -376,12 +376,22 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 })
 router.get("/editContracts",(req,res,next)=>{
-    res.render('editContracts')
+    res.render("editContracts");
 });
+
 router.get("/alertsContracts",(req,res,next)=>{
     res.render('alertsContracts')
 });
 
+router.get("/profile",async(req,res,next)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    //Obtener info del Usuario actual (sesion iniciada)
+    const sesionEmail = req.session.currentUser.email
+    let currentUser = await User.find({email:sesionEmail})
+    user = currentUser[0]
+    console.log(currentUser)
+    res.render('profile', {user})
+});
 
 async function sendEmail(emailParams){
     let attachmentsObj = []
@@ -699,13 +709,13 @@ function getPersonaHistorico(name,surname,dept){
     let minidept = ""
 
     if (dept === "Comercial"){
-        var minidept = "Comerc."
+        minidept = "Comerc."
     }else if (dept === "Control de Riesgos"){
-        var minidept="C. Riesgos"
+        minidept="C. Riesgos"
     }else if (dept === "Operaciones"){
-        var minidept = "Oper."
+        minidept = "Oper."
     }else if (dept === "PRL"){
-        var minidept = "PRL"
+        minidept = "PRL"
     }
     let result = name1 + " " + surnameInicial+". (" + minidept +")"
     

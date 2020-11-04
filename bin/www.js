@@ -7,8 +7,11 @@ let app = require('../app');
 
 // catch 404 and render a not-found.hbs template
 app.use((req, res, next) => {
+  let template = {
+    layout: false
+  }
   res.status(404);
-  // res.render('not-found');
+  res.render('not-found', template);
 });
 
 app.use((err, req, res, next) => {

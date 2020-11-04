@@ -103,3 +103,15 @@ html,body{
     margin-bottom: 20px;
     font-size: 0.875rem;
 }
+
+@media screen and (min-width: 320px) and (max-width: 375px){
+    .login-container{
+        margin: 0;
+    }
+
+    .bg-register-login{
+        transform: scale(0.7);
+        width: 100%;
+        padding: 30px 20px;
+    }
+}

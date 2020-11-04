@@ -1,0 +1,69 @@
+<div class="second-nav">
+    <ul>
+        <li><a href="/displayPendingContracts" class="link-nav ">Contracts</a></li>
+        <li><a href="/alertsContracts" class="link-nav">Alerts</a></li>
+        <li><span><a href="" class="disabled">Indicators</a></span></li>
+        <li><span><a href="" class="disabled">Permissions</a></span></li>
+    </ul>
+</div>
+
+<div class="alertas-container">
+    <div class="nav-alertas">
+        <h2>My profile</h2>
+</div>
+
+<div class="profile-container">
+        <div class="profile-info-container border">
+                <div class="block">
+                        <li><strong>Nombre: </strong>{{user.name}}</li>
+                        <li><strong>Apellido: </strong>{{user.surname}}</li>
+                        <li><strong>Email: </strong>{{user.email}}</li>
+                        <li><strong>Role: </strong>
+                            <ul class="roles-list-profile">
+                                {{#each user.role}}
+                                <li>{{this}} <span class="delete" onclick="deleteRole()">&times;</span></li>
+                                {{/each}}
+                            </ul>
+                        </li>
+                </div>
+        </div>
+
+        
+        <div class="select-user">
+            <form method="POST" id="registerForm">
+                <div class="select">
+                    <select name="role">
+                        <option hidden selected>Select your Role and Department</option>
+                        <option value="comercial-autorizado">Comercial - Autorizado</option>
+                        <option value="comercial-director">Comercial - Director</option>
+                        <option value="control-de-riesgos-autorizado">Control de Riesgos - Autorizado</option>
+                        <option value="control-de-riesgos-director">Control de Riesgos - Director</option>
+                        <option value="operaciones-autorizado">Operaciones - Autorizado</option>
+                        <option value="operaciones-director">Operaciones - Director</option>
+                        <option value="prl-autorizado">PRL - Autorizado</option>
+                        <option value="prl-director">PRL - Director</option>
+                    </select>
+                </div>
+                <p id="addRoleSelectorBtn" class="underline-link forgot-password"  onclick="addRoleSelectorBtn(this)">Add more roles/departments</p>
+                <button class="btn btn-blue" type="submit" value="Update">Update</button>
+            </form>
+        </div>
+</div>
+
+
+
+<script>
+
+function addRoleSelectorBtn(){
+    addbtn = document.getElementById("addRoleSelectorBtn")
+    registerForm = document.getElementById("registerForm")
+    selector = document.getElementsByClassName("select")[0]
+    numRoles = document.getElementsByClassName("select").length
+    selectorClonado = selector.cloneNode(true)
+    if (numRoles<5){
+        selectorClonado.children[0].name="role"+numRoles
+        console.log(numRoles)
+        registerForm.insertBefore(selectorClonado,addbtn)
+    }
+}
+</script>

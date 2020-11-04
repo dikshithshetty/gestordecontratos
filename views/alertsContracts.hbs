@@ -1,15 +1,15 @@
         <div class="second-nav">
             <ul>
-                <li><a href="/">Contracts</a></li>
-                <li><a href="/alertsContracts">Alerts</a></li>
-                <li><a href="" class="disabled">Indicators</a></li>
-                <li><a href="" class="disabled">Permissions</a></li>
+                <li><a href="/" class="link-nav ">Contracts</a></li>
+                <li><a href="/alertsContracts" class="link-nav link-nav-active">Alerts</a></li>
+                <li><span><a href="" class="disabled">Indicators</a></span></li>
+                <li><span><a href="" class="disabled">Permissions</a></span></li>
             </ul>
         </div>
 
 <div class="alertas-container">
     <div class="nav-alertas">
-        <h3>Alerts configuration</h3>
+        <h2>Alerts configuration</h2>
     </div>
 <div class="alertsContainer">
         <div class="second-nav-alerts">
@@ -44,6 +44,8 @@ let recordatorioContractBtn = document.querySelector('#recordatorioContractBtn')
 let escaladoContractBtn = document.querySelector('#escaladoContractBtn');*/
 
 
+
+//Active Btn Alertas
 var header = document.getElementById("myDIV");
 var btns = header.getElementsByClassName("department-btn");
 for (var i = 0; i < btns.length; i++) {
@@ -54,5 +56,19 @@ for (var i = 0; i < btns.length; i++) {
   });
 }
 
+//Btn Alerts Show Correct Form
+
+
+
+//Active Btn Nav
+var header = document.getElementById("second-nav");
+var btns = header.getElementsByClassName("link-nav");
+for (var i = 0; i < btns.length; i++) {
+btns[i].addEventListener("click", function() {
+var current = document.getElementsByClassName("link-nav-active");
+current[0].className = current[0].className.replace(" link-nav-active", "");
+this.className += " link-nav-active";
+});
+}
 
 </script>
