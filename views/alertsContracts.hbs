@@ -17,62 +17,52 @@
     <div class="alertsContainer">
         <div class="second-nav-alerts">
             <div id="myDIV" class="departments-alerts-btn">
-                <button id="newContract" class="btn department-btn" onclick="getAlertId(this)">New Contract</button>
-                <button id="reject" class="btn department-btn " onclick="getAlertId(this)">Reject Contract</button>
-                <button id="update" class="btn department-btn" onclick="getAlertId(this)">Update Contract</button>
-                {{!-- <button id="approve" class="btn department-btn" onclick="getAlertId(this)">Approve Contract</button> --}}
-                <button id="reminder" class="btn department-btn" onclick="getAlertId(this)">Reminders</button>
-                <button id="escalado" class="btn department-btn" onclick="getAlertId(this)">Escalado</button>
+                <button id="newContract" class="btn department-btn" onclick="btnSelected(this)">New Contract</button>
+                <button id="reject" class="btn department-btn " onclick="btnSelected(this)">Reject Contract</button>
+                <button id="update" class="btn department-btn" onclick="btnSelected(this)">Update Contract</button>
+                {{!-- <button id="approve" class="btn department-btn" onclick="btnSelected(this)">Approve Contract</button> --}}
+                <button id="reminder" class="btn department-btn" onclick="btnSelected(this)">Reminders</button>
+                <button id="escalado" class="btn department-btn" onclick="btnSelected(this)">Escalado</button>
             </div>
         </div>
-
-        <div class="mess-container">
-            <form class="form-alertas" action="/updateAlerts/newContract" method="post">
-                <input id="email-list" type="text" placeholder="For:" name="email">
-                <input type="text" placeholder="Cc:" name="cc">
-                <input type="text" placeholder="Subject:" name="subject">
-                <textarea placeholder="Message...." rows ="10" name="emailBody"></textarea>
+        {{#each notice}}
+        <div class="mess-container" id="notice-type-{{noticeType}}">
+            <form class="form-alertas" action="/updateAlerts/{{noticeType}}" method="post">
+                <input id="email-list" type="text" placeholder="For:" name="email" value="{{destinatario}}">
+                <input type="text" placeholder="Cc:" name="cc" value="{{cc}}">
+                <input type="text" placeholder="Subject:" name="subject" value="{{subject}}">
+                <textarea placeholder="Message...." rows ="10" name="emailBody" >{{emailBody}}</textarea>
                 <button class="btn btn-blue btn-save" type="submit">Save</button>
             </form>
         </div>
+        {{/each}}
     </div>
 </div>
 
 <script>
-/*let newContractBtn = document.querySelector('#newContractBtn');
-let rejectContractBtn = document.querySelector('#rejectContractBtn');
-let actualizadoContractBtn = document.querySelector('#actualizadoContractBtn');
-let acceptContractBtn = document.querySelector('#acceptContractBtn');
-let recordatorioContractBtn = document.querySelector('#recordatorioContractBtn');
-let escaladoContractBtn = document.querySelector('#escaladoContractBtn');*/
     
+function btnSelected(currentBtn){
+    let id = currentBtn.id
+    console.log(id)
+    let form = document.getElementById("notice-type-"+id)
+        console.log(form)
 
+    let buttons = document.getElementsByClassName("department-btn")
+        console.log(buttons)
 
-var header = document.getElementById("myDIV");
-var btns = header.getElementsByClassName("department-btn");
-for (var i = 0; i < btns.length; i++) {
-  btns[i].addEventListener("click", function() {
-  var current = document.getElementsByClassName("btn-blue");
-  current[0].className = current[0].className.replace(" btn-blue", "");
-  this.className += " btn-blue";
-  });
+    let forms = document.getElementsByClassName("mess-container")
+        console.log(forms)
+
+    for (i=0;i<buttons.length;i++){
+        buttons[i].classList.remove("btn-blue")
+        forms[i].style.display="none"
+    }
+    currentBtn.classList.add("btn-blue")
+    form.style.display="flex"
 }
 
-async function getAlertId(element){
 
-    //const Notice = require('./models/notice-model')
-    let id = element.id
-    let form = document.getElementsByClassName("mess-container")[0].getElementsByTagName("form")[0]
-    //console.log(document.getElementsByClassName("mess-container"))
-    document.getElementsByClassName("mess-container")[0].style.visibility="visible"
-    form.action="/updateAlerts/"+id
 
-    //console.log(alert)
-    form.getElementsByTagName("input")[0].value = "test Email"
-    form.getElementsByTagName("input")[1].value = "test cc"
-    form.getElementsByTagName("input")[2].value = "test subject"
-    form.getElementsByTagName("textarea")[0].value = "test message"
-}
 
 
 </script>

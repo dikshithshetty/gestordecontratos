@@ -34,7 +34,7 @@
     <div class="block">
         <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
         <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
-        <li><strong>App creation date: </strong>{{fechaCreaccionApp}}</li>
+        <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
     </div>
 </div>
 </div>
@@ -45,23 +45,24 @@
 <div class="info-container border">
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-        <li><span class="btn1 btn-grey">Comercial: </span></li>
-        <li><span class="btn1 btn-grey">Operaciones: </span></li>
-        <li><span class="btn1 btn-grey">Control de Riesgos: </span></li>
-        <li><span class="btn1 btn-grey">Prev.Riesgos.Lab: </span></li>
+        <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Comercial - {{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{/if}}</span></li>
+        <li><span class="btn1 btn-red">Operaciones: </span></li>
+        <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
+        <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
 
     </div>
 
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
-        <li><span class="btn1 btn-grey">Comercial: </span></li>
-        <li><span class="btn1 btn-grey">Operaciones: </span></li>
-        <li><span class="btn1 btn-grey">Control de Riesgos: </span></li>
-        <li><span class="btn1 btn-grey">Prev.Riesgos.Lab: </span></li>
+        <li><span class="btn1 btn-red">Comercial: </span></li>
+        <li><span class="btn1 btn-red">Operaciones: </span></li>
+        <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
+        <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
     </div>
 
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
+        <li><span class="btn1 btn-red">Dirección General </span></li>
     </div>
 </div>
 </div>
@@ -73,19 +74,21 @@
         <div class="archivos-nav">
             <h3 class="blue">Contract history</h3>
         </div>
-           
-           <div class="email-status-card">
-                <div class="titulos-avisos">
-                    <div class="icon-alert">mail</div>
-                    <div class="tipo-aviso">Primer recordatorio</div>
-                    <div class="tipo-aviso-nombre">Monica D. (Oper.)</div>
-                    <div class="tipo-aviso-fecha">02/11/2020</div>
-                </div>
-                <div class="info-avisos">
-                    <p></p>
-                    <p>Aviso contrato creado...</p>
-                </div>
+        {{#each historico}}
+        <div class="email-status-card">
+            <div class="titulos-avisos">
+                <div class="icon-alert">mail</div>
+                <div class="tipo-aviso">{{accion}}</div>
+                <div class="tipo-aviso-nombre">{{persona}}</div>
+                <div class="tipo-aviso-fecha">{{fecha}}</div>
             </div>
+            <div class="info-avisos">
+                <p></p>
+                <p>{{observaciones}}</p>
+            </div>
+        </div>
+        {{/each}}
+
     </div>
 
     <div class="archivos-upload archivos border">
@@ -95,14 +98,15 @@
         </div>
    
         <div class="contracts-cards-items">
-
+            {{#each uploadedFiles}}
             <div class="document-card">
-                    <p>nombre del archivo</p>
+                    <p>{{fileName}}</p>
                     <div class="icons-files">
                         <img id="download-btn" src="/images/icons/download.png" alt="download">
                         <img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete">
                     </div>
             </div>
+            {{/each}}
         </div>
         
     </div>

@@ -23,8 +23,8 @@
                         {{noFileSelected}}
                     </div>
                     {{else}}
-                        {{#if succesMsg}}
-                        <div class="success-message">{{succesMsg}}</div>
+                        {{#if successMsg}}
+                        <div class="success-message">{{successMsg}}</div>
                     {{!-- <a href="/">Go to Login</a> --}}
                         {{/if}}
                 {{/if}}
@@ -36,6 +36,9 @@
         {{/if}}
         {{#if formData.successMsg}}
             <div class="success-message">{{formData.successMsg}}</div>
+        {{/if}}
+        {{#if successMsg}}
+            <div class="success-message">{{successMsg}}</div>
         {{/if}}
 
 <div class="contracts-container">
@@ -77,11 +80,10 @@
                     <div class="card-box">{{cliente}}</div>
                 </div>
                 <div class="nav-contract-actions1">
-                    {{!-- {{./showClosed}} --}}
-                    <img src="images/icons/approve.png" alt="accept" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
-                    <img src="images/icons/reject.png" alt="reject"  {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
+                    <img src="images/icons/approve.png" alt="accept" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowApprove}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
+                    <img src="images/icons/reject.png" alt="reject"  {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowReject}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
                     <img src="images/icons/delete-Icon.png" alt="delete" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}}  onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
-                    <img src="images/icons/edit.png" alt="edit" onclick="showDetailsModal(this)" id="openDetailsModal-{{_id}}">
+                    <a  href="/editContracts/{{id}}"><img src="images/icons/edit.png" alt="edit"></a>
                 </div>
             </div>
             {{/each}}

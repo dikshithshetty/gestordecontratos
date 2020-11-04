@@ -131,18 +131,22 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
         console.log("--------------- UPLOADING NEW CONTRACT ---------------");
         // console.log(req.files)
         if (req.files.length===0){
-            noFileSelected="No se ha seleccionado ningún contrato.";
-            res.render("contracts.hbs",{noFileSelected});
+            errorMsg="No se ha seleccionado ningún contrato.";
+            // res.render("contracts.hbs",{noFileSelected});
+            res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
         }else {
-            
+            const sesionEmail = req.session.currentUser.email
+            let currentUser = await User.find({email:sesionEmail})
+
             //Save Excel document to "temporaryFiles" folder to read it
             let tempFolder = path.join(__dirname,"temporaryFiles");
             let tempFile = path.join(tempFolder,req.files[0].originalname);
             let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
             // console.log("Extensión: " ,ext)
             if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
-                noFileSelected="La hoja de firmas no se encuentra en formato Excel."
-                res.render("contracts.hbs",{noFileSelected});
+                errorMsg="La hoja de firmas no se encuentra en formato Excel."
+                // res.render("contracts.hbs",{noFileSelected})
+                res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
             }
             
             await saveFile(req.files[0].path,tempFile)
@@ -184,10 +188,18 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     uploadedFiles.push(fileToSave)
                 }
 
+                nuevaAccion=[{
+                    accion:"Contrato Creado",
+                    persona:currentUser[0].name+" "+currentUser[0].surname,
+                    icono:"Nuevo Contrato",
+                    fecha: getCurrentDate(),
+                    observaciones:""
+                }]
+
 
                 //Create Contract to DB
                 console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
-                await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles});
+                await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
 
                 emailParams={
                     host:"smtp-mail.outlook.com",
@@ -208,7 +220,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                 // console.log(contractList)
                 // //Send Email
                 // await sendEmail(emailParams)
-                succesMsg="Contrato "+pq+" Creado Correctamente.",
+                successMsg="Contrato "+pq+" Creado Correctamente.",
 
                 // formData={
                 //     succesMsg:succesMsg,
@@ -216,7 +228,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                 // }
                 console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
                 // res.render("contracts.hbs",{formData});
-                res.redirect("/displayPendingContracts?succesMsg="+succesMsg);
+                res.redirect("/displayPendingContracts?successMsg="+successMsg);
             }
         }
     }
@@ -243,58 +255,33 @@ router.get("/displayPendingContracts", async (req,res)=>{
     const sesionEmail = req.session.currentUser.email
 
     let currentUser = await User.find({email:sesionEmail})
-    console.log(currentUser[0].role)
+    // console.log(currentUser[0].role)
     // await deleteDir(path.join(__dirname,"uploadedContracts"))
 
-    var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial historico')
+    var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente historico importe comercial')
     const roleObj = await createRoleSelector(currentUser[0].role)
     // console.log(roleObj)
+    // console.log(contractList)
+
     contractList.forEach(contract=>{
-        contract.importe=numberToCurrency(contract.importe)
-        let allowAprove = canUserSign(currentUser,contract)
-        contract.allowAprove = allowAprove
+        contract.importe = numberToCurrency(contract.importe)
+        let allowApprove = canUserSign(currentUser,contract)
+        // let allowApprove = true;
+        // console.log(allowApprove)
+        let allowReject = true;
+        contract.allowApprove = allowApprove
+        contract.allowReject = allowReject
         // console.log(contract.allowAprove)
     })
-    // let allowAprove = canUserSign(currentUser,contract)
-
-    // const newContractList = await modifyContractList(contractList)
-    // console.log(newContractList)
-    // for (i=0;i<contractList.length;i++){
-    //     contractList[i].importe = numberToCurrency(contractList[i].importe)
-    //     contractList[i].allowAccept=true
-    //     console.log(contractList[i])
-        
-    // }
-    // // console.log("!!!!!!!!!!!!INITIAL CONTRACT LIST!!!!!!!!!!!!!")
-    // console.log(contractList)
-    // const newCL = contractList.forEach(pq=>{
-    //     console.log("!!!!!!!!!!!!  PQ START !!!!!!!!!!!!!")
-    //     pq.importe = numberToCurrency(pq.importe)
-    //     // pq['allowAccept']= true
-    //     pq.allowAccept=true
-    //     console.log(pq)
-    //     console.log(pq.allowAccept)
-    //     console.log(pq.importe)
-    //     console.log("!!!!!!!!!!!!  PQ FINISH !!!!!!!!!!!!!")
-    // })
-    // console.log("!!!!!!!!!!!!MODIFIED CONTRACT LIST!!!!!!!!!!!!!")
-    // console.log(contractList[0])
-    // console.log(contractList[0].allowAccept)
-    // console.log(newCL)
-    // console.log("!!!!!!!!!!!! NEW MODIFIED CONTRACT LIST!!!!!!!!!!!!!")
-    // console.log(newContractList)
-    // console.log("CONTRACT LIST:")
-    // console.log(contractList[0].historico)
-    // const canReject=getCanReject(contractList[0].historico)
+    
     formData={
         errorMsg:errorMsg,
         showClosed:false,
         successMsg:successMsg,
         contractList:contractList,
-        roleObj:roleObj
-        // canReject:canReject
+        roleObj:roleObj,
     }
-    console.log("Form Data -->",formData)
+    // console.log("Form Data -->",formData)
     res.render("contracts.hbs",{formData});
 })
 router.post("/approveContract/:id",async(req,res)=>{
@@ -408,8 +395,12 @@ router.post("/rejectContract/:id",async(req,res)=>{
 router.get("/editContracts",(req,res,next)=>{
     res.render('editContracts')
 });
-router.get("/alertsContracts",(req,res,next)=>{
-    res.render('alertsContracts')
+router.get("/alertsContracts",async (req,res,next)=>{
+    const notice = await Notice.find();
+    console.log(notice)
+
+
+    res.render('alertsContracts',{notice})
 });
 router.post("/updateAlerts/:alertType",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
@@ -418,22 +409,167 @@ router.post("/updateAlerts/:alertType",async(req,res)=>{
     // console.log(alertType,email,cc,subject,emailBody)
     const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
     console.log(newAlert)
-    // const successMsg = "Configuración Guardada"
-    res.render("alertsContracts.hbs",{successMsg})
+    const successMsg = "Configuración Guardada"
+    res.redirect("/alertsContracts?successMsg="+successMsg)
 })
+router.get("/editContracts/:id",async(req,res,next)=>{
+    // console.log("entered the edit contract function")
+    if (!req.session.currentUser){res.redirect("/")}
+    const id = req.params.id
+    // console.log(id)
+    const selectedContract = await Contract.findOne({_id:id})
+    // console.log(selectedContract)
+    const uploadedFiles = getFiles(selectedContract.uploadedFiles)
+    contr={
+        pq:selectedContract.pq,
+        cliente:selectedContract.cliente,
+        comercial:selectedContract.comercial,
+        obra:selectedContract.obra,
+        usuarioFinal:selectedContract.usuarioFinal,
+        nPedido:selectedContract.nPedido,
+        importe:numberToCurrency(selectedContract.importe),
+        fechaStatusWon:selectedContract.fechaStatusWon,
+        fechaRecepcion:selectedContract.fechaRecepcion,
+        fechaCreacionApp:selectedContract.fechaCreaccionApp,
+        historico:selectedContract.historico,
+        firmas:selectedContract.firmas,
+        uploadedFiles:uploadedFiles
+    }
+    
+    res.render("editContracts",contr)
+    // res.redirect("/editContracts?pq="+pq)
 
-function canUserSign(user,contract){
-    console.log("!!!!!!!!!!!!!!!INSIDE canUserSign!!!!!!!!!!!!!!!!")
-    // console.log(user[0])
-    userRole = user[0].role
-    historico = contract.historico
-    console.log(userRole)
-    console.log(historico)
-
-
-    result = true
-    console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
+})
+function getFiles(uploadedFiles){
+    const result = uploadedFiles.map(file=>{
+        return {fileName:file.split("\\")[file.split("\\").length-1],filePath:file}
+    })
+    // console.log(result)
     return result
+}
+function canUserSign(user,contract){
+    // console.log("!!!!!!!!!!!!!!!INSIDE canUserSign!!!!!!!!!!!!!!!!")
+    user = user[0]
+    //Transforms "Control de Riesgos - Director" to "Esteve M. (C. Riesgos) for each role."
+    let roles = formatRolesToResumedRoles(user)
+    // console.log("Roles: -->",roles)
+  
+    //Get the historico after the last reject
+    let historico = contract.historico
+    let relevantHistorico = getRelevantHistorico(historico)
+    // console.log("historicoRelevante: -->",relevantHistorico)
+    
+    //Count Nº de Escalados in Historico
+    let numEscalados = countEscalados(relevantHistorico)
+    // console.log("Número de Escalados:-->",numEscalados)
+
+    //Get historico after the last escalado
+    let historicoLastEscalado = getLastEscaladoHistorico(relevantHistorico)
+
+    let result = false
+    roles.forEach(role=>{
+
+        let cargo=role.split("-")[2]
+        // console.log("--->>> CURRENT ROLE:",cargo)
+        let dept=role.split("-")[1]
+        // console.log("--->>> CURRENT DEPT:",dept)
+        switch (cargo){
+            case "Autorizado":
+                // console.log("---------->>>>>Soy Autorizado!")
+                if (numEscalados===0){
+                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(historico,dept)
+                    // console.log("Previously Approved by My Department?",approvedByMyDepartment)
+                    if (approvedByMyDepartment===false){result=true}
+                }
+            break;
+            case "Director":
+                // console.log("---------->>>>>Soy Director!")
+                if (numEscalados===1){
+                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(historicoLastEscalado,dept)
+                    // console.log("Previously Approved by My Department?",approvedByMyDepartment)
+                    if (approvedByMyDepartment===false){result=true}
+
+                }
+
+            break;
+            case "Dirección General":
+                // console.log("---------->>>>>Soy Director General!")
+                if (numEscalados===2){
+                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(historicoLastEscalado,dept)
+                    // console.log("Previously Approved by My Department?",approvedByMyDepartment)
+                    if (approvedByMyDepartment===false){result=true}    
+                }
+
+            break;
+        }
+    })
+
+
+
+    // result = true
+    // console.log ("RESULT: ", result)
+    // console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
+    return result
+}
+function getLastEscaladoHistorico(historico){
+    let indexLastEscalado = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Escalado")){indexLastEscalado=i;break}
+    }
+    // console.log("indexLastEscalado: -->", indexLastEscalado)
+    //Cut everything previous to last escalado.
+    if (indexLastEscalado===-1){
+        var historicoLastEscalado = historico
+    } else{
+        var historicoLastEscalado = historico.slice(indexLastEscalado+1)
+    }
+    return historicoLastEscalado
+}
+function checkIfApprovedByMyDepartment(hist,dept){
+    // console.log("------------check if aproved by my department------------")
+    // console.log(hist)
+    // console.log(dept)
+    for (i=0;i<hist.length;i++){
+        if (hist[i].persona.includes(dept)){return true;}
+        // console.log(hist[i].persona.includes(dept))
+    }
+    return false
+}
+function countEscalados(hist){
+    // console.log(hist)
+    let statusEscalados = hist.filter(accion=>{
+        // console.log(accion.accion.includes("Rechazado"))
+        return accion.accion.includes("Escalado")
+    })
+    // console.log(statusEscalados)
+    return statusEscalados.length
+}
+function getRelevantHistorico(historico){
+    let indexLastRejection = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Escalado")){indexLastRejection=i;break}
+    }
+    // console.log("indexLastRejection: -->", indexLastRejection)
+    //Cut everything previous to last rejection.
+    if (indexLastRejection===-1){
+        var historicoRelevante = historico
+    } else{
+        var historicoRelevante = historico.slice(indexLastRejection+1)
+    }
+    return historicoRelevante
+}
+function formatRolesToResumedRoles(user){
+    // console.log(user)
+    const resumedUserRole = user.role.map(role=>{
+        personalHist = getPersonaHistorico(user.name,user.surname,role.split(" - ")[0])
+        return personalHist.replace(" (","-").replace(")","-")+role.split(" - ")[1]
+        // console.log(personalHist)
+        // return personalHist
+    })
+    // console.log("resumedUserRole: --> ",resumedUserRole)
+    return resumedUserRole
 }
 async function sendEmail(emailParams){
     let attachmentsObj = []
