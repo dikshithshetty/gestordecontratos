@@ -248,11 +248,13 @@ router.get("/displayPendingContracts", async (req,res)=>{
 
     var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial historico')
     const roleObj = await createRoleSelector(currentUser[0].role)
-    // contractList.forEach(contract=>{
-    //     let allowAprove = canUserSign(currentUser,contract)
-    //     contract.allowAprove = allowAprove
-    //     // console.log(contract.allowAprove)
-    // })
+    // console.log(roleObj)
+    contractList.forEach(contract=>{
+        contract.importe=numberToCurrency(contract.importe)
+        let allowAprove = canUserSign(currentUser,contract)
+        contract.allowAprove = allowAprove
+        // console.log(contract.allowAprove)
+    })
     // let allowAprove = canUserSign(currentUser,contract)
 
     // const newContractList = await modifyContractList(contractList)
@@ -292,7 +294,7 @@ router.get("/displayPendingContracts", async (req,res)=>{
         roleObj:roleObj
         // canReject:canReject
     }
-    console.log(formData)
+    console.log("Form Data -->",formData)
     res.render("contracts.hbs",{formData});
 })
 router.post("/approveContract/:id",async(req,res)=>{
@@ -804,7 +806,6 @@ function getCanReject(historico){
     // console.log(canReject)
 }
 async function createRoleSelector(role){
-    // role 
     var roleCountVariable=0
     var roleObj={}
     if (role.indexOf("Comercial - Autorizado")!==-1){roleObj.autComercial=true;roleCountVariable=+1}else{roleObj.autComercial=false}
@@ -815,20 +816,9 @@ async function createRoleSelector(role){
     if (role.indexOf("PRL - Director")!==-1){roleObj.dirPRL=true;roleCountVariable=+1}else{roleObj.dirPRL=false}
     if (role.indexOf("Operaciones - Director")!==-1){roleObj.dirOperaciones=true;roleCountVariable=+1}else{roleObj.dirOperaciones=false}
     if (role.indexOf("Control de Riesgos - Director")!==-1){roleObj.dirControlRiesgos=true;roleCountVariable=+1}else{roleObj.dirControlRiesgos=false}
-    // roleObj.dirComercial
-    // roleObj.dirOperaciones
-    // roleObj.dirPRL
-    // roleObj.dirControlRiesgos
-    // roleObj.autComercial
-    // roleObj.autOperaciones
-    // roleObj.autPRL
-    // roleObj.autControlRiesgos
-    // console.log(roleCountVariable)
-    if (roleCountVariable>1){roleObj.singleRole = true}else{roleObj.singleRole = false}
-    // console.log(roleObj)
-    return roleObj
-
     
+    if (roleCountVariable>1){roleObj.singleRole = true}else{roleObj.singleRole = false}
+    return roleObj
 }
 
 module.exports=router;
