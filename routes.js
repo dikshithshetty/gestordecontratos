@@ -61,8 +61,8 @@ router.post('/', async(req,res,next)=>{
             if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                 req.session.currentUser = user;                         //Save User Session.
                 // await deleteDir(path.join(__dirname,"uploadedContracts"))
-                await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
-                await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
+                // await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
+                // await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
 
                 res.redirect("/displayPendingContracts")                                       //Redirect to home.
             }else{
