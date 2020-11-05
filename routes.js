@@ -246,7 +246,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                 }
             }
         }
-    }catch(err){console.log("Error en Login Post:",err)}
+    }catch(err){console.log("Error en Upload New Contract:",err)}
 
 });
 
@@ -1041,14 +1041,20 @@ function ExcelDateToJSDate(serial) {
     // var hours = Math.floor(total_seconds / (60 * 60));
     // var minutes = Math.floor(total_seconds / 60) % 60;
     returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+    console.log(returnDate)
     returnDate=returnDate.toLocaleString().split(' ')[0]
+    console.log(returnDate)
 
     var year=returnDate.split('-')[0]
     var month=returnDate.split('-')[1]
     var day=returnDate.split('-')[2]
+    console.log(month)
+
+    console.log(month.length)
+
     if (month.length===1){month='0'+month}
     returnDate=day+"/"+month+"/"+year
-    // console.log(returnDate)
+    console.log(returnDate)
 
     return returnDate;
 }
