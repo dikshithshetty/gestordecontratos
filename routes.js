@@ -1045,9 +1045,9 @@ function ExcelDateToJSDate(serial) {
     returnDate=returnDate.toLocaleString().split(' ')[0]
     console.log(returnDate)
 
-    var year=returnDate.split('-')[0]
-    var month=returnDate.split('-')[1]
-    var day=returnDate.split('-')[2]
+    var year=returnDate.split('/')[0]
+    var month=returnDate.split('/')[1]
+    var day=returnDate.split('/')[2]
     console.log(month)
 
     console.log(month.length)
