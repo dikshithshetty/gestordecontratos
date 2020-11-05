@@ -476,9 +476,10 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 
 })
+
 router.get("/alertsContracts",async (req,res,next)=>{
     const notice = await Notice.find();
-    console.log(notice)
+    // console.log(notice)
 
 
     res.render('alertsContracts',{notice})
@@ -504,6 +505,7 @@ router.get("/editContracts/:id",async(req,res,next)=>{
     const uploadedFiles = getFiles(selectedContract.uploadedFiles)
     const showeditButons = getshoweditButons(selectedContract.mainStatus)
 
+    // console.log(uploadedFiles)
     contr={
         pq:selectedContract.pq,
         cliente:selectedContract.cliente,

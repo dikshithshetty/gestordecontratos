@@ -63,46 +63,55 @@
     <div class="first-nav1">
     <div class="title-container">
         {{#if formData.showClosed}}
-            <a href="/displayPendingContracts"><h2 class="grey">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
+            <a href="/displayPendingContracts"><h2 class="grey">Pending contracts</h2></a><span><h2 class="grey">/</h2></span><a href="/displayClosedContracts"><h2 class="blue" >Closed contracts</h2></a>
         {{else}}
-            <a href="/displayPendingContracts"><h2 class="blue">Pending contracts</h2></a><h2 class="grey">/</h2><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
+            <a href="/displayPendingContracts"><h2 class="blue">Pending contracts</h2></a><span><h2 class="grey">/</h2></span><a href="/displayClosedContracts"><h2 class="grey" >Closed contracts</h2></a>
         {{/if}}
     </div>
         <button id="add-btn" class="btn btn-blue" onclick="showAddNewContractModal()">Add <span class="btn-add">contracts</span></button> 
 </div>
     <div class="nav-contract">
-        <div class="nav-contract-items">
-                    <div class="card-box titulos">PQ</div>
-                    <div class="card-box">Amount</div>
-                    <div class="card-box nav-item">Commercial</div>
-                    <div class="card-box">Client</div>
-            
-        </div>
-        <div class="nav-contract-actions">
-
-                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Accept</div>
-                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Reject</div>
-                    <div class="actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Delete</div>
-                    <div class="actions">View</div>
-        </div>
+            <table class="nav-contract-items">
+                <tr>
+                    <td class="pq">PQ</td>
+                    <td class="amount">Amount</td>
+                    <td class="commercial">Commercial</td>
+                    <td class="client">Client</td>   
+                </tr>
+            </table>
+            <table class="nav-contract-actions">
+                <tr>
+                    <td class="celda-actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Accept</td>
+                    <td class="celda-actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Reject</td>
+                    <td class="celda-actions"{{#if formData.showClosed}}style="visibility:hidden;"{{/if}}>Delete</td>
+                    <td class="celda-actions">View</td>
+                </tr>
+            </table>
     </div>
 
 {{!-- contracts cards here --}}
     <div class="cards">
             {{#each formData.contractList}}
-            <div class="contract-card" >
-                <div class="nav-contract-items">
-                    <div class="card-box">{{pq}}</div>
-                    <div class="card-box">{{importe}}</div>
-                    <div class="card-box">{{comercial}}</div>
-                    <div class="card-box">{{cliente}}</div>
-                </div>
-                <div class="nav-contract-actions1">
-                    <img src="images/icons/approve.png" alt="accept" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowApprove}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}">
-                    <img src="images/icons/reject.png" alt="reject"  {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowReject}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}">
-                    <img src="images/icons/delete-Icon.png" alt="delete" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}}  onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}">
-                    <a  href="/editContracts/{{id}}"><img src="images/icons/view.png" alt="view"></a>
-                </div>
+            <div class="contract-card">
+                <table class="nav-contract-items1">
+                    <tr>
+                        <td class="pq"><span><strong>PQ:</strong> </span>{{pq}}</td>
+                        <td class="amount"><span><strong>Amount: </strong></span>{{importe}}</td>
+                        <td class="commercial">{{comercial}}</td>
+                        <td class="client"><span><strong>Cliente: </strong></span>{{cliente}}</td>
+                    </tr>
+                    <tr class="client-responsive">
+                        <td class="client1"><span><strong>Cliente: </strong></span>{{cliente}}</td>
+                    </tr>
+                </table>
+                <table class="nav-contract-actions1">
+                    <tr>
+                        <td class="celda-actions"><ion-icon name="checkmark-circle" class="approve-svg" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowApprove}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showApproveModal(this)"id="openApproveModal-{{_id}}"></ion-icon></td>
+                        <td class="celda-actions"><ion-icon name="close-circle" class="reject-svg" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{#if allowReject}}{{else}}style="visibility:hidden;"{{/if}}{{/if}} onclick="showRejectModal(this)" id="openRejectModal-{{_id}}"></ion-icon></td>
+                        <td class="celda-actions"><ion-icon name="trash-outline" class="delete-svg" {{#if ../formData.showClosed}}style="visibility:hidden;"{{else}}{{/if}}  onclick="showDeleteModal(this)" id="openDeleteModal-{{_id}}"></ion-icon></td>
+                        <td class="celda-actions"><a  href="/editContracts/{{id}}"><ion-icon name="eye-outline"  class="view-svg"></ion-icon></a></td>
+                    </tr>
+                </table>
             </div>
             {{/each}}
 
@@ -207,10 +216,10 @@
 
                 <div class="selectors-options">
                     <div class="accept">
-                        <a href="/deleteContract/{{_id}}"><img src="images/icons/approve.png" alt="reject" onclick=""></a>
+                        <a href="/deleteContract/{{_id}}"><ion-icon name="checkmark-circle" class="approve-svg"></ion-icon></a>
                     </div>
                     <div class="reject">
-                        <a href="/displayPendingContracts"><img src="images/icons/reject.png" alt="accept" onclick=""></a>
+                        <a href="/displayPendingContracts"><ion-icon name="close-circle" class="reject-svg"></ion-icon></a>
                     </div>
 
                 </div>

@@ -11,7 +11,7 @@ html,body{
     justify-content: center;
     align-items: center;
     /* padding: 20px; */
-    /* height: 100vh; */
+    min-height: 100vh;
 }
 
 
@@ -104,14 +104,31 @@ html,body{
     font-size: 0.875rem;
 }
 
+
+
+@media screen and (min-width: 376px) and (max-width: 740px){
+    .login-container{
+        margin: 0;
+    }
+
+    .bg-register-login{
+        transform: scale(1);
+        width: 100%;
+        min-width: 320px;
+        padding: 30px 20px;
+        margin: 20px;
+    }
+}
+
 @media screen and (min-width: 320px) and (max-width: 375px){
     .login-container{
         margin: 0;
     }
 
     .bg-register-login{
-        transform: scale(0.7);
+        transform: scale(0.9);
         width: 100%;
         padding: 30px 20px;
+        margin: 0px;
     }
 }

@@ -1,4 +1,4 @@
- <div id="container">       
+<div id="container">       
         <div class="second-nav">
             <ul>
                 <li><a href="/">Contracts</a></li>
@@ -9,7 +9,9 @@
          
         </div>
 </div>
-
+<div class="btn-back-responsive">
+<a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
+</div>
 <div class="edit-container">
 
     {{!-- Detalles Contrato --}}
@@ -23,6 +25,31 @@
                 <li><strong>PQ: </strong>{{pq}}</li>
                 <li><strong>Client: </strong>{{cliente}}</li>
                 <li><strong>Commercial: </strong>{{comercial}}</li>
+            </div>
+            <div class="block">
+                <li><strong>Work: </strong>{{obra}}</li>
+                <li><strong>Amount: </strong>{{importe}}</li>
+                <li><strong>Final user: </strong>{{usuarioFinal}}</li>
+            </div>
+            <div class="block">
+                <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
+                <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
+                <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
+            </div>
+        </div>
+    </div>
+
+
+    {{!-- Firmas Necesarias --}}
+    <div class="contract-details">
+        <h2 class="blue">Signatures required</h2>
+        <div class="info-container border info-contract-details">
+            <div class="block">
+                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
+                <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Comercial - {{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-red">Operaciones: </span></li>
+                <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
+                <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
             </div>
 
             <div class="block">
@@ -64,6 +91,7 @@
         </div>
     </div>
 
+    
     {{!-- Historia de alertas enviadas y archivos --}}
     <div class="archivos-preview-container">
         <div class="email-status archivos border">
@@ -73,8 +101,7 @@
             {{#each historico}}
             <div class="email-status-card">
                 <div class="titulos-avisos">
-                    <!--Nombre iconos: mail new upd apr rej esc-->
-                    <div class="icon-alert"><img src="images/icons/{{icono}}.png" alt="{{icono}}"></div>
+                    <div class="icon-alert"><ion-icon name="{{icono}}" alt="{{icono}}"></ion-icon></div>
                     <div class="tipo-aviso">{{accion}}</div>
                     <div class="tipo-aviso-nombre">{{persona}}</div>
                     <div class="tipo-aviso-fecha">{{fecha}}</div>
@@ -86,21 +113,25 @@
             </div>
             {{/each}}
         </div>
+
         <div class="archivos-upload archivos border">
             <div class="archivos-nav">
                 <h3 class="blue">Contract files</h3>
                 {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
             </div>
+    
             <div class="contracts-cards-items">
                 {{#each uploadedFiles}}
                 <div class="document-card">
-                        <p>{{fileName}}</p>
-                        <div class="icons-files">
-                            <a href="/{{filePath}}" download="{{fileName}}"><img id="download-btn" src="/images/icons/download.png" alt="download" download></a>
-                            {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete"></a>{{/if}}
-                        </div>
+                    <p>{{fileName}}</p>
+                    <div class="icons-files">
+                        <a href="/{{filePath}}" download="{{fileName}}"><ion-icon id="download-btn" name="download-outline"></ion-icon></a>
+                        {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><ion-icon id="delete-btn" name="trash-outline"></ion-icon></a>{{/if}}
+                    </div>
                 </div>
                 {{/each}}
+            </div>
+            <div class="archivos-upload archivos border">
             </div>
         </div>
     </div>
@@ -125,15 +156,22 @@
             <h2 class="red">Delete file</h2>
 
             <p class="text-popup">Are you sure you wish to delete this file?</p>
+                <div class="selectors-options">
+                    <div class="accept">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                    </div>
+                    <div class="reject">
+                        <ion-icon name="close-circle"></ion-icon>
+                    </div>
 
-            <div class="selectors-options">
+            {{!-- <div class="selectors-options">
                 <div class="accept">
                     <img src="images/icons/reject.png" alt="reject" onclick="">
                 </div>
                 <div class="reject">
                     <img src="images/icons/approve.png" alt="accept" onclick="">
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>
