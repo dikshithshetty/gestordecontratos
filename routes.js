@@ -82,37 +82,42 @@ router.get('/register',(req,res,next)=>{
     // }
 })
 router.post('/register',async (req,res,next)=>{
-    const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
-    var errorMsg = [];
-    // console.log("Role4: ",role4)
-        roleArr = createRoleArray(role,role1,role2,role3,role4)
-        // console.log("Role Array", roleArr)
-    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
+    try{
+        const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
+        var errorMsg = [];
+        // console.log("Role4: ",role4)
+            roleArr = createRoleArray(role,role1,role2,role3,role4)
+            // console.log("Role Array", roleArr)
+        errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
+        
+        formData={
+            errorMsg:errorMsg,
+            succesMsg:null,
+            username:username,
+            usersurname:usersurname,
+            email:email,
+            repeatemail:repeatemail,
+            password:password,
+            repeatedpassword:repeatedpassword,
+            role:role
+        };
     
-    formData={
-        errorMsg:errorMsg,
-        succesMsg:null,
-        username:username,
-        usersurname:usersurname,
-        email:email,
-        repeatemail:repeatemail,
-        password:password,
-        repeatedpassword:repeatedpassword,
-        role:role
-    };
-
-    if (errorMsg.length===0){
-        
-        const bcryptSalt = 10;
-        const salt = bcrypt.genSaltSync(bcryptSalt);
-        const hashPass = bcrypt.hashSync(password, salt);
-        
-        await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
-        formData.succesMsg="User succesfully created.";
-        res.render("login-register/login",{formData, layout: false});
-    } else{
-        res.render("login-register/register",{formData, layout: false});
+        if (errorMsg.length===0){
+            
+            const bcryptSalt = 10;
+            const salt = bcrypt.genSaltSync(bcryptSalt);
+            const hashPass = bcrypt.hashSync(password, salt);
+            
+            await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
+            formData.succesMsg="User succesfully created.";
+            res.render("login-register/login",{formData, layout: false});
+        } else{
+            res.render("login-register/register",{formData, layout: false});
+        }
+    }   catch(err){
+        console.log("Error en Register Form:",err)
     }
+    
 })
 router.get('/logout', (req, res, next) => {
     req.session.destroy((err) => {
