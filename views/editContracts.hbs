@@ -1,4 +1,4 @@
- <div id="container">       
+<div id="container">       
         <div class="second-nav">
             <ul>
                 <li><a href="/">Contracts</a></li>
@@ -9,14 +9,16 @@
          
         </div>
 </div>
-
+<div class="btn-back-responsive">
+<a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
+</div>
 <div class="edit-container">
 
 {{!-- Detalles Contrato --}}
 <div class="contract-details">
 <div class="nav3">
-<h2 class="blue">Contract details</h2>
-<a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
+    <h2 class="blue">Contract details</h2>
+    <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
 </div>
 
 
@@ -45,7 +47,7 @@
 {{!-- Firmas Necesarias --}}
 <div class="contract-details">
 <h2 class="blue">Signatures required</h2>
-<div class="info-container border">
+<div class="info-container border info-contract-details">
     <div class="block">
         <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
         <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Comercial - {{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{/if}}</span></li>
@@ -80,7 +82,7 @@
         {{#each historico}}
         <div class="email-status-card">
             <div class="titulos-avisos">
-                <div class="icon-alert">mail</div>
+                <div class="icon-alert"><ion-icon name="mail-unread-outline"></ion-icon></div>
                 <div class="tipo-aviso">{{accion}}</div>
                 <div class="tipo-aviso-nombre">{{persona}}</div>
                 <div class="tipo-aviso-fecha">{{fecha}}</div>
@@ -96,7 +98,7 @@
 
     <div class="archivos-upload archivos border">
         <div class="archivos-nav">
-            <h3 class="blue">Contract files</h3>
+            <h3 class="blue"><span>Contract</span> Files</h3>
             <button id="upload-btn" class="btn btn-blue">upload files</button>
         </div>
    
@@ -105,8 +107,8 @@
             <div class="document-card">
                     <p>{{fileName}}</p>
                     <div class="icons-files">
-                        <img id="download-btn" src="/images/icons/download.png" alt="download">
-                        <img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete">
+                        <ion-icon id="download-btn" name="download-outline"></ion-icon>
+                        <ion-icon id="delete-btn" name="trash-outline"></ion-icon>
                     </div>
             </div>
             {{/each}}
@@ -158,20 +160,13 @@
 
                 <div class="selectors-options">
                     <div class="accept">
-                        <img src="images/icons/reject.png" alt="reject" onclick="">
+                        <ion-icon name="checkmark-circle"></ion-icon>
                     </div>
                     <div class="reject">
-                        <img src="images/icons/approve.png" alt="accept" onclick="">
+                        <ion-icon name="close-circle"></ion-icon>
                     </div>
 
                 </div>
         </div>
 </div>
 </div>
-
-<script>
-
-
-
-
-</script>

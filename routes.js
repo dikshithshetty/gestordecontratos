@@ -392,9 +392,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
 
 })
-router.get("/editContracts",(req,res,next)=>{
-    res.render("editContracts");
-});
+
 router.get("/alertsContracts",async (req,res,next)=>{
     const notice = await Notice.find();
     console.log(notice)
@@ -420,6 +418,7 @@ router.get("/editContracts/:id",async(req,res,next)=>{
     const selectedContract = await Contract.findOne({_id:id})
     // console.log(selectedContract)
     const uploadedFiles = getFiles(selectedContract.uploadedFiles)
+    console.log(uploadedFiles)
     contr={
         pq:selectedContract.pq,
         cliente:selectedContract.cliente,
@@ -442,7 +441,9 @@ router.get("/editContracts/:id",async(req,res,next)=>{
 })
 function getFiles(uploadedFiles){
     const result = uploadedFiles.map(file=>{
-        return {fileName:file.split("\\")[file.split("\\").length-1],filePath:file}
+        return {fileName:file.split("/")[file.split("/").length-1],filePath:file}
+        // return {fileName:file.split("\\")[file.split("\\").length-1],filePath:file}
+
     })
     // console.log(result)
     return result
