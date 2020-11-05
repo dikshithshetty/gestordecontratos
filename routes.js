@@ -461,7 +461,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
 })
 router.get("/alertsContracts",async (req,res,next)=>{
     const notice = await Notice.find();
-    // console.log(notice)
+    console.log(notice)
 
 
     res.render('alertsContracts',{notice})
