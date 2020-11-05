@@ -46,32 +46,6 @@
         <div class="info-container border info-contract-details">
             <div class="block">
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-                <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Comercial - {{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{/if}}</span></li>
-                <li><span class="btn1 btn-red">Operaciones: </span></li>
-                <li><span class="btn1 btn-red">Control de Riesgos: </span></li>
-                <li><span class="btn1 btn-red">Prev.Riesgos.Lab: </span></li>
-            </div>
-
-            <div class="block">
-                <li><strong>Work: </strong>{{obra}}</li>
-                <li><strong>Amount: </strong>{{importe}}</li>
-                <li><strong>Final user: </strong>{{usuarioFinal}}</li>
-            </div>
-
-            <div class="block">
-                <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
-                <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
-                <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
-            </div>
-        </div>
-    </div>
-
-    {{!-- Firmas Necesarias --}}
-    <div class="contract-details">
-        <h2 class="blue">Signatures required</h2>
-        <div class="info-container border">
-            <div class="block">
-                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
                 <li><span class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.autComercial.person}} - {{firmas.autComercial.person}}{{/if}}</span></li>
                 <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.autOperaciones.person}} - {{firmas.autOperaciones.person}}{{/if}}</span></li>
                 <li><span class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.autCRiesgos.person}} - {{firmas.autCRiesgos.person}}{{/if}}</span></li>
@@ -88,8 +62,11 @@
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
                 <li><span class="btn1 btn-red">Dirección General </span></li>
             </div>
+            
         </div>
     </div>
+
+    
 
     
     {{!-- Historia de alertas enviadas y archivos --}}
@@ -131,8 +108,7 @@
                 </div>
                 {{/each}}
             </div>
-            <div class="archivos-upload archivos border">
-            </div>
+            
         </div>
     </div>
 
