@@ -30,6 +30,8 @@ router.get('/',(req,res,next)=>{
     }
 })
 router.post('/', async(req,res,next)=>{
+    try{
+
     // console.log("Entering Login POST Method")
     const{email, password} = req.body;
     var errorMsg = '';
@@ -70,6 +72,8 @@ router.post('/', async(req,res,next)=>{
             }
         }
     }
+    }catch(err){console.log("Error en Login Post:",err)}
+
 })
 router.get('/register',(req,res,next)=>{
     // if (req.session!==undefined) {
@@ -132,129 +136,135 @@ router.get('/createContract',(req,res,next)=>{
     }
 })
 router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
 
-    if (req.session===undefined) {
-        res.redirect("/")
-    }else{
-        // console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-        // console.log(req.files)
-        if (req.files.length===0){
-            errorMsg="No se ha seleccionado ningún contrato.";
-            // res.render("contracts.hbs",{noFileSelected});
-            res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
-        }else {
-            const sesionEmail = req.session.currentUser.email
-            let currentUser = await User.find({email:sesionEmail})
-
-            //Save Excel document to "temporaryFiles" folder to read it
-            let tempFolder = path.join(__dirname,"temporaryFiles");
-            let tempFile = path.join(tempFolder,req.files[0].originalname);
-            let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
-            // console.log("Extensión: " ,ext)
-            if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
-                errorMsg="La hoja de firmas no se encuentra en formato Excel."
-                // res.render("contracts.hbs",{noFileSelected})
+        if (req.session===undefined) {
+            res.redirect("/")
+        }else{
+            // console.log("--------------- UPLOADING NEW CONTRACT ---------------");
+            // console.log(req.files)
+            if (req.files.length===0){
+                errorMsg="No se ha seleccionado ningún contrato.";
+                // res.render("contracts.hbs",{noFileSelected});
                 res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
-            }
-            
-            await saveFile(req.files[0].path,tempFile)
-            
-            //Reads Excel File Variables
-            const pq=readExcel(tempFile,'V7');
-            const pqFolderName = editPQ(pq)
-            const comercial=readExcel(tempFile,'F7');
-            const cliente=readExcel(tempFile,'F9');
-            const obra=readExcel(tempFile,'E11');
-            const usuarioFinal=readExcel(tempFile,'G13');
-            const nPedido=readExcel(tempFile,'W11');
-            const importe=readExcel(tempFile,'G17');
-            const fechaStatusWon=readExcel(tempFile,'H19');
-            const fechaRecepcion=readExcel(tempFile,'U19');
-            // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
-            // await deleteFile(tempFile)
+            }else {
+                const sesionEmail = req.session.currentUser.email
+                let currentUser = await User.find({email:sesionEmail})
 
-            var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
-
-            //Check that the contract doesn't exists in the DB.
-            const contract = await Contract.findOne({ pq: pq });
-            if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
-
-            if (errorMsg.length>0){
-                deleteFile(tempFile)
-                res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
-            } else {
-                //Create PQ Folder
-                let contractsFolder = path.join(__dirname, "contracts");
-                const pqFolder=path.join(contractsFolder,pqFolderName);
-                let uploadedFiles=[]
-
-                //Save all the files to PQ Folder
-                for (i=0;i<req.files.length;i++){
-                    let uploadedFile=req.files[i]
-                    let fileToSave = path.join(pqFolder,uploadedFile.originalname)
-                    await saveFile(uploadedFile.path,fileToSave)
-                    uploadedFiles.push(fileToSave)
+                //Save Excel document to "temporaryFiles" folder to read it
+                let tempFolder = path.join(__dirname,"temporaryFiles");
+                let tempFile = path.join(tempFolder,req.files[0].originalname);
+                let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
+                // console.log("Extensión: " ,ext)
+                if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
+                    errorMsg="La hoja de firmas no se encuentra en formato Excel."
+                    // res.render("contracts.hbs",{noFileSelected})
+                    res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
                 }
+                
+                await saveFile(req.files[0].path,tempFile)
+                
+                //Reads Excel File Variables
+                const pq=readExcel(tempFile,'V7');
+                const pqFolderName = editPQ(pq)
+                const comercial=readExcel(tempFile,'F7');
+                const cliente=readExcel(tempFile,'F9');
+                const obra=readExcel(tempFile,'E11');
+                const usuarioFinal=readExcel(tempFile,'G13');
+                const nPedido=readExcel(tempFile,'W11');
+                const importe=readExcel(tempFile,'G17');
+                const fechaStatusWon=readExcel(tempFile,'H19');
+                const fechaRecepcion=readExcel(tempFile,'U19');
+                // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
+                // await deleteFile(tempFile)
 
-                nuevaAccion=[{
-                    accion:"Contrato Creado",
-                    persona:currentUser[0].name+" "+currentUser[0].surname,
-                    icono:"new",
-                    fecha: getCurrentDate(),
-                    observaciones:""
-                }]
+                var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
+
+                //Check that the contract doesn't exists in the DB.
+                const contract = await Contract.findOne({ pq: pq });
+                if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
+
+                if (errorMsg.length>0){
+                    deleteFile(tempFile)
+                    res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
+                } else {
+                    //Create PQ Folder
+                    let contractsFolder = path.join(__dirname, "contracts");
+                    const pqFolder=path.join(contractsFolder,pqFolderName);
+                    let uploadedFiles=[]
+
+                    //Save all the files to PQ Folder
+                    for (i=0;i<req.files.length;i++){
+                        let uploadedFile=req.files[i]
+                        let fileToSave = path.join(pqFolder,uploadedFile.originalname)
+                        await saveFile(uploadedFile.path,fileToSave)
+                        uploadedFiles.push(fileToSave)
+                    }
+
+                    nuevaAccion=[{
+                        accion:"Contrato Creado",
+                        persona:currentUser[0].name+" "+currentUser[0].surname,
+                        icono:"new",
+                        fecha: getCurrentDate(),
+                        observaciones:""
+                    }]
 
 
-                //Create Contract to DB
-                // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
-                await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
+                    //Create Contract to DB
+                    // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
+                    await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
 
-                emailParams={
-                    host:"smtp-mail.outlook.com",
-                    port:587,
-                    secure:false,
-                    auth: {
-                        user: "",
-                        pass: ""
-                    },
-                    from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
-                    to:"esteve.martin@mpasolutions.es",
-                    subject:"Test Email",
-                    html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
-                    attachments:uploadedFiles
+                    emailParams={
+                        host:"smtp-mail.outlook.com",
+                        port:587,
+                        secure:false,
+                        auth: {
+                            user: "",
+                            pass: ""
+                        },
+                        from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
+                        to:"esteve.martin@mpasolutions.es",
+                        subject:"Test Email",
+                        html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
+                        attachments:uploadedFiles
+                    }
+
+                    // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+                    // console.log(contractList)
+                    // //Send Email
+                    // await sendEmail(emailParams)
+                    successMsg="Contrato "+pq+" Creado Correctamente.",
+
+                    // formData={
+                    //     succesMsg:succesMsg,
+                    //     contractList:contractList
+                    // }
+                    // console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
+                    // res.render("contracts.hbs",{formData});
+                    res.redirect("/displayPendingContracts?successMsg="+successMsg);
                 }
-
-                // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
-                // console.log(contractList)
-                // //Send Email
-                // await sendEmail(emailParams)
-                successMsg="Contrato "+pq+" Creado Correctamente.",
-
-                // formData={
-                //     succesMsg:succesMsg,
-                //     contractList:contractList
-                // }
-                // console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
-                // res.render("contracts.hbs",{formData});
-                res.redirect("/displayPendingContracts?successMsg="+successMsg);
             }
         }
-    }
+    }catch(err){console.log("Error en Login Post:",err)}
+
 });
 
 router.get("/displayClosedContracts", async (req,res)=>{
-    // console.log("INSIDE DISPLAY CLOSED CONTRACTS")
-    if (!req.session.currentUser){res.redirect("/")}
+    try{
+        // console.log("INSIDE DISPLAY CLOSED CONTRACTS")
+        if (!req.session.currentUser){res.redirect("/")}
 
-    const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
-    // console.log(contractList)
-    contractList.forEach(pq=>{
-        pq.importe = numberToCurrency(pq.importe)
-    })
-    // console.log(contractList)
-    formData={showClosed:true,contractList:contractList}
-    res.render("contracts.hbs",{formData});
+        const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
+        // console.log(contractList)
+        contractList.forEach(pq=>{
+            pq.importe = numberToCurrency(pq.importe)
+        })
+        // console.log(contractList)
+        formData={showClosed:true,contractList:contractList}
+        res.render("contracts.hbs",{formData});
+    }catch(err){console.log("Error en Login Post:",err)}
+
 })
 router.get("/displayPendingContracts", async (req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
