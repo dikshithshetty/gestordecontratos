@@ -12,166 +12,145 @@
 
 <div class="edit-container">
 
-{{!-- Detalles Contrato --}}
-<div class="contract-details">
-<div class="nav3">
-<h2 class="blue">Contract details</h2>
-<a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
-</div>
-
-
-<div class="info-container border">
-    <div class="block">
-        <li><strong>PQ: </strong>{{pq}}</li>
-        <li><strong>Client: </strong>{{cliente}}</li>
-        <li><strong>Commercial: </strong>{{comercial}}</li>
-    </div>
-
-    <div class="block">
-        <li><strong>Work: </strong>{{obra}}</li>
-        <li><strong>Amount: </strong>{{importe}}</li>
-        <li><strong>Final user: </strong>{{usuarioFinal}}</li>
-    </div>
-
-    <div class="block">
-        <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
-        <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
-        <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
-    </div>
-</div>
-</div>
-
-
-{{!-- Firmas Necesarias --}}
-<div class="contract-details">
-<h2 class="blue">Signatures required</h2>
-<div class="info-container border">
-    <div class="block">
-        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-        <li><span class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.autComercial.person}} - {{firmas.autComercial.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.autOperaciones.person}} - {{firmas.autOperaciones.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.autCRiesgos.person}} - {{firmas.autCRiesgos.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.autPRL.person}} - {{firmas.autPRL.person}}{{/if}}</span></li>
-
-    </div>
-
-    <div class="block">
-        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
-        <li><span class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.dirComercial.person}} - {{firmas.dirComercial.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.dirOperaciones.person}} - {{firmas.dirOperaciones.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.dirCRiesgos.person}} - {{firmas.dirCRiesgos.person}}{{/if}}</span></li>
-        <li><span class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.dirPRL.person}} - {{firmas.dirPRL.person}}{{/if}}</span></li>
-    </div>
-
-    <div class="block">
-        <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
-        <li><span class="btn1 btn-red">Dirección General </span></li>
-    </div>
-</div>
-</div>
-
-
-{{!-- Historia de alertas enviadas y archivos --}}
-<div class="archivos-preview-container">
-    <div class="email-status archivos border">
-        <div class="archivos-nav">
-            <h3 class="blue">Contract history</h3>
+    {{!-- Detalles Contrato --}}
+    <div class="contract-details">
+        <div class="nav3">
+            <h2 class="blue">Contract details</h2>
+            <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
         </div>
-        {{#each historico}}
-        <div class="email-status-card">
-            <div class="titulos-avisos">
-                <div class="icon-alert">mail</div>
-                <div class="tipo-aviso">{{accion}}</div>
-                <div class="tipo-aviso-nombre">{{persona}}</div>
-                <div class="tipo-aviso-fecha">{{fecha}}</div>
+        <div class="info-container border">
+            <div class="block">
+                <li><strong>PQ: </strong>{{pq}}</li>
+                <li><strong>Client: </strong>{{cliente}}</li>
+                <li><strong>Commercial: </strong>{{comercial}}</li>
             </div>
-            <div class="info-avisos">
-                <p></p>
-                <p>{{observaciones}}</p>
+
+            <div class="block">
+                <li><strong>Work: </strong>{{obra}}</li>
+                <li><strong>Amount: </strong>{{importe}}</li>
+                <li><strong>Final user: </strong>{{usuarioFinal}}</li>
+            </div>
+
+            <div class="block">
+                <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
+                <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
+                <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
             </div>
         </div>
-        {{/each}}
-
     </div>
 
-    <div class="archivos-upload archivos border">
-        <div class="archivos-nav">
-            <h3 class="blue">Contract files</h3>
-            {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue">upload files</button>{{/if}}
+    {{!-- Firmas Necesarias --}}
+    <div class="contract-details">
+        <h2 class="blue">Signatures required</h2>
+        <div class="info-container border">
+            <div class="block">
+                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
+                <li><span class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.autComercial.person}} - {{firmas.autComercial.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.autOperaciones.person}} - {{firmas.autOperaciones.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.autCRiesgos.person}} - {{firmas.autCRiesgos.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.autPRL.person}} - {{firmas.autPRL.person}}{{/if}}</span></li>
+            </div>
+            <div class="block">
+                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
+                <li><span class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.dirComercial.person}} - {{firmas.dirComercial.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.dirOperaciones.person}} - {{firmas.dirOperaciones.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.dirCRiesgos.person}} - {{firmas.dirCRiesgos.person}}{{/if}}</span></li>
+                <li><span class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.dirPRL.person}} - {{firmas.dirPRL.person}}{{/if}}</span></li>
+            </div>
+            <div class="block">
+                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
+                <li><span class="btn1 btn-red">Dirección General </span></li>
+            </div>
         </div>
-   
-        <div class="contracts-cards-items">
-            {{#each uploadedFiles}}
-            <div class="document-card">
-                    <p>{{fileName}}</p>
-                    <div class="icons-files">
-                        <a href="{{filePath}}"><img id="download-btn" src="/images/icons/download.png" alt="download"></a>
-                        {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete"></a>{{/if}}
-                    </div>
+    </div>
+
+    {{!-- Historia de alertas enviadas y archivos --}}
+    <div class="archivos-preview-container">
+        <div class="email-status archivos border">
+            <div class="archivos-nav">
+                <h3 class="blue">Contract history</h3>
+            </div>
+            {{#each historico}}
+            <div class="email-status-card">
+                <div class="titulos-avisos">
+                    <div class="icon-alert">mail</div>
+                    <div class="tipo-aviso">{{accion}}</div>
+                    <div class="tipo-aviso-nombre">{{persona}}</div>
+                    <div class="tipo-aviso-fecha">{{fecha}}</div>
+                </div>
+                <div class="info-avisos">
+                    <p></p>
+                    <p>{{observaciones}}</p>
+                </div>
             </div>
             {{/each}}
         </div>
-        
-    </div>
-
-{{!-- preview status --}}
-    {{!-- <div class="preview-status-edit border">
-        <h3 class="blue">Preview Status</h3>
-        <div class="status-bloque">
-            <h4><strong>Main status: </strong></h4>
-            <div class="status-department">
-                <li><strong>Comercial: </strong></li>
-                <li><strong>Operaciones: </strong></li>
-                <li><strong>Control de Riesgos: </strong></li>
-                <li><strong>Prev.Riesgos.Lab: </strong></li>
+        <div class="archivos-upload archivos border">
+            <div class="archivos-nav">
+                <h3 class="blue">Contract files</h3>
+                {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
+            </div>
+            <div class="contracts-cards-items">
+                {{#each uploadedFiles}}
+                <div class="document-card">
+                        <p>{{fileName}}</p>
+                        <div class="icons-files">
+                            <a href="{{filePath}}"><img id="download-btn" src="/images/icons/download.png" alt="download"></a>
+                            {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete"></a>{{/if}}
+                        </div>
+                </div>
+                {{/each}}
             </div>
         </div>
-        <button class="btn btn-blue">Show more details</button>
-    </div> --}}
-</div>
+    </div>
 
-{{!-- UPLOAD FILE --}}
-<div id="addModal" class="modal">
+    {{!-- UPLOAD FILE --}}
+    <div id="addModal" class="modal">
         <div class="modal-content modal-blue">
-            <span id="close-btn-add" class="close-btn">&times;</span>
-                 <h2 class="blue">Upload files</h2>
-               
-                <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
-                    <input id="file" class="upload-files" type="file" name="excelFile">
-                    <label for="file">Please select the Excel file </label>
-                    <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
-                    <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
-                    <label for="otherFiles">Please select the rest of the files </label>
-                    {{!-- <input type="file" name="otherFiles" multiple> --}}
-                    <input class="create-contracts-btn" type="submit" value="Create Contract">
-                </form>
+            <span id="close-btn-add" class="close-btn" onclick="closeAddNewContractModal()">&times;</span>
+            <h2 class="blue">Upload files</h2>
+            <form class="add-contracts-form" action="/editContracts/uploadFiles/{{pq}}" method="post" enctype="multipart/form-data">
+                <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
+                <label for="otherFiles">Please select the rest of the files </label>
+                <input class="create-contracts-btn" type="submit" value="Upload">
+            </form>
         </div>
-</div>
+    </div>
 
-{{!-- Delete contracts --}}
-<div id="deleteModal" class="modal">
+    {{!-- Delete contracts --}}
+    <div id="deleteModal" class="modal">
         <div class="modal-content modal-red">
             <span id="close-btn-delete" class="close-btn">&times;</span>
-                <h2 class="red">Delete file</h2>
+            <h2 class="red">Delete file</h2>
 
-                <p class="text-popup">Are you sure you wish to delete this file?</p>
+            <p class="text-popup">Are you sure you wish to delete this file?</p>
 
-                <div class="selectors-options">
-                    <div class="accept">
-                        <img src="images/icons/reject.png" alt="reject" onclick="">
-                    </div>
-                    <div class="reject">
-                        <img src="images/icons/approve.png" alt="accept" onclick="">
-                    </div>
-
+            <div class="selectors-options">
+                <div class="accept">
+                    <img src="images/icons/reject.png" alt="reject" onclick="">
                 </div>
+                <div class="reject">
+                    <img src="images/icons/approve.png" alt="accept" onclick="">
+                </div>
+            </div>
         </div>
-</div>
+    </div>
 </div>
 
 <script>
-
-
+//UPLOAD FILES MODAL
+function showAddNewContractModal(){
+    let approveModal = document.getElementById("addModal");
+    approveModal.style.display = "block";
+    let blurred = document.getElementById("container");
+    blurred.classList.add('blurred');
+}
+function closeAddNewContractModal(){
+        let approveModal = document.getElementById("addModal");
+        approveModal.style.display = "none";
+        let blurred = document.getElementById("container");
+        blurred.classList.remove('blurred');
+}
 
 
 </script>

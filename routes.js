@@ -522,7 +522,67 @@ router.get("/profile",async(req,res,next)=>{
     // console.log(currentUser)
     res.render('profile', {user})
 });
+router.post("/profile/addRoles/:email",async(req,res,next)=>{
+    const{role,role1,role2,role3,role4} = req.body;
+    const email = req.params.email
+    let currentUser = await User.find({email:email})
+    let roleArr = createRoleArray(role,role1,role2,role3,role4)
+    let currentRoles = currentUser[0].role
+    console.log(roleArr)
+    console.log(currentRoles)
+    let rolesToUpdate=currentRoles
+    console.log(rolesToUpdate)
 
+    for (i=0;i<roleArr.length;i++){
+        if (!currentRoles.includes(roleArr[i])){
+            rolesToUpdate.push(roleArr[i])
+        }
+    }
+    console.log(rolesToUpdate)
+
+    await User.findOneAndUpdate({email:email},{role:rolesToUpdate})
+    res.redirect("/profile")
+    
+})
+router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    if (req.files.length===0){
+        errorMsg="No file selected.";
+        // res.render("contracts.hbs",{noFileSelected});
+        res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
+    }else {
+        let pq = req.params.pq
+        pqFolderName = editPQ(pq)
+        pqPath = path.join(__dirname,"contracts",pq)
+        const contract = await Contract.findOne({ pq: pq });
+        console.log(contract)
+        pqId = contract._id
+        newUploadedFiles = contract.uploadedFiles
+        for (i=0;i<req.files.length;i++){
+            let uploadedFile=req.files[i]
+            let fileToSave = path.join(pqPath,uploadedFile.originalname)
+            await saveFile(uploadedFile.path,fileToSave)
+            newUploadedFiles.push(fileToSave)
+        }
+        await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+        res.redirect("/editContracts/"+pqId)
+    }
+})
+router.get("/deleteRole/:role",async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    const email = req.session.currentUser.email
+    const roleToDelete = req.params.role
+    let currentUser = await User.find({email:email})
+    let currentRoles = currentUser[0].role
+    let newRoleList=[]
+    for (i=0;i<currentRoles.length;i++){
+        if(currentRoles[i]!==roleToDelete){
+            newRoleList.push(currentRoles[i])
+        }
+    }
+    await User.findOneAndUpdate({email:email},{role:newRoleList})
+    res.redirect("/profile")
+})
 
 function getCanDirectorSign(historico){
     let indexLastRejection = -1
@@ -986,11 +1046,11 @@ function numberToCurrency(number){
 function createRoleArray(role,role1,role2,role3,role4){
     const roleArr = []
     // console.log(role4)
-    if (role!==undefined){roleArr.push(role)}
-    if (role1!==undefined){roleArr.push(role1)}
-    if (role2!==undefined){roleArr.push(role2)}
-    if (role3!==undefined){roleArr.push(role3)}
-    if (role4!==undefined){roleArr.push(role4)}
+    if (role!==undefined&&role!=="Select your Role and Department"){roleArr.push(role)}
+    if (role1!==undefined&&role!=="Select your Role and Department"){roleArr.push(role1)}
+    if (role2!==undefined&&role!=="Select your Role and Department"){roleArr.push(role2)}
+    if (role3!==undefined&&role!=="Select your Role and Department"){roleArr.push(role3)}
+    if (role4!==undefined&&role!=="Select your Role and Department"){roleArr.push(role4)}
     return roleArr
 }
 function getWho(currentUser,role){
