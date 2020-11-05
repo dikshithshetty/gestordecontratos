@@ -29,51 +29,10 @@ router.get('/',(req,res,next)=>{
         res.render('login-register/login', template);
     }
 })
-router.get('/register',(req,res,next)=>{
-    // if (req.session!==undefined) {
-    //     res.render('contracts');
-    // } else {
-        let template = {
-            layout: false
-        }
-        res.render('login-register/register', template);
-    // }
-})
-router.post('/register',async (req,res,next)=>{
-    const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
-    var errorMsg = [];
-    console.log("Role4: ",role4)
-        roleArr = createRoleArray(role,role1,role2,role3,role4)
-        console.log("Role Array", roleArr)
-    errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
-    
-    formData={
-        errorMsg:errorMsg,
-        succesMsg:null,
-        username:username,
-        usersurname:usersurname,
-        email:email,
-        repeatemail:repeatemail,
-        password:password,
-        repeatedpassword:repeatedpassword,
-        role:role
-    };
-
-    if (errorMsg.length===0){
-        
-        const bcryptSalt = 10;
-        const salt = bcrypt.genSaltSync(bcryptSalt);
-        const hashPass = bcrypt.hashSync(password, salt);
-        
-        await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
-        formData.succesMsg="User succesfully created.";
-        res.render("login-register/login",{formData, layout: false});
-    } else{
-        res.render("login-register/register",{formData, layout: false});
-    }
-})
 router.post('/', async(req,res,next)=>{
-    console.log("Entering Login POST Method")
+    try{
+
+    // console.log("Entering Login POST Method")
     const{email, password} = req.body;
     var errorMsg = '';
 
@@ -102,6 +61,9 @@ router.post('/', async(req,res,next)=>{
             if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                 req.session.currentUser = user;                         //Save User Session.
                 // await deleteDir(path.join(__dirname,"uploadedContracts"))
+                // await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
+                // await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
+
                 res.redirect("/displayPendingContracts")                                       //Redirect to home.
             }else{
                 errorMsg="Incorrect email or password."                 //Password is inccorrect.
@@ -110,6 +72,56 @@ router.post('/', async(req,res,next)=>{
             }
         }
     }
+    }catch(err){console.log("Error en Login Post:",err)}
+
+})
+router.get('/register',(req,res,next)=>{
+    // if (req.session!==undefined) {
+    //     res.render('contracts');
+    // } else {
+        let template = {
+            layout: false
+        }
+        res.render('login-register/register', template);
+    // }
+})
+router.post('/register',async (req,res,next)=>{
+    try{
+        const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
+        var errorMsg = [];
+        // console.log("Role4: ",role4)
+            roleArr = createRoleArray(role,role1,role2,role3,role4)
+            // console.log("Role Array", roleArr)
+        errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
+        
+        formData={
+            errorMsg:errorMsg,
+            succesMsg:null,
+            username:username,
+            usersurname:usersurname,
+            email:email,
+            repeatemail:repeatemail,
+            password:password,
+            repeatedpassword:repeatedpassword,
+            role:role
+        };
+    
+        if (errorMsg.length===0){
+            
+            const bcryptSalt = 10;
+            const salt = bcrypt.genSaltSync(bcryptSalt);
+            const hashPass = bcrypt.hashSync(password, salt);
+            
+            await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
+            formData.succesMsg="User succesfully created.";
+            res.render("login-register/login",{formData, layout: false});
+        } else{
+            res.render("login-register/register",{formData, layout: false});
+        }
+    }   catch(err){
+        console.log("Error en Register Form:",err)
+    }
+    
 })
 router.get('/logout', (req, res, next) => {
     req.session.destroy((err) => {
@@ -124,128 +136,135 @@ router.get('/createContract',(req,res,next)=>{
     }
 })
 router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
-    
-    if (req.session===undefined) {
-        res.redirect("/")
-    }else{
-        console.log("--------------- UPLOADING NEW CONTRACT ---------------");
-        // console.log(req.files)
-        if (req.files.length===0){
-            errorMsg="No se ha seleccionado ningún contrato.";
-            // res.render("contracts.hbs",{noFileSelected});
-            res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
-        }else {
-            const sesionEmail = req.session.currentUser.email
-            let currentUser = await User.find({email:sesionEmail})
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
 
-            //Save Excel document to "temporaryFiles" folder to read it
-            let tempFolder = path.join(__dirname,"temporaryFiles");
-            let tempFile = path.join(tempFolder,req.files[0].originalname);
-            let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
-            // console.log("Extensión: " ,ext)
-            if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
-                errorMsg="La hoja de firmas no se encuentra en formato Excel."
-                // res.render("contracts.hbs",{noFileSelected})
+        if (req.session===undefined) {
+            res.redirect("/")
+        }else{
+            // console.log("--------------- UPLOADING NEW CONTRACT ---------------");
+            // console.log(req.files)
+            if (req.files.length===0){
+                errorMsg="No se ha seleccionado ningún contrato.";
+                // res.render("contracts.hbs",{noFileSelected});
                 res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
-            }
-            
-            await saveFile(req.files[0].path,tempFile)
-            
-            //Reads Excel File Variables
-            const pq=readExcel(tempFile,'V7');
-            const pqFolderName = editPQ(pq)
-            const comercial=readExcel(tempFile,'F7');
-            const cliente=readExcel(tempFile,'F9');
-            const obra=readExcel(tempFile,'E11');
-            const usuarioFinal=readExcel(tempFile,'G13');
-            const nPedido=readExcel(tempFile,'W11');
-            const importe=readExcel(tempFile,'G17');
-            const fechaStatusWon=readExcel(tempFile,'H19');
-            const fechaRecepcion=readExcel(tempFile,'U19');
-            // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
-            // await deleteFile(tempFile)
+            }else {
+                const sesionEmail = req.session.currentUser.email
+                let currentUser = await User.find({email:sesionEmail})
 
-            var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
-
-            //Check that the contract doesn't exists in the DB.
-            const contract = await Contract.findOne({ pq: pq });
-            if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
-
-            if (errorMsg.length>0){
-                deleteFile(tempFile)
-                res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
-            } else {
-                //Create PQ Folder
-                let contractsFolder = path.join(__dirname, "contracts");
-                const pqFolder=path.join(contractsFolder,pqFolderName);
-                let uploadedFiles=[]
-
-                //Save all the files to PQ Folder
-                for (i=0;i<req.files.length;i++){
-                    let uploadedFile=req.files[i]
-                    let fileToSave = path.join(pqFolder,uploadedFile.originalname)
-                    await saveFile(uploadedFile.path,fileToSave)
-                    uploadedFiles.push(fileToSave)
+                //Save Excel document to "temporaryFiles" folder to read it
+                let tempFolder = path.join(__dirname,"temporaryFiles");
+                let tempFile = path.join(tempFolder,req.files[0].originalname);
+                let ext = tempFile.substr(tempFile.lastIndexOf('.') + 1);
+                // console.log("Extensión: " ,ext)
+                if (ext!=="xlsx" && ext!=="xls" && ext!=="xlsm"){
+                    errorMsg="La hoja de firmas no se encuentra en formato Excel."
+                    // res.render("contracts.hbs",{noFileSelected})
+                    res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
                 }
+                
+                await saveFile(req.files[0].path,tempFile)
+                
+                //Reads Excel File Variables
+                const pq=readExcel(tempFile,'V7');
+                const pqFolderName = editPQ(pq)
+                const comercial=readExcel(tempFile,'F7');
+                const cliente=readExcel(tempFile,'F9');
+                const obra=readExcel(tempFile,'E11');
+                const usuarioFinal=readExcel(tempFile,'G13');
+                const nPedido=readExcel(tempFile,'W11');
+                const importe=readExcel(tempFile,'G17');
+                const fechaStatusWon=readExcel(tempFile,'H19');
+                const fechaRecepcion=readExcel(tempFile,'U19');
+                // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
+                // await deleteFile(tempFile)
 
-                nuevaAccion=[{
-                    accion:"Contrato Creado",
-                    persona:currentUser[0].name+" "+currentUser[0].surname,
-                    icono:"Nuevo Contrato",
-                    fecha: getCurrentDate(),
-                    observaciones:""
-                }]
+                var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
+
+                //Check that the contract doesn't exists in the DB.
+                const contract = await Contract.findOne({ pq: pq });
+                if (contract!==null){errorMsg.push("The contract "+pqFolderName+" already exists. Edit the existing contract.")}
+
+                if (errorMsg.length>0){
+                    deleteFile(tempFile)
+                    res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
+                } else {
+                    //Create PQ Folder
+                    let contractsFolder = path.join(__dirname, "contracts");
+                    const pqFolder=path.join(contractsFolder,pqFolderName);
+                    let uploadedFiles=[]
+
+                    //Save all the files to PQ Folder
+                    for (i=0;i<req.files.length;i++){
+                        let uploadedFile=req.files[i]
+                        let fileToSave = path.join(pqFolder,uploadedFile.originalname)
+                        await saveFile(uploadedFile.path,fileToSave)
+                        uploadedFiles.push(fileToSave)
+                    }
+
+                    nuevaAccion=[{
+                        accion:"Contrato Creado",
+                        persona:currentUser[0].name+" "+currentUser[0].surname,
+                        icono:"new",
+                        fecha: getCurrentDate(),
+                        observaciones:""
+                    }]
 
 
-                //Create Contract to DB
-                console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
-                await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
+                    //Create Contract to DB
+                    // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
+                    await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
 
-                emailParams={
-                    host:"smtp-mail.outlook.com",
-                    port:587,
-                    secure:false,
-                    auth: {
-                        user: "",
-                        pass: ""
-                    },
-                    from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
-                    to:"esteve.martin@mpasolutions.es",
-                    subject:"Test Email",
-                    html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
-                    attachments:uploadedFiles
+                    emailParams={
+                        host:"smtp-mail.outlook.com",
+                        port:587,
+                        secure:false,
+                        auth: {
+                            user: "",
+                            pass: ""
+                        },
+                        from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
+                        to:"esteve.martin@mpasolutions.es",
+                        subject:"Test Email",
+                        html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
+                        attachments:uploadedFiles
+                    }
+
+                    // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+                    // console.log(contractList)
+                    // //Send Email
+                    // await sendEmail(emailParams)
+                    successMsg="Contrato "+pq+" Creado Correctamente.",
+
+                    // formData={
+                    //     succesMsg:succesMsg,
+                    //     contractList:contractList
+                    // }
+                    // console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
+                    // res.render("contracts.hbs",{formData});
+                    res.redirect("/displayPendingContracts?successMsg="+successMsg);
                 }
-
-                // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
-                // console.log(contractList)
-                // //Send Email
-                // await sendEmail(emailParams)
-                successMsg="Contrato "+pq+" Creado Correctamente.",
-
-                // formData={
-                //     succesMsg:succesMsg,
-                //     contractList:contractList
-                // }
-                console.log("!!!!!!ABOUT TO REDIRECT!!!!!")
-                // res.render("contracts.hbs",{formData});
-                res.redirect("/displayPendingContracts?successMsg="+successMsg);
             }
         }
-    }
+    }catch(err){console.log("Error en Upload New Contract:",err)}
+
 });
 
 router.get("/displayClosedContracts", async (req,res)=>{
-    console.log("INSIDE DISPLAY CLOSED CONTRACTS")
-    if (!req.session.currentUser){res.redirect("/")}
+    try{
+        // console.log("INSIDE DISPLAY CLOSED CONTRACTS")
+        if (!req.session.currentUser){res.redirect("/")}
 
-    const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
-    // console.log(contractList)
-    contractList.forEach(pq=>{
-        pq.importe = numberToCurrency(pq.importe)
-    })
-    // console.log(contractList)
-    formData={showClosed:true,contractList:contractList}
-    res.render("contracts.hbs",{formData});
+        const contractList = await Contract.find({visible:true,mainStatus:"Closed"},'pq cliente importe comercial')
+        // console.log(contractList)
+        contractList.forEach(pq=>{
+            pq.importe = numberToCurrency(pq.importe)
+        })
+        // console.log(contractList)
+        formData={showClosed:true,contractList:contractList}
+        res.render("contracts.hbs",{formData});
+    }catch(err){console.log("Error en Login Post:",err)}
+
 })
 router.get("/displayPendingContracts", async (req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
@@ -286,49 +305,103 @@ router.get("/displayPendingContracts", async (req,res)=>{
 })
 router.post("/approveContract/:id",async(req,res)=>{
     if (!req.session.currentUser){res.redirect("/")}
-    console.log("ENTERED APPROVE CONTRACT / ID")
+    // console.log("ENTERED APPROVE CONTRACT / ID")
     const {role,approveInfo}=req.body
     const sesionEmail = req.session.currentUser.email
     const id=req.params.id
     // const role=req.params.role
     const fullRole=role
     // const approveInfo=req.params.approveInfo
-    console.log(req.params)
-    console.log(id,role,approveInfo)
+    // console.log(req.params)
+    // console.log(id,role,approveInfo)
     // console.log(id)
     //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
     let currentUser = await User.find({email:sesionEmail})
     // console.log(currentUser)
-    console.log(fullRole)
+    // console.log(fullRole)
 
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
-    console.log(dept)
-    console.log(role)
-    errorMsg = createErrorMsgApprove(role)
+    // console.log(dept)
+    // console.log(splitRole)
+    
+    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
+    // console.log(personaFirma)
     nuevaAccion={
         accion:"Aprobado",
-        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
-        icono:"Pulgar Arriba",
+        persona:personaFirma,
+        icono:"apr",
         fecha: getCurrentDate(),
         observaciones:approveInfo
     }
     let contract = await Contract.find({_id:id})
     let historico = contract[0].historico
+    let canDirectorsign = getCanDirectorSign(historico)
+    let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
+    // console.log(canDirectorsign)
+    errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign)
+    // console.log(errorMsg)
     // console.log("HISTORICO EN DB: ",historico)
-    console.log(nuevaAccion)
+    // console.log(nuevaAccion)
     if (errorMsg!==""){
         res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
     }else{
-
-        //Save Reject Action
+        //Save Approve Action
         historico.push(nuevaAccion)
-        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+        switch (dept){
+            case "Control de Riesgos":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autCRiesgos.person":personaFirma,"firmas.autCRiesgos.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirCRiesgos.person":personaFirma,"firmas.dirCRiesgos.value":true})
+                }
+                break;
+            case "Operaciones":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autOperaciones.person":personaFirma,"firmas.autOperaciones.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirOperaciones.person":personaFirma,"firmas.dirOperaciones.value":true})
+                }
+                break;
+            case "Comercial":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autComercial.person":personaFirma,"firmas.autComercial.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirComercial.person":personaFirma,"firmas.dirComercial.value":true})
+                }
+                break;
+            case "PRL":
+                if(splitRole === "Autorizado"){
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autPRL.person":personaFirma,"firmas.autPRL.value":true})
+                }else{
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirPRL.person":personaFirma,"firmas.dirPRL.value":true})
+                }
+                break;
+        }
+        // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+
+        let timeToScale = await mustScale(historico)
+        // console.log("Time To Sacle: ",timeToScale)
+        if(timeToScale===true){
+            nuevaAccion={
+                accion:"Escalado",
+                persona:personaFirma,
+                icono:"esc",
+                fecha: getCurrentDate(),
+                observaciones:""
+            }
+            historico.push(nuevaAccion)
+            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+            successMsg = "Contrato Aprobado y Escalado Correctamente"
+        } else {
+            successMsg = "Contrato Aprobado Correctamente"
+        }
+        
 
         //Send Approve Email (if needed)
         // await sendEmail(emailParams)
-        console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
-        successMsg = "Contrato Aprobado Correctamente"
+        // console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
+        // successMsg = "Contrato Aprobado Correctamente"
         res.redirect('/displayPendingContracts?successMsg='+successMsg)
     }
 
@@ -357,11 +430,11 @@ router.post("/rejectContract/:id",async(req,res)=>{
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
     errorMsg = createErrorMsgReject(fullRole,reason)
-    
+    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
     nuevaAccion={
         accion:"Rechazado (" +reason+")",
-        persona:getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept),
-        icono:"Pulgar Abajo",
+        persona:personaFirma,
+        icono:"rej",
         fecha: getCurrentDate(),
         observaciones:rejectInfo
     }
@@ -377,7 +450,18 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
         //Save Reject Action
         historico.push(nuevaAccion)
-        await Contract.findByIdAndUpdate({_id:id},{historico:historico})
+        firmas={
+            autOperaciones:{value:false,person:""},
+            dirOperaciones:{value:false,person:""},
+            autComercial:{value:false,person:""},
+            dirComercial:{value:false,person:""},
+            autPRL:{value:false,person:""},
+            dirPRL:{value:false,person:""},
+            autCRiesgos:{value:false,person:""},
+            dirCRiesgos:{value:false,person:""}
+          }
+        
+        await Contract.findByIdAndUpdate({_id:id},{historico, firmas})
 
         //Send Rejection Email
         // await sendEmail(emailParams)
@@ -406,11 +490,12 @@ router.post("/updateAlerts/:alertType",async(req,res)=>{
     const {email,cc,subject,emailBody}=req.body
     // console.log(alertType,email,cc,subject,emailBody)
     const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
-    console.log(newAlert)
+    // console.log(newAlert)
     const successMsg = "Configuración Guardada"
     res.redirect("/alertsContracts?successMsg="+successMsg)
 })
 router.get("/editContracts/:id",async(req,res,next)=>{
+    
     // console.log("entered the edit contract function")
     if (!req.session.currentUser){res.redirect("/")}
     const id = req.params.id
@@ -418,7 +503,9 @@ router.get("/editContracts/:id",async(req,res,next)=>{
     const selectedContract = await Contract.findOne({_id:id})
     // console.log(selectedContract)
     const uploadedFiles = getFiles(selectedContract.uploadedFiles)
-    console.log(uploadedFiles)
+    // console.log(uploadedFiles)
+    const showeditButons = getshoweditButons(selectedContract.mainStatus)
+
     contr={
         pq:selectedContract.pq,
         cliente:selectedContract.cliente,
@@ -432,18 +519,265 @@ router.get("/editContracts/:id",async(req,res,next)=>{
         fechaCreacionApp:selectedContract.fechaCreaccionApp,
         historico:selectedContract.historico,
         firmas:selectedContract.firmas,
-        uploadedFiles:uploadedFiles
+        uploadedFiles:uploadedFiles,
+        showeditButons:showeditButons
     }
     
     res.render("editContracts",contr)
     // res.redirect("/editContracts?pq="+pq)
 
 })
+router.get("/deleteFiles/:pq/:fileName",async(req,res,next)=>{
+    let pq=req.params.pq
+    let fileName = req.params.fileName
+    // console.log(pq)
+    // console.log("fileName: ",fileName)
+    let currentpq = await Contract.find({pq:pq})
+    let id = currentpq[0].id
+    // console.log("id: ",id)
+    let uploadedFiles = currentpq[0].uploadedFiles
+    // console.log(uploadedFiles)
+    var newUploadedFiles=[]
+    for (i=0;i<uploadedFiles.length;i++){
+        if(uploadedFiles[i].includes(fileName)){
+            var fileToDelete = uploadedFiles[i]
+            // newUploadedFiles = uploadedFiles.splice(i,1)
+        } else {
+            newUploadedFiles.push(uploadedFiles[i])
+        }
+    }
+    // console.log("filetoDelete: ",fileToDelete)
+    await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+    await fs.remove(fileToDelete)
+    
+    // console.log(newUploadedFiles)
+    res.redirect("/editContracts/"+id)
+})
+router.get("/profile",async(req,res,next)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    //Obtener info del Usuario actual (sesion iniciada)
+    const sesionEmail = req.session.currentUser.email
+    let currentUser = await User.find({email:sesionEmail})
+    user = currentUser[0]
+    // console.log(currentUser)
+    res.render('profile', {user})
+});
+router.post("/profile/addRoles/:email",async(req,res,next)=>{
+    const{role,role1,role2,role3,role4} = req.body;
+    const email = req.params.email
+    let currentUser = await User.find({email:email})
+    let roleArr = createRoleArray(role,role1,role2,role3,role4)
+    let currentRoles = currentUser[0].role
+    // console.log(roleArr)
+    // console.log(currentRoles)
+    let rolesToUpdate=currentRoles
+    // console.log(rolesToUpdate)
+
+    for (i=0;i<roleArr.length;i++){
+        if (!currentRoles.includes(roleArr[i])){
+            rolesToUpdate.push(roleArr[i])
+        }
+    }
+    // console.log(rolesToUpdate)
+
+    await User.findOneAndUpdate({email:email},{role:rolesToUpdate})
+    res.redirect("/profile")
+    
+})
+router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    if (req.files.length===0){
+        errorMsg="No file selected.";
+        // res.render("contracts.hbs",{noFileSelected});
+        res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
+    }else {
+        let pq = req.params.pq
+        pqFolderName = editPQ(pq)
+        pqPath = path.join(__dirname,"contracts",pq)
+        const contract = await Contract.findOne({ pq: pq });
+        // console.log(contract)
+        pqId = contract._id
+        newUploadedFiles = contract.uploadedFiles
+        for (i=0;i<req.files.length;i++){
+            let uploadedFile=req.files[i]
+            let fileToSave = path.join(pqPath,uploadedFile.originalname)
+            await saveFile(uploadedFile.path,fileToSave)
+            newUploadedFiles.push(fileToSave)
+        }
+        await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+        res.redirect("/editContracts/"+pqId)
+    }
+})
+router.get("/deleteRole/:role",async(req,res)=>{
+    if (!req.session.currentUser){res.redirect("/")}
+    const email = req.session.currentUser.email
+    const roleToDelete = req.params.role
+    let currentUser = await User.find({email:email})
+    let currentRoles = currentUser[0].role
+    let newRoleList=[]
+    for (i=0;i<currentRoles.length;i++){
+        if(currentRoles[i]!==roleToDelete){
+            newRoleList.push(currentRoles[i])
+        }
+    }
+    await User.findOneAndUpdate({email:email},{role:newRoleList})
+    res.redirect("/profile")
+})
+
+async function mustScale(historico){
+    // console.log(historico)
+
+    //Get the historico after the last reject
+    let relevantHistorico = getRelevantHistorico(historico)
+    // console.log("Historico Relevante (Posterior a Último Rechazo):",relevantHistorico)
+
+    //Count Nº de Escalados in Historico
+    let numEscalados = countEscalados(relevantHistorico)
+    // console.log("Número de Escalados:",numEscalados)
+
+    //Get historico after the last escalado.
+    if (numEscalados!==0){
+        var historicoLastEscalado = getLastEscaladoHistorico(relevantHistorico)
+    } else {
+        var historicoLastEscalado = relevantHistorico
+    }
+    // console.log("Historico Last Escalado: --> ",historicoLastEscalado)
+
+    //Cout num of approves
+    let numApprove = countApprove(historicoLastEscalado)
+    // console.log("Número de Aprobados: ",numApprove)
+
+    if(numApprove !==4){return false}
+
+    let histApprove = historicoLastEscalado.filter(hist=>{return hist.accion==="Aprobado"})
+    // console.log("Historico de Aprobados: ",histApprove)
+
+    let allDeptsApproved = await getAllDeptsApproved(histApprove)
+    // console.log("Todos los departamentos han aprobado? ",allDeptsApproved)
+    if (allDeptsApproved ===true) {result = true}else{result=false}
+    // console.log("Resultado: ",result)
+    return result
+}
+async function getAllDeptsApproved(hist){
+    let comercial = false
+    let operaciones = false
+    let riesgos=false
+    let prl = false
+    // console.log(hist)
+    // console.log("!!!!EMPIEZA EL LOOP!!!!")
+    for(i=0;i<hist.length;i++){
+        // console.log(hist[i].persona)
+        if (hist[i].persona.includes("Riesgos")){riesgos=true}
+        if (hist[i].persona.includes("Oper")){operaciones=true}
+        if (hist[i].persona.includes("Comerc")){comercial=true}
+        if (hist[i].persona.includes("PRL")){prl=true}
+    }
+    // console.log(comercial,operaciones,riesgos,prl)
+    if(comercial===true&&operaciones===true&&riesgos===true&&prl===true){result=true}else{result=false}
+    // console.log(result)
+    return result
+}
+function countApprove(hist){
+    let result = 0
+    for (i=0;i<hist.length;i++){
+        if(hist[i].accion === "Aprobado"){result++}
+    }
+    return result
+}
+async function getCanThisDeptSign(historico,fullRole,personaFirma){
+    // console.log(historico)
+    // console.log(fullRole)
+    let dept = fullRole.split(" - ")[0]
+    // console.log(dept)
+    let role = fullRole.split(" - ")[1]
+    // console.log(role)
+    //Get the historico after the last reject
+    let relevantHistorico = getRelevantHistorico(historico)
+    // console.log(relevantHistorico)
+    //Count Nº de Escalados in Historico
+    let numEscalados = countEscalados(relevantHistorico)
+    // console.log(numEscalados)
+
+    //Get historico after the last escalado.
+    if (numEscalados!==0){
+        var historicoLastEscalado = getLastEscaladoHistorico(relevantHistorico)
+    } else {
+        var historicoLastEscalado = relevantHistorico
+    }
+    // console.log("Relevant Historico: --> ",historicoLastEscalado)
+    let result = true
+    for (i=0;i<historicoLastEscalado.length;i++){
+        // console.log(historicoLastEscalado[i].accion)
+        // console.log(historicoLastEscalado[i].persona)
+        // console.log(personaFirma)
+        if(historicoLastEscalado[i].accion === "Aprobado" && historicoLastEscalado[i].persona === personaFirma ){
+            // console.log("Result =false")
+            result = false
+        }
+    }
+    
+    // console.log(result)
+    return result
+
+}
+async function deleteDirectoryContent(directory){
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
+      
+        for (const file of files) {
+          fs.unlink(path.join(directory, file), err => {
+            if (err) throw err;
+          });
+        }
+      });
+}
+function getCanDirectorSign(historico){
+    let indexLastRejection = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
+    }
+    // console.log("indexLastRejection: -->", indexLastRejection)
+    //Cut everything previous to last rejection.
+    if (indexLastRejection===-1){
+        var historicoRelevante = historico
+    } else{
+        var historicoRelevante = historico.slice(indexLastRejection+1)
+    }
+    // console.log(historicoRelevante)
+    if (countEscalados(historicoRelevante)===1){return true}else{return false}
+}
+function getshoweditButons(mainStatus){
+    if(mainStatus==="Closed"){
+        return false
+    }   else {
+        return true
+    }
+}
 function getFiles(uploadedFiles){
     const result = uploadedFiles.map(file=>{
-        return {fileName:file.split("/")[file.split("/").length-1],filePath:file}
-        // return {fileName:file.split("\\")[file.split("\\").length-1],filePath:file}
+        let separator ="\\"
+        let fileName = file.split(separator)[file.split(separator).length-1]
+        // console.log("fileName:",fileName)
+        let filePathArr = file.split(separator)
+        // console.log("filePathArr:",filePathArr)
 
+        let folderNumber = filePathArr.indexOf("contractGenerator")+1
+        // console.log("folderNumber:",folderNumber)
+
+        let slicedPath = filePathArr.slice(folderNumber)
+        // console.log("slicedPath:",slicedPath)
+
+        let filePath=""
+        for (i=0;i<slicedPath.length;i++){
+            filePath = path.join(filePath,slicedPath[i])
+            // filePath=filePath+slicedPath[i]
+        }
+        // console.log(filePath.replace("\\","/"))
+
+        let okFilePath = filePath.replace("\\","/").replace("\\","/")
+        // console.log(okFilePath)
+        return {fileName:fileName,filePath:okFilePath}
     })
     // console.log(result)
     return result
@@ -471,14 +805,13 @@ function canUserSign(user,contract){
     roles.forEach(role=>{
 
         let cargo=role.split("-")[2]
-        // console.log("--->>> CURRENT ROLE:",cargo)
         let dept=role.split("-")[1]
-        // console.log("--->>> CURRENT DEPT:",dept)
+        // console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
         switch (cargo){
             case "Autorizado":
                 // console.log("---------->>>>>Soy Autorizado!")
                 if (numEscalados===0){
-                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(historico,dept)
+                    let approvedByMyDepartment = checkIfApprovedByMyDepartment(relevantHistorico,dept)
                     // console.log("Previously Approved by My Department?",approvedByMyDepartment)
                     if (approvedByMyDepartment===false){result=true}
                 }
@@ -513,16 +846,6 @@ function canUserSign(user,contract){
     // console.log("!!!!!!!!!!!!!!!OUTSIDE canUserSign!!!!!!!!!!!!!!!!")
     return result
 }
-
-router.get("/profile",async(req,res,next)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    //Obtener info del Usuario actual (sesion iniciada)
-    const sesionEmail = req.session.currentUser.email
-    let currentUser = await User.find({email:sesionEmail})
-    user = currentUser[0]
-    console.log(currentUser)
-    res.render('profile', {user})
-});
 function getLastEscaladoHistorico(historico){
     let indexLastEscalado = -1
     // let historico = contract.historico
@@ -561,7 +884,7 @@ function getRelevantHistorico(historico){
     let indexLastRejection = -1
     // let historico = contract.historico
     for(i=historico.length-1;i>=0;i--){
-        if(historico[i].accion.includes("Escalado")){indexLastRejection=i;break}
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
     // console.log("indexLastRejection: -->", indexLastRejection)
     //Cut everything previous to last rejection.
@@ -615,9 +938,9 @@ async function deleteFile (filePath) {
     try {
         // console.log(filePath)
       await fs.remove(filePath)
-    //   console.log('File Removed: '+filePath)
+        // console.log('File Removed: '+filePath)
     } catch (err) {
-      console.error(err)
+        // console.error(err)
     }
 }
 async function createDirectory(dir){
@@ -625,7 +948,7 @@ async function createDirectory(dir){
         await fs.ensureDir(dir)
         // console.log("Directory Created: " +dir)
     } catch (err){
-        console.error(err)
+        // console.error(err)
     }
 }
 async function saveFile(src,dest){
@@ -633,7 +956,7 @@ async function saveFile(src,dest){
         await fs.ensureLink(src,dest)
         // console.log("File Saved from: " + src + " to " + dest)
     } catch (err){
-        console.error(err)
+        // console.error(err)
     }
 }
 async function deleteDir(dir){
@@ -642,7 +965,7 @@ async function deleteDir(dir){
         await fs.remove(dir)
         // console.log('Uploaded Contracts Deleted!')
       } catch (err) {
-        console.error(err)
+        // console.error(err)
       }
 }
 function editPQ(pq){
@@ -650,7 +973,7 @@ function editPQ(pq){
         if (pq.split('-').length-1===2){return pq;}
         if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
     } catch (error){
-        console.log(error)
+        // console.log(error)
     }
     
 }
@@ -720,14 +1043,20 @@ function ExcelDateToJSDate(serial) {
     // var hours = Math.floor(total_seconds / (60 * 60));
     // var minutes = Math.floor(total_seconds / 60) % 60;
     returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+    console.log(returnDate)
     returnDate=returnDate.toLocaleString().split(' ')[0]
+    console.log(returnDate)
 
-    var year=returnDate.split('-')[0]
-    var month=returnDate.split('-')[1]
-    var day=returnDate.split('-')[2]
+    var year=returnDate.split('/')[0]
+    var month=returnDate.split('/')[1]
+    var day=returnDate.split('/')[2]
+    console.log(month)
+
+    console.log(month.length)
+
     if (month.length===1){month='0'+month}
     returnDate=day+"/"+month+"/"+year
-    // console.log(returnDate)
+    console.log(returnDate)
 
     return returnDate;
 }
@@ -745,9 +1074,9 @@ async function createErrorMsgRegister(username, usersurname, email, repeatemail,
     role.forEach(role=>{
         if(role==="Select your Role and Department"){someEmptyRole=true}
     })
-    console.log(someEmptyRole)
+    // console.log(someEmptyRole)
     if (someEmptyRole===true){insertErrorMsg.push('role/department')}
-    console.log(insertErrorMsg)
+    // console.log(insertErrorMsg)
     switch (insertErrorMsg.length){
         case 1:
             insertErrorMsgOutPut = "You forgot to fill your " + insertErrorMsg[0] + "."
@@ -819,7 +1148,7 @@ async function modifyContract(pq){
         pq.importe = numberToCurrency(pq.importe)
         // pq['allowAccept']= true
         pq.allowAccept=true
-        console.log(pq)
+        // console.log(pq)
         // console.log(pq.allowAccept)
         // console.log(pq.importe)
         // console.log("!!!!!!!!!!!!  PQ FINISH !!!!!!!!!!!!!")
@@ -833,8 +1162,8 @@ async function modifyContractList(contractList){
     return newContractList
 }
 function createErrorMsgReject(role,reason){
-    console.log(role)
-    console.log(reason)
+    // console.log(role)
+    // console.log(reason)
     if(role === "Select your Role and Department" && reason ==="Select a reason"){
         errorMsg = "Select a role and a reason."
     } else if (role === "Select your Role and Department"){
@@ -844,14 +1173,23 @@ function createErrorMsgReject(role,reason){
     } else {
         errorMsg = ""
     }
-    console.log(errorMsg)
+    // console.log(errorMsg)
     return errorMsg;
 }
-function createErrorMsgApprove(role){
+async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign){
+    // console.log(canThisDeptSign)
     if(role === "Select your Role and Department"){
         errorMsg = "Select a role."
     } else {
-        errorMsg = ""
+        if (!canDirectorsign && role.includes("Director")){
+            errorMsg="You must aprove as Autorized befor approving as Director."
+        }else if(canDirectorsign && role.includes("Autorizado")){
+            errorMsg="This contract only needs to be signed by Directors."
+        }else if(canThisDeptSign===false){
+            errorMsg="You can't approve with this role again."
+        }else{
+            errorMsg=""
+        }
     }
     return errorMsg;
 }
@@ -865,12 +1203,12 @@ function numberToCurrency(number){
 }
 function createRoleArray(role,role1,role2,role3,role4){
     const roleArr = []
-    console.log(role4)
-    if (role!==undefined){roleArr.push(role)}
-    if (role1!==undefined){roleArr.push(role1)}
-    if (role2!==undefined){roleArr.push(role2)}
-    if (role3!==undefined){roleArr.push(role3)}
-    if (role4!==undefined){roleArr.push(role4)}
+    // console.log(role4)
+    if (role!==undefined&&role!=="Select your Role and Department"){roleArr.push(role)}
+    if (role1!==undefined&&role!=="Select your Role and Department"){roleArr.push(role1)}
+    if (role2!==undefined&&role!=="Select your Role and Department"){roleArr.push(role2)}
+    if (role3!==undefined&&role!=="Select your Role and Department"){roleArr.push(role3)}
+    if (role4!==undefined&&role!=="Select your Role and Department"){roleArr.push(role4)}
     return roleArr
 }
 function getWho(currentUser,role){
@@ -885,7 +1223,7 @@ function getWho(currentUser,role){
     return who;
 }
 function getStatusRejection(dept){
-    console.log(dept)
+    // console.log(dept)
     let status={
         mainStatus:"Pending",
         operationsStatus:"",
