@@ -60,6 +60,8 @@ router.post('/', async(req,res,next)=>{
                 req.session.currentUser = user;                         //Save User Session.
                 // await deleteDir(path.join(__dirname,"uploadedContracts"))
                 await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
+                await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
+
                 res.redirect("/displayPendingContracts")                                       //Redirect to home.
             }else{
                 errorMsg="Incorrect email or password."                 //Password is inccorrect.
