@@ -193,7 +193,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                 nuevaAccion=[{
                     accion:"Contrato Creado",
                     persona:currentUser[0].name+" "+currentUser[0].surname,
-                    icono:"Nuevo Contrato",
+                    icono:"new",
                     fecha: getCurrentDate(),
                     observaciones:""
                 }]
@@ -305,29 +305,31 @@ router.post("/approveContract/:id",async(req,res)=>{
 
     const dept=fullRole.split(" - ")[0]
     const splitRole=fullRole.split(" - ")[1]
-    console.log(dept)
-    console.log(splitRole)
+    // console.log(dept)
+    // console.log(splitRole)
     
     let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
-    console.log(personaFirma)
+    // console.log(personaFirma)
     nuevaAccion={
         accion:"Aprobado",
         persona:personaFirma,
-        icono:"Pulgar Arriba",
+        icono:"apr",
         fecha: getCurrentDate(),
         observaciones:approveInfo
     }
     let contract = await Contract.find({_id:id})
     let historico = contract[0].historico
-    let canDirectorsign=getCanDirectorSign(historico)
-    console.log(canDirectorsign)
-    errorMsg = createErrorMsgApprove(role,canDirectorsign)
+    let canDirectorsign = getCanDirectorSign(historico)
+    let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
+    // console.log(canDirectorsign)
+    errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign)
+    // console.log(errorMsg)
     // console.log("HISTORICO EN DB: ",historico)
     // console.log(nuevaAccion)
     if (errorMsg!==""){
         res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
     }else{
-        //Save Reject Action
+        //Save Approve Action
         historico.push(nuevaAccion)
         switch (dept){
             case "Control de Riesgos":
@@ -361,10 +363,28 @@ router.post("/approveContract/:id",async(req,res)=>{
         }
         // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
 
+        let timeToScale = await mustScale(historico)
+        // console.log("Time To Sacle: ",timeToScale)
+        if(timeToScale===true){
+            nuevaAccion={
+                accion:"Escalado",
+                persona:personaFirma,
+                icono:"esc",
+                fecha: getCurrentDate(),
+                observaciones:""
+            }
+            historico.push(nuevaAccion)
+            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+            successMsg = "Contrato Aprobado y Escalado Correctamente"
+        } else {
+            successMsg = "Contrato Aprobado Correctamente"
+        }
+        
+
         //Send Approve Email (if needed)
         // await sendEmail(emailParams)
         // console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
-        successMsg = "Contrato Aprobado Correctamente"
+        // successMsg = "Contrato Aprobado Correctamente"
         res.redirect('/displayPendingContracts?successMsg='+successMsg)
     }
 
@@ -397,7 +417,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
     nuevaAccion={
         accion:"Rechazado (" +reason+")",
         persona:personaFirma,
-        icono:"Pulgar Abajo",
+        icono:"rej",
         fecha: getCurrentDate(),
         observaciones:rejectInfo
     }
@@ -529,17 +549,17 @@ router.post("/profile/addRoles/:email",async(req,res,next)=>{
     let currentUser = await User.find({email:email})
     let roleArr = createRoleArray(role,role1,role2,role3,role4)
     let currentRoles = currentUser[0].role
-    console.log(roleArr)
-    console.log(currentRoles)
+    // console.log(roleArr)
+    // console.log(currentRoles)
     let rolesToUpdate=currentRoles
-    console.log(rolesToUpdate)
+    // console.log(rolesToUpdate)
 
     for (i=0;i<roleArr.length;i++){
         if (!currentRoles.includes(roleArr[i])){
             rolesToUpdate.push(roleArr[i])
         }
     }
-    console.log(rolesToUpdate)
+    // console.log(rolesToUpdate)
 
     await User.findOneAndUpdate({email:email},{role:rolesToUpdate})
     res.redirect("/profile")
@@ -556,7 +576,7 @@ router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
         pqFolderName = editPQ(pq)
         pqPath = path.join(__dirname,"contracts",pq)
         const contract = await Contract.findOne({ pq: pq });
-        console.log(contract)
+        // console.log(contract)
         pqId = contract._id
         newUploadedFiles = contract.uploadedFiles
         for (i=0;i<req.files.length;i++){
@@ -585,7 +605,102 @@ router.get("/deleteRole/:role",async(req,res)=>{
     res.redirect("/profile")
 })
 
+async function mustScale(historico){
+    // console.log(historico)
 
+    //Get the historico after the last reject
+    let relevantHistorico = getRelevantHistorico(historico)
+    // console.log("Historico Relevante (Posterior a Último Rechazo):",relevantHistorico)
+
+    //Count Nº de Escalados in Historico
+    let numEscalados = countEscalados(relevantHistorico)
+    // console.log("Número de Escalados:",numEscalados)
+
+    //Get historico after the last escalado.
+    if (numEscalados!==0){
+        var historicoLastEscalado = getLastEscaladoHistorico(relevantHistorico)
+    } else {
+        var historicoLastEscalado = relevantHistorico
+    }
+    // console.log("Historico Last Escalado: --> ",historicoLastEscalado)
+
+    //Cout num of approves
+    let numApprove = countApprove(historicoLastEscalado)
+    // console.log("Número de Aprobados: ",numApprove)
+
+    if(numApprove !==4){return false}
+
+    let histApprove = historicoLastEscalado.filter(hist=>{return hist.accion==="Aprobado"})
+    // console.log("Historico de Aprobados: ",histApprove)
+
+    let allDeptsApproved = await getAllDeptsApproved(histApprove)
+    // console.log("Todos los departamentos han aprobado? ",allDeptsApproved)
+    if (allDeptsApproved ===true) {result = true}else{result=false}
+    // console.log("Resultado: ",result)
+    return result
+}
+async function getAllDeptsApproved(hist){
+    let comercial = false
+    let operaciones = false
+    let riesgos=false
+    let prl = false
+    // console.log(hist)
+    // console.log("!!!!EMPIEZA EL LOOP!!!!")
+    for(i=0;i<hist.length;i++){
+        // console.log(hist[i].persona)
+        if (hist[i].persona.includes("Riesgos")){riesgos=true}
+        if (hist[i].persona.includes("Oper")){operaciones=true}
+        if (hist[i].persona.includes("Comerc")){comercial=true}
+        if (hist[i].persona.includes("PRL")){prl=true}
+    }
+    // console.log(comercial,operaciones,riesgos,prl)
+    if(comercial===true&&operaciones===true&&riesgos===true&&prl===true){result=true}else{result=false}
+    // console.log(result)
+    return result
+}
+function countApprove(hist){
+    let result = 0
+    for (i=0;i<hist.length;i++){
+        if(hist[i].accion === "Aprobado"){result++}
+    }
+    return result
+}
+async function getCanThisDeptSign(historico,fullRole,personaFirma){
+    // console.log(historico)
+    // console.log(fullRole)
+    let dept = fullRole.split(" - ")[0]
+    // console.log(dept)
+    let role = fullRole.split(" - ")[1]
+    // console.log(role)
+    //Get the historico after the last reject
+    let relevantHistorico = getRelevantHistorico(historico)
+    // console.log(relevantHistorico)
+    //Count Nº de Escalados in Historico
+    let numEscalados = countEscalados(relevantHistorico)
+    // console.log(numEscalados)
+
+    //Get historico after the last escalado.
+    if (numEscalados!==0){
+        var historicoLastEscalado = getLastEscaladoHistorico(relevantHistorico)
+    } else {
+        var historicoLastEscalado = relevantHistorico
+    }
+    // console.log("Relevant Historico: --> ",historicoLastEscalado)
+    let result = true
+    for (i=0;i<historicoLastEscalado.length;i++){
+        // console.log(historicoLastEscalado[i].accion)
+        // console.log(historicoLastEscalado[i].persona)
+        // console.log(personaFirma)
+        if(historicoLastEscalado[i].accion === "Aprobado" && historicoLastEscalado[i].persona === personaFirma ){
+            // console.log("Result =false")
+            result = false
+        }
+    }
+    
+    // console.log(result)
+    return result
+
+}
 async function deleteDirectoryContent(directory){
     fs.readdir(directory, (err, files) => {
         if (err) throw err;
@@ -603,14 +718,14 @@ function getCanDirectorSign(historico){
     for(i=historico.length-1;i>=0;i--){
         if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
-    console.log("indexLastRejection: -->", indexLastRejection)
+    // console.log("indexLastRejection: -->", indexLastRejection)
     //Cut everything previous to last rejection.
     if (indexLastRejection===-1){
         var historicoRelevante = historico
     } else{
         var historicoRelevante = historico.slice(indexLastRejection+1)
     }
-    console.log(historicoRelevante)
+    // console.log(historicoRelevante)
     if (countEscalados(historicoRelevante)===1){return true}else{return false}
 }
 function getshoweditButons(mainStatus){
@@ -642,7 +757,7 @@ function getFiles(uploadedFiles){
         // console.log(filePath.replace("\\","/"))
 
         let okFilePath = filePath.replace("\\","/").replace("\\","/")
-        console.log(okFilePath)
+        // console.log(okFilePath)
         return {fileName:fileName,filePath:okFilePath}
     })
     // console.log(result)
@@ -1036,12 +1151,17 @@ function createErrorMsgReject(role,reason){
     // console.log(errorMsg)
     return errorMsg;
 }
-function createErrorMsgApprove(role,canDirectorsign){
+async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign){
+    // console.log(canThisDeptSign)
     if(role === "Select your Role and Department"){
         errorMsg = "Select a role."
     } else {
         if (!canDirectorsign && role.includes("Director")){
             errorMsg="You must aprove as Autorized befor approving as Director."
+        }else if(canDirectorsign && role.includes("Autorizado")){
+            errorMsg="This contract only needs to be signed by Directors."
+        }else if(canThisDeptSign===false){
+            errorMsg="You can't approve with this role again."
         }else{
             errorMsg=""
         }
