@@ -25,6 +25,7 @@
                 <button id="escalado" class="btn department-btn" onclick="btnSelected(this)">Escalado</button>
             </div>
         </div>
+        <div class="mess-container1">
         {{#each notice}}
         <div class="mess-container" id="notice-type-{{noticeType}}">
             <form class="form-alertas" action="/updateAlerts/{{noticeType}}" method="post">
@@ -36,6 +37,7 @@
             </form>
         </div>
         {{/each}}
+        </div>
     </div>
 </div>
 
