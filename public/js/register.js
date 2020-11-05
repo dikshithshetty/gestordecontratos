@@ -41,12 +41,12 @@ async function getAlertId(element){
     form.getElementsByTagName("textarea")[0].value = "test message"
 }
 
-var header = document.getElementById("myDIV");
-var btns = header.getElementsByClassName("department-btn");
-for (var i = 0; i < btns.length; i++) {
-  btns[i].addEventListener("click", function() {
-  var current = document.getElementsByClassName("btn-blue");
-  current[0].className = current[0].className.replace(" btn-blue", "");
-  this.className += " btn-blue";
-  });
-}
+// var header = document.getElementById("myDIV");
+// var btns = header.getElementsByClassName("department-btn");
+// for (var i = 0; i < btns.length; i++) {
+//   btns[i].addEventListener("click", function() {
+//   var current = document.getElementsByClassName("btn-blue");
+//   current[0].className = current[0].className.replace(" btn-blue", "");
+//   this.className += " btn-blue";
+//   });
+// }
