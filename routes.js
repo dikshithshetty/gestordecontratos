@@ -59,6 +59,7 @@ router.post('/', async(req,res,next)=>{
             if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                 req.session.currentUser = user;                         //Save User Session.
                 // await deleteDir(path.join(__dirname,"uploadedContracts"))
+                await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
                 res.redirect("/displayPendingContracts")                                       //Redirect to home.
             }else{
                 errorMsg="Incorrect email or password."                 //Password is inccorrect.
@@ -584,6 +585,18 @@ router.get("/deleteRole/:role",async(req,res)=>{
     res.redirect("/profile")
 })
 
+
+async function deleteDirectoryContent(directory){
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
+      
+        for (const file of files) {
+          fs.unlink(path.join(directory, file), err => {
+            if (err) throw err;
+          });
+        }
+      });
+}
 function getCanDirectorSign(historico){
     let indexLastRejection = -1
     // let historico = contract.historico
@@ -626,11 +639,11 @@ function getFiles(uploadedFiles){
             filePath = path.join(filePath,slicedPath[i])
             // filePath=filePath+slicedPath[i]
         }
-        // console.log(filePath)
+        // console.log(filePath.replace("\\","/"))
 
-        // let filePath = path.join(slicedPath)
-        // console.log(filePath)
-        return {fileName:fileName,filePath:filePath}
+        let okFilePath = filePath.replace("\\","/").replace("\\","/")
+        console.log(okFilePath)
+        return {fileName:fileName,filePath:okFilePath}
     })
     // console.log(result)
     return result

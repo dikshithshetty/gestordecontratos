@@ -73,7 +73,8 @@
             {{#each historico}}
             <div class="email-status-card">
                 <div class="titulos-avisos">
-                    <div class="icon-alert">mail</div>
+                    <!--Nombre iconos: mail new upd apr rej esc-->
+                    <div class="icon-alert"><img src="images/icons/{{icono}}.png" alt="{{icono}}"></div>
                     <div class="tipo-aviso">{{accion}}</div>
                     <div class="tipo-aviso-nombre">{{persona}}</div>
                     <div class="tipo-aviso-fecha">{{fecha}}</div>
@@ -95,7 +96,7 @@
                 <div class="document-card">
                         <p>{{fileName}}</p>
                         <div class="icons-files">
-                            <a href="{{filePath}}"><img id="download-btn" src="/images/icons/download.png" alt="download"></a>
+                            <a href="/{{filePath}}" download="{{fileName}}"><img id="download-btn" src="/images/icons/download.png" alt="download" download></a>
                             {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><img id="delete-btn" src="/images/icons/delete-Icon.png" alt="delete"></a>{{/if}}
                         </div>
                 </div>
