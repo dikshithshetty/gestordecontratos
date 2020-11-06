@@ -128,7 +128,7 @@
                
                 <form class="add-contracts-form" action="/uploadNewContractToDB" method="post" enctype="multipart/form-data">
                     <input id="file" class="upload-files" type="file" name="excelFile">
-                    <label for="file">Please select the Excel file </label>
+                    <label id="file" for="file">Please select the Excel file </label>
                     <p class="underline-link note-text">Your file must be in '.xlsx' format.</p>
                     <div id="nameFile"></div>
                     <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
@@ -349,3 +349,4 @@ fileInput.onchange = function () {
 })*/
 
 </script>
+

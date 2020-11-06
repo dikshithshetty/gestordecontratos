@@ -8,9 +8,9 @@
             </ul>
         </div>
 </div>
-<div class="btn-back-responsive">
-<a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
-</div>
+{{!-- <div class="btn-back-responsive">
+    <a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
+</div> --}}
 <div class="edit-container">
     {{!-- Detalles Contrato --}}
     <div class="contract-details">
@@ -81,17 +81,19 @@
                     <div class="tipo-aviso-nombre">{{persona}}</div>
                     <div class="tipo-aviso-fecha">{{fecha}}</div>
                 </div>
+                {{#if observaciones}}
                 <div class="info-avisos">
                     <p></p>
                     <p>{{observaciones}}</p>
                 </div>
+                {{/if}}
             </div>
             {{/each}}
         </div>
 
         <div class="archivos-upload archivos border">
             <div class="archivos-nav">
-                <h3 class="blue">Contract files</h3>
+                <h3 class="blue"><span>Contract</span>Files</h3>
                 {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
             </div>
     
