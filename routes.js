@@ -206,7 +206,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     nuevaAccion=[{
                         accion:"Contrato Creado",
                         persona:currentUser[0].name+" "+currentUser[0].surname,
-                        icono:"new",
+                        icono:"mail-unread-outline",
                         fecha: getCurrentDate(),
                         observaciones:""
                     }]
@@ -227,8 +227,8 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                         },
                         from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
                         to:"esteve.martin@mpasolutions.es",
-                        subject:"Nuevo Contrato <<Requiere su firma>>",
-                        html: "<p>Hola Sr. Martín,</p><p>Se ha creado un nuevo contrato en el gestor de contratos y requiere de su revisión y firma.</p><p>Muchas gracias.</p>",
+                        subject:"Nuevo Contrato ("+pq+") Requiere su firma",
+                        html: "<p>Hola Sr. Martín,</p><p>Se ha creado un nuevo contrato en el gestor de contratos y requiere de su revisión y firma.</p><ul><li>PQ: "+pq+"</li><li>Cliente: "+cliente+"</li><li>Importe: "+numberToCurrency(importe)+"</li><li>Nº de Pedido: "+nPedido+"</li><li>Obra: "+obra+"</li></ul><p>Muchas gracias.</p>",
                         attachments:uploadedFiles
                     }
 
@@ -335,7 +335,7 @@ router.post("/approveContract/:id",async(req,res)=>{
         nuevaAccion={
             accion:"Aprobado",
             persona:personaFirma,
-            icono:"apr",
+            icono:"thumbs-up-sharp",
             fecha: getCurrentDate(),
             observaciones:approveInfo
         }
@@ -391,7 +391,7 @@ router.post("/approveContract/:id",async(req,res)=>{
                 nuevaAccion={
                     accion:"Escalado",
                     persona:personaFirma,
-                    icono:"esc",
+                    icono:"mail-unread-outline",
                     fecha: getCurrentDate(),
                     observaciones:""
                 }
@@ -443,7 +443,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
         nuevaAccion={
             accion:"Rechazado (" +reason+")",
             persona:personaFirma,
-            icono:"rej",
+            icono:"thumbs-down-sharp",
             fecha: getCurrentDate(),
             observaciones:rejectInfo
         }
@@ -784,7 +784,7 @@ function getshoweditButons(mainStatus){
 }
 function getFiles(uploadedFiles){
     const result = uploadedFiles.map(file=>{
-        let separator ="\\"
+        let separator =process.env.FILE_SEPARATOR
         let fileName = file.split(separator)[file.split(separator).length-1]
         // console.log("fileName:",fileName)
         let filePathArr = file.split(separator)
@@ -803,7 +803,7 @@ function getFiles(uploadedFiles){
         }
         // console.log(filePath.replace("\\","/"))
 
-        let okFilePath = filePath.replace("\\","/").replace("\\","/")
+        let okFilePath = filePath.replace(process.env.FILE_SEPARATOR,"/").replace(process.env.FILE_SEPARATOR,"/")
         // console.log(okFilePath)
         return {fileName:fileName,filePath:okFilePath}
     })
@@ -935,7 +935,7 @@ function formatRolesToResumedRoles(user){
     return resumedUserRole
 }
 async function sendEmail(emailParams){
-    console.log("ENTERED EMAIL")
+    // console.log("ENTERED EMAIL")
     let attachmentsObj = []
     for (i=0;i<emailParams.attachments.length;i++){
         attachmentsObj.push(
@@ -945,7 +945,7 @@ async function sendEmail(emailParams){
             }
         )
     }
-    console.log(attachmentsObj)
+    // console.log(attachmentsObj)
     let transporter = nodemailer.createTransport({
         host: emailParams.host,
         port: emailParams.port,
@@ -955,7 +955,7 @@ async function sendEmail(emailParams){
             pass: emailParams.auth.pass
           }
     })
-    console.log(transporter)
+    // console.log(transporter)
     let info=await transporter.sendMail({
         from: emailParams.from,
         to: emailParams.to,
@@ -963,7 +963,7 @@ async function sendEmail(emailParams){
         html: emailParams.html,
         attachments:attachmentsObj
     })
-    console.log(info)
+    // console.log(info)
 }
 async function deleteFile (filePath) {
     try {
