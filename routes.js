@@ -1067,35 +1067,35 @@ function validateEmail(email) {
 function ExcelDateToJSDate(serial) {
     console.log("------ Convert Excel Date To JS Date -------")
     var utc_days  = Math.floor(serial - 25569);
-    console.log("UTC_Days: ",utc_days)
+    // console.log("UTC_Days: ",utc_days)
     var utc_value = utc_days * 86400;    
-    console.log("UTC_Value: ",utc_value)                     
+    // console.log("UTC_Value: ",utc_value)                     
     var date_info = new Date(utc_value * 1000);
     console.log("Date Info: ",date_info)
     console.log("Get Full Year:",date_info.getFullYear())
     console.log("Get Month: ",date_info.getMonth())
     console.log("Get Date:",date_info.getDate())
-    returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
-    console.log("Return Date: ",returnDate)
-    returnDate=returnDate.toLocaleString().split(' ')[0]
-    console.log("Return Date: ",returnDate)
-    var year=returnDate.split(process.env.DATE_SEPARATOR)[0]
-    console.log("YEAR: ",year)
-    var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
-    console.log("MONTH: ",month)
-    var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
-    console.log("DAY: ",day)
-    console.log("Month Number Length: ",month.length)
+    // returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+    // console.log("Return Date: ",returnDate)
+    // returnDate=returnDate.toLocaleString().split(' ')[0]
+    // console.log("Return Date: ",returnDate)
+    // var year=returnDate.split(process.env.DATE_SEPARATOR)[0]
+    // console.log("YEAR: ",year)
+    // var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
+    // console.log("MONTH: ",month)
+    // var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
+    // console.log("DAY: ",day)
+    // console.log("Month Number Length: ",month.length)
     if (month.length===1){month='0'+month}
     console.log("Month to Wirte:", month)
     returnDate=day+"/"+month+"/"+year
     console.log("Return Date: ",returnDate)
-    returnDate=returnDate.toLocaleString()
-    console.log("Return Date to Locale String: ",returnDate)
-    returnDate=returnDate.split(" ")
-    console.log("Return Date to Locale String Split (' '): ",returnDate.split(" "))
-    returnDate=returnDate.split(" ")[0]
-    console.log("Return Date to Locale String Split (' ')[0]: ",returnDate.split(" ")[0])
+    // returnDate=returnDate.toLocaleString()
+    // console.log("Return Date to Locale String: ",returnDate)
+    // returnDate=returnDate.split(" ")
+    // console.log("Return Date to Locale String Split (' '): ",returnDate.split(" "))
+    // returnDate=returnDate.split(" ")[0]
+    // console.log("Return Date to Locale String Split (' ')[0]: ",returnDate.split(" ")[0])
     return returnDate;
 }
 async function createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, role){
@@ -1236,7 +1236,7 @@ function numberToCurrency(number){
     console.log(number)
     result = new Intl.NumberFormat("de-DE" ,{style: "currency", currency: "EUR"}).format(number)
     console.log(result)
-    result = result.slice(2)+"€"
+    result = result.slice(1)+"€"
     console.log(result)
     result = result.replace(".","!").replace(",",".").replace("!",",").replace(",00","")
     console.log(result)
