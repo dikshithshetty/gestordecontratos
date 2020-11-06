@@ -28,7 +28,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 //Registrar varis partials
 var partialsDir = __dirname + '/views/partials';
 var filenames = fs.readdirSync(partialsDir);
