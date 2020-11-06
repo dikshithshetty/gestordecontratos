@@ -227,34 +227,31 @@ input:focus, textarea:focus {
     color: var(--color-red);
 }
 .bg-color-mail-unread-outline{
-    background-color: var(--color-blue-light);
+    background-color: #c4f3ff;
 }
 
-.bg-color-mail-unread-outline{
-    background-color: var(--color-blue-light);
-}
-.bg-color-thumps-up-sharp{
+.bg-color-thumbs-up-sharp{
     background-color:#D9EFBE;
 }
-.bg-color-thumps-down-sharp{
+.bg-color-thumbs-down-sharp{
     background-color:#F6BEBE;
 }
-.thumps-down-sharp{
+.thumbs-down-sharp{
     color:#A40C0C;
 }
-.thumps-up-sharp{
+.thumbs-up-sharp{
     color:#5A891F;
 }
 
-.bg-color-thumps-down-sharp{
+.bg-color-thumbs-down-sharp{
     background-color:#F6BEBE;
 }
 
-.thumps-down-sharp{
+.thumbs-down-sharp{
     color:#A40C0C;
 }
 
-.thumps-up-sharp{
+.thumbs-up-sharp{
     color:#5A891F;
 }
 
@@ -840,7 +837,7 @@ textarea{
 
     .email-status-card{
         border: 1px solid var(--color-grey);
-        background-color: var(--color-white);
+        /* background-color: var(--color-white); */
         border-radius: 5px;
         width: 100%;
         padding: 20px;

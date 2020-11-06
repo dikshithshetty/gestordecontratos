@@ -12,10 +12,6 @@
 <a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
 </div>
 <div class="edit-container">
-<<<<<<< HEAD
-
-=======
->>>>>>> 5ff41cc066b529ed61f6c67dda2afe6c6fd174e3
     {{!-- Detalles Contrato --}}
     <div class="contract-details">
         <div class="nav3">
@@ -48,17 +44,17 @@
         <div class="info-container border info-contract-details">
             <div class="block">
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-                <div class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.autComercial.person}} - {{firmas.autComercial.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.autOperaciones.person}} - {{firmas.autOperaciones.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.autCRiesgos.person}} - {{firmas.autCRiesgos.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.autPRL.person}} - {{firmas.autPRL.person}}{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.autComercial.person}}{{firmas.autComercial.person}}{{else}}Comercial{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{else}}Operaciones{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.autCRiesgos.person}}{{firmas.autCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.autPRL.person}}{{firmas.autPRL.person}}{{else}}PRL{{/if}}</div>
             </div>
             <div class="block">
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
-                <div class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">Comercial{{#if firmas.dirComercial.person}} - {{firmas.dirComercial.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">Operaciones{{#if firmas.dirOperaciones.person}} - {{firmas.dirOperaciones.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">Control de Riesgos{{#if firmas.dirCRiesgos.person}} - {{firmas.dirCRiesgos.person}}{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">PRL{{#if firmas.dirPRL.person}} - {{firmas.dirPRL.person}}{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.dirComercial.person}}{{firmas.dirComercial.person}}{{else}}Comercial{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.dirOperaciones.person}}{{firmas.dirOperaciones.person}}{{else}}Operaciones{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.dirCRiesgos.person}}{{firmas.dirCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
+                <div class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.dirPRL.person}}{{firmas.dirPRL.person}}{{else}}PRL{{/if}}</div>
             </div>
             <div class="block">
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
@@ -80,7 +76,7 @@
             {{#each historico}}
             <div class="email-status-card bg-color-{{icono}}">
                 <div class="titulos-avisos">
-                    <div class="icon-alert"><ion-icon class="{{icon}}" name="{{icono}}" alt="{{icono}}"></ion-icon></div>
+                    <div class="icon-alert"><ion-icon class="{{icono}}" name="{{icono}}" alt="{{icono}}"></ion-icon></div>
                     <div class="tipo-aviso">{{accion}}</div>
                     <div class="tipo-aviso-nombre">{{persona}}</div>
                     <div class="tipo-aviso-fecha">{{fecha}}</div>
