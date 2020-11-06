@@ -217,6 +217,21 @@ input:focus, textarea:focus {
     color: var(--color-red);
 }
 
+.bg-color-mail-unread-outline{
+    background-color: var(--color-blue-light);
+}
+.bg-color-thumps-up-sharp{
+    background-color:#D9EFBE;
+}
+.bg-color-thumps-down-sharp{
+    background-color:#F6BEBE;
+}
+.thumps-down-sharp{
+    color:#A40C0C;
+}
+.thumps-up-sharp{
+    color:#5A891F;
+}
 
 
 
