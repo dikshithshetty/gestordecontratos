@@ -489,11 +489,11 @@ router.post("/rejectContract/:id",async(req,res)=>{
 router.get("/alertsContracts",async (req,res,next)=>{
     try{
         let successMsg = req.params.successMsg;
-        console.log(successMsg)
+        // console.log(successMsg)
 
         const notice = await Notice.find();
         notice.successMsg = successMsg
-        console.log(notice)
+        // console.log(notice)
 
 
         res.render('alertsContracts',{notice})
@@ -1065,35 +1065,35 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 function ExcelDateToJSDate(serial) {
-    console.log("------ Convert Excel Date To JS Date -------")
+    // console.log("------ Convert Excel Date To JS Date -------")
     var utc_days  = Math.floor(serial - 25569);
     // console.log("UTC_Days: ",utc_days)
     var utc_value = utc_days * 86400;    
     // console.log("UTC_Value: ",utc_value)                     
     var date_info = new Date(utc_value * 1000);
-    console.log("Date Info: ",date_info)
-    console.log("Get Full Year:",date_info.getFullYear())
-    console.log("Get Month: ",date_info.getMonth())
-    console.log("Get Date:",date_info.getDate())
+    // console.log("Date Info: ",date_info)
+    // console.log("Get Full Year:",date_info.getFullYear())
+    // console.log("Get Month: ",date_info.getMonth())
+    // console.log("Get Date:",date_info.getDate())
     // returnDate = new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
     // console.log("Return Date: ",returnDate)
     // returnDate=returnDate.toLocaleString().split(' ')[0]
     // console.log("Return Date: ",returnDate)
     // var year=returnDate.split(process.env.DATE_SEPARATOR)[0]
     var year = date_info.getFullYear()
-    console.log("YEAR: ",year)
+    // console.log("YEAR: ",year)
     // var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
     var month =date_info.getMonth()
-    console.log("MONTH: ",month ,"Variable Type:", typeof month)
+    // console.log("MONTH: ",month ,"Variable Type:", typeof month)
 
     // var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
     var day  =date_info.getDate()
-    console.log("DAY: ",day)
-    console.log("Month Number Length: ",month.length)
+    // console.log("DAY: ",day)
+    // console.log("Month Number Length: ",month.length)
     if (month.toString().length===1){month='0'+month}
-    console.log("Month to Wirte:", month)
+    // console.log("Month to Wirte:", month)
     returnDate=day+"/"+month+"/"+year
-    console.log("Return Date: ",returnDate)
+    // console.log("Return Date: ",returnDate)
     // returnDate=returnDate.toLocaleString()
     // console.log("Return Date to Locale String: ",returnDate)
     // returnDate=returnDate.split(" ")
@@ -1236,14 +1236,14 @@ async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign){
     return errorMsg;
 }
 function numberToCurrency(number){
-    console.log("-----Convert New Number-----")
-    console.log(number)
+    // console.log("-----Convert New Number-----")
+    // console.log(number)
     result = new Intl.NumberFormat("de-DE" ,{style: "currency", currency: "EUR"}).format(number)
-    console.log(result)
+    // console.log(result)
     result = result.slice(1)+"€"
-    console.log(result)
+    // console.log(result)
     result = result.replace(".","!").replace(",",".").replace("!",",").replace(",00","")
-    console.log(result)
+    // console.log(result)
     return result
 }
 function createRoleArray(role,role1,role2,role3,role4){
