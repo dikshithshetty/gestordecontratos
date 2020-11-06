@@ -67,7 +67,7 @@
     
 
     
-    {{!-- Historia de alertas enviadas y archivos --}}
+    {{!-- Historial de alertas enviadas y archivos --}}
     <div class="archivos-preview-container">
         <div class="email-status archivos border">
             <div class="archivos-nav">
@@ -100,7 +100,7 @@
                 <div class="document-card">
                     <p>{{fileName}}</p>
                     <div class="icons-files">
-                        <a href="/{{filePath}}" download="{{fileName}}"><ion-icon id="download-btn" name="download-outline"></ion-icon></a>
+                        <a href="{{filePath}}" download="{{fileName}}" ><ion-icon id="download-btn" name="download-outline"></ion-icon></a>
                         {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><ion-icon id="delete-btn" name="trash-outline"></ion-icon></a>{{/if}}
                     </div>
                 </div>
