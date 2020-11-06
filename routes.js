@@ -1080,11 +1080,14 @@ function ExcelDateToJSDate(serial) {
     // returnDate=returnDate.toLocaleString().split(' ')[0]
     // console.log("Return Date: ",returnDate)
     // var year=returnDate.split(process.env.DATE_SEPARATOR)[0]
-    // console.log("YEAR: ",year)
+    var year = date_info.getFullYear()
+    console.log("YEAR: ",year)
     // var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
-    // console.log("MONTH: ",month)
+    var month =date_info.getMonth()
+    console.log("MONTH: ",month)
     // var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
-    // console.log("DAY: ",day)
+    var day  =date_info.getDate()
+    console.log("DAY: ",day)
     // console.log("Month Number Length: ",month.length)
     if (month.length===1){month='0'+month}
     console.log("Month to Wirte:", month)
