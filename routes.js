@@ -16,6 +16,7 @@ const { findOne } = require("./models/user-model");
 const { pbkdf2 } = require('crypto');
 
 router.get('/',(req,res,next)=>{
+    
     // console.log(req.session)
     let template = {
         layout: false
@@ -214,26 +215,27 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     //Create Contract to DB
                     // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
                     await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
+                    // const newAlert = await Notice.findOneAndUpdate({noticeType:"newContract"},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
 
                     emailParams={
-                        host:"smtp-mail.outlook.com",
-                        port:587,
+                        host:process.env.EMAIL_HOST,
+                        port:process.env.EMAIL_PORT,
                         secure:false,
                         auth: {
-                            user: "",
-                            pass: ""
+                            user: process.env.EMAIL_USER,
+                            pass: process.env.EMAIL_PASS
                         },
                         from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
                         to:"esteve.martin@mpasolutions.es",
-                        subject:"Test Email",
-                        html: "<b> NO ME CREO QUE HAYA LLEGADO </b>",
+                        subject:"Nuevo Contrato ("+pq+") Requiere su firma",
+                        html: "<p>Hola Sr. Martín,</p><p>Se ha creado un nuevo contrato en el gestor de contratos y requiere de su revisión y firma.</p><ul><li>PQ: "+pq+"</li><li>Cliente: "+cliente+"</li><li>Importe: "+numberToCurrency(importe)+"</li><li>Nº de Pedido: "+nPedido+"</li><li>Obra: "+obra+"</li></ul><p>Muchas gracias.</p>",
                         attachments:uploadedFiles
                     }
 
                     // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
                     // console.log(contractList)
                     // //Send Email
-                    // await sendEmail(emailParams)
+                    await sendEmail(emailParams)
                     successMsg="Contrato "+pq+" Creado Correctamente.",
 
                     // formData={
@@ -263,365 +265,391 @@ router.get("/displayClosedContracts", async (req,res)=>{
         // console.log(contractList)
         formData={showClosed:true,contractList:contractList}
         res.render("contracts.hbs",{formData});
-    }catch(err){console.log("Error en Login Post:",err)}
+    }catch(err){console.log("Error en DisplayClosedContracts Get:",err)}
 
 })
 router.get("/displayPendingContracts", async (req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
 
-    const errorMsg = req.query.errorMsg
-    const successMsg = req.query.successMsg
-    const sesionEmail = req.session.currentUser.email
+        const errorMsg = req.query.errorMsg
+        const successMsg = req.query.successMsg
+        const sesionEmail = req.session.currentUser.email
 
-    let currentUser = await User.find({email:sesionEmail})
-    // console.log(currentUser[0].role)
-    // await deleteDir(path.join(__dirname,"uploadedContracts"))
+        let currentUser = await User.find({email:sesionEmail})
+        // console.log(currentUser[0].role)
+        // await deleteDir(path.join(__dirname,"uploadedContracts"))
 
-    var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente historico importe comercial')
-    const roleObj = await createRoleSelector(currentUser[0].role)
-    // console.log(roleObj)
-    // console.log(contractList)
+        var contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente historico importe comercial')
+        const roleObj = await createRoleSelector(currentUser[0].role)
+        // console.log(roleObj)
+        // console.log(contractList)
 
-    contractList.forEach(contract=>{
-        contract.importe = numberToCurrency(contract.importe)
-        let allowApprove = canUserSign(currentUser,contract)
-        // let allowApprove = true;
-        // console.log(allowApprove)
-        let allowReject = true;
-        contract.allowApprove = allowApprove
-        contract.allowReject = allowReject
-        // console.log(contract.allowAprove)
-    })
-    
-    formData={
-        errorMsg:errorMsg,
-        showClosed:false,
-        successMsg:successMsg,
-        contractList:contractList,
-        roleObj:roleObj,
-    }
-    // console.log("Form Data -->",formData)
-    res.render("contracts.hbs",{formData});
+        contractList.forEach(contract=>{
+            contract.importe = numberToCurrency(contract.importe)
+            let allowApprove = canUserSign(currentUser,contract)
+            // let allowApprove = true;
+            // console.log(allowApprove)
+            let allowReject = true;
+            contract.allowApprove = allowApprove
+            contract.allowReject = allowReject
+            // console.log(contract.allowAprove)
+        })
+        
+        formData={
+            errorMsg:errorMsg,
+            showClosed:false,
+            successMsg:successMsg,
+            contractList:contractList,
+            roleObj:roleObj,
+        }
+        // console.log("Form Data -->",formData)
+        res.render("contracts.hbs",{formData});
+    }catch(err){console.log("Error en DisplayPendingContracts Get:",err)}
 })
 router.post("/approveContract/:id",async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    // console.log("ENTERED APPROVE CONTRACT / ID")
-    const {role,approveInfo}=req.body
-    const sesionEmail = req.session.currentUser.email
-    const id=req.params.id
-    // const role=req.params.role
-    const fullRole=role
-    // const approveInfo=req.params.approveInfo
-    // console.log(req.params)
-    // console.log(id,role,approveInfo)
-    // console.log(id)
-    //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
-    let currentUser = await User.find({email:sesionEmail})
-    // console.log(currentUser)
-    // console.log(fullRole)
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        // console.log("ENTERED APPROVE CONTRACT / ID")
+        const {role,approveInfo}=req.body
+        const sesionEmail = req.session.currentUser.email
+        const id=req.params.id
+        // const role=req.params.role
+        const fullRole=role
+        // const approveInfo=req.params.approveInfo
+        // console.log(req.params)
+        // console.log(id,role,approveInfo)
+        // console.log(id)
+        //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
+        let currentUser = await User.find({email:sesionEmail})
+        // console.log(currentUser)
+        // console.log(fullRole)
 
-    const dept=fullRole.split(" - ")[0]
-    const splitRole=fullRole.split(" - ")[1]
-    // console.log(dept)
-    // console.log(splitRole)
-    
-    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
-    // console.log(personaFirma)
-    nuevaAccion={
-        accion:"Aprobado",
-        persona:personaFirma,
-        icono:"thumps-up-sharp",
-        fecha: getCurrentDate(),
-        observaciones:approveInfo
-    }
-    let contract = await Contract.find({_id:id})
-    let historico = contract[0].historico
-    let canDirectorsign = getCanDirectorSign(historico)
-    let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
-    // console.log(canDirectorsign)
-    errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign)
-    // console.log(errorMsg)
-    // console.log("HISTORICO EN DB: ",historico)
-    // console.log(nuevaAccion)
-    if (errorMsg!==""){
-        res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
-    }else{
-        //Save Approve Action
-        historico.push(nuevaAccion)
-        switch (dept){
-            case "Control de Riesgos":
-                if(splitRole === "Autorizado"){
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autCRiesgos.person":personaFirma,"firmas.autCRiesgos.value":true})
-                }else{
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirCRiesgos.person":personaFirma,"firmas.dirCRiesgos.value":true})
-                }
-                break;
-            case "Operaciones":
-                if(splitRole === "Autorizado"){
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autOperaciones.person":personaFirma,"firmas.autOperaciones.value":true})
-                }else{
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirOperaciones.person":personaFirma,"firmas.dirOperaciones.value":true})
-                }
-                break;
-            case "Comercial":
-                if(splitRole === "Autorizado"){
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autComercial.person":personaFirma,"firmas.autComercial.value":true})
-                }else{
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirComercial.person":personaFirma,"firmas.dirComercial.value":true})
-                }
-                break;
-            case "PRL":
-                if(splitRole === "Autorizado"){
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autPRL.person":personaFirma,"firmas.autPRL.value":true})
-                }else{
-                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirPRL.person":personaFirma,"firmas.dirPRL.value":true})
-                }
-                break;
-        }
-        // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
-
-        let timeToScale = await mustScale(historico)
-        // console.log("Time To Sacle: ",timeToScale)
-        if(timeToScale===true){
-            nuevaAccion={
-                accion:"Escalado",
-                persona:personaFirma,
-                icono:"mail-unread-outline",
-                fecha: getCurrentDate(),
-                observaciones:""
-            }
-            historico.push(nuevaAccion)
-            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
-            successMsg = "Contrato Aprobado y Escalado Correctamente"
-        } else {
-            successMsg = "Contrato Aprobado Correctamente"
-        }
+        const dept=fullRole.split(" - ")[0]
+        const splitRole=fullRole.split(" - ")[1]
+        // console.log(dept)
+        // console.log(splitRole)
         
+        let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
+        // console.log(personaFirma)
+        nuevaAccion={
+            accion:"Aprobado",
+            persona:personaFirma,
+            icono:"thumbs-up-sharp",
+            fecha: getCurrentDate(),
+            observaciones:approveInfo
+        }
+        let contract = await Contract.find({_id:id})
+        let historico = contract[0].historico
+        let canDirectorsign = getCanDirectorSign(historico)
+        let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
+        // console.log(canDirectorsign)
+        errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign)
+        // console.log(errorMsg)
+        // console.log("HISTORICO EN DB: ",historico)
+        // console.log(nuevaAccion)
+        if (errorMsg!==""){
+            res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
+        }else{
+            //Save Approve Action
+            historico.push(nuevaAccion)
+            switch (dept){
+                case "Control de Riesgos":
+                    if(splitRole === "Autorizado"){
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autCRiesgos.person":personaFirma,"firmas.autCRiesgos.value":true})
+                    }else{
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirCRiesgos.person":personaFirma,"firmas.dirCRiesgos.value":true})
+                    }
+                    break;
+                case "Operaciones":
+                    if(splitRole === "Autorizado"){
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autOperaciones.person":personaFirma,"firmas.autOperaciones.value":true})
+                    }else{
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirOperaciones.person":personaFirma,"firmas.dirOperaciones.value":true})
+                    }
+                    break;
+                case "Comercial":
+                    if(splitRole === "Autorizado"){
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autComercial.person":personaFirma,"firmas.autComercial.value":true})
+                    }else{
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirComercial.person":personaFirma,"firmas.dirComercial.value":true})
+                    }
+                    break;
+                case "PRL":
+                    if(splitRole === "Autorizado"){
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.autPRL.person":personaFirma,"firmas.autPRL.value":true})
+                    }else{
+                        await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirPRL.person":personaFirma,"firmas.dirPRL.value":true})
+                    }
+                    break;
+            }
+            // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
 
-        //Send Approve Email (if needed)
-        // await sendEmail(emailParams)
-        // console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
-        // successMsg = "Contrato Aprobado Correctamente"
-        res.redirect('/displayPendingContracts?successMsg='+successMsg)
-    }
+            let timeToScale = await mustScale(historico)
+            // console.log("Time To Sacle: ",timeToScale)
+            if(timeToScale===true){
+                nuevaAccion={
+                    accion:"Escalado",
+                    persona:personaFirma,
+                    icono:"mail-unread-outline",
+                    fecha: getCurrentDate(),
+                    observaciones:""
+                }
+                historico.push(nuevaAccion)
+                await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+                successMsg = "Contrato Aprobado y Escalado Correctamente"
+            } else {
+                successMsg = "Contrato Aprobado Correctamente"
+            }
+            
+
+            //Send Approve Email (if needed)
+            // await sendEmail(emailParams)
+            // console.log("!!!!!!!!!!ABOUT TO DISPLAY SUCCES MESSAGE!!!!!!!!!!!!!")
+            // successMsg = "Contrato Aprobado Correctamente"
+            res.redirect('/displayPendingContracts?successMsg='+successMsg)
+        }
+    }catch(err){console.log("Error en Approve Contract ID Post:",err)}
 
 })
 router.get("/deleteContract/:id",async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
 
-    // console.log(req.params.id)
-    const id=req.params.id
-    // console.log("GET INSIDE ID: ", id)
-    await Contract.deleteOne({_id:id})
-    res.redirect("/displayPendingContracts")
+        // console.log(req.params.id)
+        const id=req.params.id
+        // console.log("GET INSIDE ID: ", id)
+        await Contract.deleteOne({_id:id})
+        res.redirect("/displayPendingContracts")
+    }catch(err){console.log("Error en DeleteContract ID Get:",err)}
 })
 router.post("/rejectContract/:id",async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-   
-    // console.log("ENTERED REJECT CONTRACT / ID")
-    const {role,reason,rejectInfo}=req.body
-    const fullRole=role
-    const sesionEmail = req.session.currentUser.email
-    const id=req.params.id
-    //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
-    let currentUser = await User.find({email:sesionEmail})
-    // console.og(currentUser)
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
     
-    const dept=fullRole.split(" - ")[0]
-    const splitRole=fullRole.split(" - ")[1]
-    errorMsg = createErrorMsgReject(fullRole,reason)
-    let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
-    nuevaAccion={
-        accion:"Rechazado (" +reason+")",
-        persona:personaFirma,
-        icono:"thumps-down-sharp",
-        fecha: getCurrentDate(),
-        observaciones:rejectInfo
-    }
-    // console.log(nuevaAccion)
-    // observaciones={reason:reason,additionalInfo:rejectInfo}
-
-    let contract = await Contract.find({_id:id})
-    let historico = contract[0].historico
-    // console.log("HISTORICO EN DB: ",historico)
-    if (errorMsg!==""){
-        res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
-    }else{
-
-        //Save Reject Action
-        historico.push(nuevaAccion)
-        firmas={
-            autOperaciones:{value:false,person:""},
-            dirOperaciones:{value:false,person:""},
-            autComercial:{value:false,person:""},
-            dirComercial:{value:false,person:""},
-            autPRL:{value:false,person:""},
-            dirPRL:{value:false,person:""},
-            autCRiesgos:{value:false,person:""},
-            dirCRiesgos:{value:false,person:""}
-          }
+        // console.log("ENTERED REJECT CONTRACT / ID")
+        const {role,reason,rejectInfo}=req.body
+        const fullRole=role
+        const sesionEmail = req.session.currentUser.email
+        const id=req.params.id
+        //QUE HACEMOS SI NO ENCUENTRA EL USUARIO?
+        let currentUser = await User.find({email:sesionEmail})
+        // console.og(currentUser)
         
-        await Contract.findByIdAndUpdate({_id:id},{historico, firmas})
+        const dept=fullRole.split(" - ")[0]
+        const splitRole=fullRole.split(" - ")[1]
+        errorMsg = createErrorMsgReject(fullRole,reason)
+        let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
+        nuevaAccion={
+            accion:"Rechazado (" +reason+")",
+            persona:personaFirma,
+            icono:"thumbs-down-sharp",
+            fecha: getCurrentDate(),
+            observaciones:rejectInfo
+        }
+        // console.log(nuevaAccion)
+        // observaciones={reason:reason,additionalInfo:rejectInfo}
 
-        //Send Rejection Email
-        // await sendEmail(emailParams)
+        let contract = await Contract.find({_id:id})
+        let historico = contract[0].historico
+        // console.log("HISTORICO EN DB: ",historico)
+        if (errorMsg!==""){
+            res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
+        }else{
+
+            //Save Reject Action
+            historico.push(nuevaAccion)
+            firmas={
+                autOperaciones:{value:false,person:""},
+                dirOperaciones:{value:false,person:""},
+                autComercial:{value:false,person:""},
+                dirComercial:{value:false,person:""},
+                autPRL:{value:false,person:""},
+                dirPRL:{value:false,person:""},
+                autCRiesgos:{value:false,person:""},
+                dirCRiesgos:{value:false,person:""}
+            }
+            
+            await Contract.findByIdAndUpdate({_id:id},{historico, firmas})
+
+            //Send Rejection Email
+            // await sendEmail(emailParams)
 
 
-        successMsg = "Contrato Rechazado Correctamente"
-        res.redirect('/displayPendingContracts?successMsg='+successMsg)
-    }
+            successMsg = "Contrato Rechazado Correctamente"
+            res.redirect('/displayPendingContracts?successMsg='+successMsg)
+        }
 
-    // res.render("contracts",{errorMsg})
-    
-
+        // res.render("contracts",{errorMsg})
+        
+    }catch(err){console.log("Error en Reject Contract ID Post:",err)}
 
 })
 
 router.get("/alertsContracts",async (req,res,next)=>{
-    const notice = await Notice.find();
-    console.log(notice)
+    try{
+        let successMsg = req.params.successMsg;
+        console.log(successMsg)
+
+        const notice = await Notice.find();
+        notice.successMsg = successMsg
+        console.log(notice)
 
 
-    res.render('alertsContracts',{notice})
+        res.render('alertsContracts',{notice})
+    }catch(err){console.log("Error en AlertsContracts Get:",err)}
 });
 router.post("/updateAlerts/:alertType",async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    const alertType=req.params.alertType;
-    const {email,cc,subject,emailBody}=req.body
-    // console.log(alertType,email,cc,subject,emailBody)
-    const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
-    // console.log(newAlert)
-    const successMsg = "Configuración Guardada"
-    res.redirect("/alertsContracts?successMsg="+successMsg)
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        const alertType=req.params.alertType;
+        const {email,cc,subject,emailBody}=req.body
+        // console.log(alertType,email,cc,subject,emailBody)
+        const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
+        // console.log(newAlert)
+        const successMsg = "Configuración Guardada"
+        res.redirect("/alertsContracts?successMsg="+successMsg)
+    }catch(err){console.log("Error en UpdatAlerts AlertType Post:",err)}
 })
 router.get("/editContracts/:id",async(req,res,next)=>{
-    
-    // console.log("entered the edit contract function")
-    if (!req.session.currentUser){res.redirect("/")}
-    const id = req.params.id
-    // console.log(id)
-    const selectedContract = await Contract.findOne({_id:id})
-    // console.log(selectedContract)
-    const uploadedFiles = getFiles(selectedContract.uploadedFiles)
-    // console.log(uploadedFiles)
-    const showeditButons = getshoweditButons(selectedContract.mainStatus)
+    try{
+        // console.log("entered the edit contract function")
+        if (!req.session.currentUser){res.redirect("/")}
+        const id = req.params.id
+        // console.log(id)
+        const selectedContract = await Contract.findOne({_id:id})
+        // console.log(selectedContract)
+        const uploadedFiles = getFiles(selectedContract.uploadedFiles)
+        const showeditButons = getshoweditButons(selectedContract.mainStatus)
 
-    contr={
-        pq:selectedContract.pq,
-        cliente:selectedContract.cliente,
-        comercial:selectedContract.comercial,
-        obra:selectedContract.obra,
-        usuarioFinal:selectedContract.usuarioFinal,
-        nPedido:selectedContract.nPedido,
-        importe:numberToCurrency(selectedContract.importe),
-        fechaStatusWon:selectedContract.fechaStatusWon,
-        fechaRecepcion:selectedContract.fechaRecepcion,
-        fechaCreacionApp:selectedContract.fechaCreaccionApp,
-        historico:selectedContract.historico,
-        firmas:selectedContract.firmas,
-        uploadedFiles:uploadedFiles,
-        showeditButons:showeditButons
-    }
-    
-    res.render("editContracts",contr)
-    // res.redirect("/editContracts?pq="+pq)
+        // console.log(uploadedFiles)
+        contr={
+            pq:selectedContract.pq,
+            cliente:selectedContract.cliente,
+            comercial:selectedContract.comercial,
+            obra:selectedContract.obra,
+            usuarioFinal:selectedContract.usuarioFinal,
+            nPedido:selectedContract.nPedido,
+            importe:numberToCurrency(selectedContract.importe),
+            fechaStatusWon:selectedContract.fechaStatusWon,
+            fechaRecepcion:selectedContract.fechaRecepcion,
+            fechaCreacionApp:selectedContract.fechaCreaccionApp,
+            historico:selectedContract.historico,
+            firmas:selectedContract.firmas,
+            uploadedFiles:uploadedFiles,
+            showeditButons:showeditButons
+        }
+        
+        res.render("editContracts",contr)
+        // res.redirect("/editContracts?pq="+pq)
+    }catch(err){console.log("Error en EditContracts ID Get:",err)}
 
 })
 router.get("/deleteFiles/:pq/:fileName",async(req,res,next)=>{
-    let pq=req.params.pq
-    let fileName = req.params.fileName
-    // console.log(pq)
-    // console.log("fileName: ",fileName)
-    let currentpq = await Contract.find({pq:pq})
-    let id = currentpq[0].id
-    // console.log("id: ",id)
-    let uploadedFiles = currentpq[0].uploadedFiles
-    // console.log(uploadedFiles)
-    var newUploadedFiles=[]
-    for (i=0;i<uploadedFiles.length;i++){
-        if(uploadedFiles[i].includes(fileName)){
-            var fileToDelete = uploadedFiles[i]
-            // newUploadedFiles = uploadedFiles.splice(i,1)
-        } else {
-            newUploadedFiles.push(uploadedFiles[i])
+    try{
+        let pq=req.params.pq
+        let fileName = req.params.fileName
+        // console.log(pq)
+        // console.log("fileName: ",fileName)
+        let currentpq = await Contract.find({pq:pq})
+        let id = currentpq[0].id
+        // console.log("id: ",id)
+        let uploadedFiles = currentpq[0].uploadedFiles
+        // console.log(uploadedFiles)
+        var newUploadedFiles=[]
+        for (i=0;i<uploadedFiles.length;i++){
+            if(uploadedFiles[i].includes(fileName)){
+                var fileToDelete = uploadedFiles[i]
+                // newUploadedFiles = uploadedFiles.splice(i,1)
+            } else {
+                newUploadedFiles.push(uploadedFiles[i])
+            }
         }
-    }
-    // console.log("filetoDelete: ",fileToDelete)
-    await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
-    await fs.remove(fileToDelete)
-    
-    // console.log(newUploadedFiles)
-    res.redirect("/editContracts/"+id)
+        // console.log("filetoDelete: ",fileToDelete)
+        await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+        await fs.remove(fileToDelete)
+        
+        // console.log(newUploadedFiles)
+        res.redirect("/editContracts/"+id)
+    }catch(err){console.log("Error en DeleteFiles PQ Get:",err)}
 })
 router.get("/profile",async(req,res,next)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    //Obtener info del Usuario actual (sesion iniciada)
-    const sesionEmail = req.session.currentUser.email
-    let currentUser = await User.find({email:sesionEmail})
-    user = currentUser[0]
-    // console.log(currentUser)
-    res.render('profile', {user})
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        //Obtener info del Usuario actual (sesion iniciada)
+        const sesionEmail = req.session.currentUser.email
+        let currentUser = await User.find({email:sesionEmail})
+        user = currentUser[0]
+        // console.log(currentUser)
+        res.render('profile', {user})
+    }catch(err){console.log("Error en Profile Get:",err)}
 });
 router.post("/profile/addRoles/:email",async(req,res,next)=>{
-    const{role,role1,role2,role3,role4} = req.body;
-    const email = req.params.email
-    let currentUser = await User.find({email:email})
-    let roleArr = createRoleArray(role,role1,role2,role3,role4)
-    let currentRoles = currentUser[0].role
-    // console.log(roleArr)
-    // console.log(currentRoles)
-    let rolesToUpdate=currentRoles
-    // console.log(rolesToUpdate)
+    try{
+        const{role,role1,role2,role3,role4} = req.body;
+        const email = req.params.email
+        let currentUser = await User.find({email:email})
+        let roleArr = createRoleArray(role,role1,role2,role3,role4)
+        let currentRoles = currentUser[0].role
+        // console.log(roleArr)
+        // console.log(currentRoles)
+        let rolesToUpdate=currentRoles
+        // console.log(rolesToUpdate)
 
-    for (i=0;i<roleArr.length;i++){
-        if (!currentRoles.includes(roleArr[i])){
-            rolesToUpdate.push(roleArr[i])
+        for (i=0;i<roleArr.length;i++){
+            if (!currentRoles.includes(roleArr[i])){
+                rolesToUpdate.push(roleArr[i])
+            }
         }
-    }
-    // console.log(rolesToUpdate)
+        // console.log(rolesToUpdate)
 
-    await User.findOneAndUpdate({email:email},{role:rolesToUpdate})
-    res.redirect("/profile")
+        await User.findOneAndUpdate({email:email},{role:rolesToUpdate})
+        res.redirect("/profile")
+    }catch(err){console.log("Error en Profile Add Roles Post:",err)}
     
 })
 router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    if (req.files.length===0){
-        errorMsg="No file selected.";
-        // res.render("contracts.hbs",{noFileSelected});
-        res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
-    }else {
-        let pq = req.params.pq
-        pqFolderName = editPQ(pq)
-        pqPath = path.join(__dirname,"contracts",pq)
-        const contract = await Contract.findOne({ pq: pq });
-        // console.log(contract)
-        pqId = contract._id
-        newUploadedFiles = contract.uploadedFiles
-        for (i=0;i<req.files.length;i++){
-            let uploadedFile=req.files[i]
-            let fileToSave = path.join(pqPath,uploadedFile.originalname)
-            await saveFile(uploadedFile.path,fileToSave)
-            newUploadedFiles.push(fileToSave)
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        if (req.files.length===0){
+            errorMsg="No file selected.";
+            // res.render("contracts.hbs",{noFileSelected});
+            res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
+        }else {
+            let pq = req.params.pq
+            pqFolderName = editPQ(pq)
+            pqPath = path.join(__dirname,"contracts",pq)
+            const contract = await Contract.findOne({ pq: pq });
+            // console.log(contract)
+            pqId = contract._id
+            newUploadedFiles = contract.uploadedFiles
+            for (i=0;i<req.files.length;i++){
+                let uploadedFile=req.files[i]
+                let fileToSave = path.join(pqPath,uploadedFile.originalname)
+                await saveFile(uploadedFile.path,fileToSave)
+                newUploadedFiles.push(fileToSave)
+            }
+            await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
+            res.redirect("/editContracts/"+pqId)
         }
-        await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
-        res.redirect("/editContracts/"+pqId)
-    }
+    }catch(err){console.log("Error en Edit Contracts UploadFiles PQ Post:",err)}
 })
 router.get("/deleteRole/:role",async(req,res)=>{
-    if (!req.session.currentUser){res.redirect("/")}
-    const email = req.session.currentUser.email
-    const roleToDelete = req.params.role
-    let currentUser = await User.find({email:email})
-    let currentRoles = currentUser[0].role
-    let newRoleList=[]
-    for (i=0;i<currentRoles.length;i++){
-        if(currentRoles[i]!==roleToDelete){
-            newRoleList.push(currentRoles[i])
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        const email = req.session.currentUser.email
+        const roleToDelete = req.params.role
+        let currentUser = await User.find({email:email})
+        let currentRoles = currentUser[0].role
+        let newRoleList=[]
+        for (i=0;i<currentRoles.length;i++){
+            if(currentRoles[i]!==roleToDelete){
+                newRoleList.push(currentRoles[i])
+            }
         }
-    }
-    await User.findOneAndUpdate({email:email},{role:newRoleList})
-    res.redirect("/profile")
+        await User.findOneAndUpdate({email:email},{role:newRoleList})
+        res.redirect("/profile")
+    }catch(err){console.log("Error en deleteRole Role Get:",err)}
 })
 
 async function mustScale(historico){
@@ -756,7 +784,7 @@ function getshoweditButons(mainStatus){
 }
 function getFiles(uploadedFiles){
     const result = uploadedFiles.map(file=>{
-        let separator ="\\"
+        let separator =process.env.FILE_SEPARATOR
         let fileName = file.split(separator)[file.split(separator).length-1]
         // console.log("fileName:",fileName)
         let filePathArr = file.split(separator)
@@ -775,7 +803,7 @@ function getFiles(uploadedFiles){
         }
         // console.log(filePath.replace("\\","/"))
 
-        let okFilePath = filePath.replace("\\","/").replace("\\","/")
+        let okFilePath = filePath.replace(process.env.FILE_SEPARATOR,"/").replace(process.env.FILE_SEPARATOR,"/")
         // console.log(okFilePath)
         return {fileName:fileName,filePath:okFilePath}
     })
@@ -907,6 +935,7 @@ function formatRolesToResumedRoles(user){
     return resumedUserRole
 }
 async function sendEmail(emailParams){
+    // console.log("ENTERED EMAIL")
     let attachmentsObj = []
     for (i=0;i<emailParams.attachments.length;i++){
         attachmentsObj.push(
@@ -926,6 +955,7 @@ async function sendEmail(emailParams){
             pass: emailParams.auth.pass
           }
     })
+    // console.log(transporter)
     let info=await transporter.sendMail({
         from: emailParams.from,
         to: emailParams.to,
@@ -933,6 +963,7 @@ async function sendEmail(emailParams){
         html: emailParams.html,
         attachments:attachmentsObj
     })
+    // console.log(info)
 }
 async function deleteFile (filePath) {
     try {
@@ -1047,16 +1078,16 @@ function ExcelDateToJSDate(serial) {
     returnDate=returnDate.toLocaleString().split(' ')[0]
     console.log(returnDate)
 
-    var year=returnDate.split('/')[0]
-    var month=returnDate.split('/')[1]
-    var day=returnDate.split('/')[2]
-    console.log(month)
+    var year=returnDate.split(process.env.DATE_SEPARATOR)[0]
+    var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
+    var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
+    // console.log(month)
 
-    console.log(month.length)
+    // console.log(month.length)
 
     if (month.length===1){month='0'+month}
     returnDate=day+"/"+month+"/"+year
-    console.log(returnDate)
+    // console.log(returnDate)
 
     return returnDate;
 }
