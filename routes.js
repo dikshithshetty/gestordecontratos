@@ -205,7 +205,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     nuevaAccion=[{
                         accion:"Contrato Creado",
                         persona:currentUser[0].name+" "+currentUser[0].surname,
-                        icono:"new",
+                        icono:"mail-unread-outline",
                         fecha: getCurrentDate(),
                         observaciones:""
                     }]
@@ -330,7 +330,7 @@ router.post("/approveContract/:id",async(req,res)=>{
     nuevaAccion={
         accion:"Aprobado",
         persona:personaFirma,
-        icono:"apr",
+        icono:"thumps-up-sharp",
         fecha: getCurrentDate(),
         observaciones:approveInfo
     }
@@ -386,7 +386,7 @@ router.post("/approveContract/:id",async(req,res)=>{
             nuevaAccion={
                 accion:"Escalado",
                 persona:personaFirma,
-                icono:"esc",
+                icono:"mail-unread-outline",
                 fecha: getCurrentDate(),
                 observaciones:""
             }
@@ -434,7 +434,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
     nuevaAccion={
         accion:"Rechazado (" +reason+")",
         persona:personaFirma,
-        icono:"rej",
+        icono:"thumps-down-sharp",
         fecha: getCurrentDate(),
         observaciones:rejectInfo
     }

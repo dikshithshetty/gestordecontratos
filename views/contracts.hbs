@@ -333,4 +333,14 @@ fileInput.onchange = function () {
   listFile.innerHTML = files.join('<br/>');
 }
 
+
+//ESC MODALS
+var modal = document.querySelectorAll('.modal')
+
+window.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') {
+    modal.style.display = 'none'
+  }
+})
+
 </script>
