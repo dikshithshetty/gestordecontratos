@@ -1084,12 +1084,13 @@ function ExcelDateToJSDate(serial) {
     console.log("YEAR: ",year)
     // var month=returnDate.split(process.env.DATE_SEPARATOR)[1]
     var month =date_info.getMonth()
-    console.log("MONTH: ",month)
+    console.log("MONTH: ",month ,"Variable Type:", typeof month)
+
     // var day=returnDate.split(process.env.DATE_SEPARATOR)[2]
     var day  =date_info.getDate()
     console.log("DAY: ",day)
-    // console.log("Month Number Length: ",month.length)
-    if (month.length===1){month='0'+month}
+    console.log("Month Number Length: ",month.length)
+    if (month.toString().length===1){month='0'+month}
     console.log("Month to Wirte:", month)
     returnDate=day+"/"+month+"/"+year
     console.log("Return Date: ",returnDate)
