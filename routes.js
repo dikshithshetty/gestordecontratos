@@ -22,9 +22,6 @@ router.get('/',(req,res,next)=>{
         layout: false
     }
     if (req.session.currentUser) {
-
-
-
         res.redirect('/displayPendingContracts');
     } else {
         res.render('login-register/login', template);

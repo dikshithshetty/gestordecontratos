@@ -7,9 +7,8 @@ The main goal of this web application is to allow companies a better control and
 ## User Stories
 
 - **404** - As a user I want to see a nice 404 page when I go to a page that doesn't exist so that I know it was my fault.
-- **500** - As a user I want to see a nice error page when the super team screws it up so that I know that is not my fault.
 - **sign up** - As a user I want to sign up on the webpage so that I can register myself as a user.
-- **login** - As a user I want to be able to log in on the webpage so that I can log in into my accpunt.
+- **log in** - As a user I want to be able to log in on the webpage so that I can log in into my accpunt.
 - **logout** - As a user I want to be able to log out from the webpage so that I can make sure no one will access my account.
 - **contract list** - As a user I want to see all the contracts that need to be sign.
     - **see details** - As a user I want to see detailed information about a contract.
@@ -18,9 +17,7 @@ The main goal of this web application is to allow companies a better control and
     - **delete contract** - As a user I want to delete a contract.
     - **update contract** - As a user I want to edit a contract.
     - **upload contract** - As a user I want to upload a contract.
-    - **view contract records** - As a user I want to view all the stages that a contract has gone through.
 - **edit alerts** - As a user I want to edit email templates.
-- **view KPIs** - As a user I want to see different KPIs that allows me to evaluate and follow up my teams performance.
 
 ## MVP
 
@@ -37,58 +34,188 @@ List of other features outside of the MVPs scope
 
 - Send email whenever a user creates, accepts, deletes, updates or rejects a contract.
 - If a user doesn't sign a contract 3 days after an email was sent, another email is sent to that user every 3 days until he accepts or rejects the contract.
+- Recover Forgotten Password.
+- Send Confirmation Email for Account Activation.
+- Change Password in User Profile.
 - KPIs:
     - View all the stages that a contract has gone through.
     - View different charts that allows the user to evaluate and follow up the team performance.
 
 
-## ROUTES (PENDING):
+## ROUTES
 
-- GET / 
-  - renders the homepage
-- GET /auth/signup
-  - redirects to / if user logged in
-  - renders the signup form (with flash msg)
-- POST /auth/signup
-  - redirects to / if user logged in
-  - body:
-    - username
-    - email
-    - password
-- GET /auth/login
-  - redirects to / if user logged in
-  - renders the login form (with flash msg)
-- POST /auth/login
-  - redirects to / if user logged in
-  - body:
-    - username
-    - password
-- POST /auth/logout
-  - body: (empty)
+**/** 
+- GET: 
+  - renders the contract list (if user register)
+  - renders the login
 
-- GET /events
-  - renders the event list + the create form
-- POST /events/create 
-  - redirects to / if user is anonymous
-  - body: 
-    - name
-    - date
-    - location
-    - description
-- GET /events/:id
-  - renders the event detail page
-  - includes the list of attendees
-  - attend button if user not attending yet
-- POST /events/:id/attend 
-  - redirects to / if user is anonymous
-  - body: (empty - the user is already stored in the session)
+**/register**
+- GET: 
+  - renders the register with signup form (with flash msg)
 
+- POST:
+  - create new users in database
+  - redirects to login (with flash msg)
+  
+**/login**
+- GET: 
+  - renders the login
 
-## Models (PENDING)
+- POST:
+  - check if email and passwords matches
+  - redirects to Contract list
 
+**/logout**
+- GET: 
+  - destroy session
+  - redirects to login
+
+**/displayPendingContracts**
+- GET:
+  - list pending contracts from database
+  - check which contracts can be signed by the current user
+
+**/displayClosedContracts**
+- GET:
+  - list closed contracts from database
+
+**/uploadNewContractToDB**
+- POST:
+  - check files integrity
+  - save input files
+  - create new contract to database
+  - add first action to contract history 
+
+**/approveContract/:id**
+- POST:
+  - add user signature to contract
+  - add approve action to contract history
+  - send new contract alert
+
+**/deleteContract/:id**
+- GET:
+  - remove contracts from database
+
+**/rejectContract/:id** 
+- POST:
+  - remove all contract signatures
+  - add reject action to contract history
+
+**/alertsContracts**
+- GET:
+  - display current alerts configuration
+
+**/updateAlerts/:alertType**
+- POST:
+  - save new alerts configuration to database
+
+**/editContracts/:id**
+- GET:
+  - display contract details, signatures, files and history
+
+**/editContracts/uploadFiles/:pq/**
+- POST:
+  - upload files to contract
+
+**/deleteFiles/:pq/:fileName**
+- GET:
+  - delete selected file from PQ folder
+
+**/profile**
+- GET:
+  - show user information
+
+**/profile/addRoles/:email**
+- POST:
+  - add new roles to current user
+
+**/deleteRole/:role**
+- GET:
+  - delete role from current user
+
+## Models
+**User Models**
+```json
+{
+    name:{type:String,required:true},
+    surname:{type:String,required:true},
+    email:{type:String,required:true, unique:true},
+    password:{type:String,required:true},
+    role:{type:Array,required:true},
+    usertype:{type:String, default: 'user'},
+},
+{
+  timestamps: true
+}
+```
+
+**Contract Models**
+```json
+{
+    pq:{type:String,required:true},
+    comercial:{type:String,required:true},
+    cliente:{type:String,required:true},
+    obra:{type:String,required:true},
+    usuarioFinal:{type:String,required:true},
+    nPedido:{type:String,required:true},
+    importe:{type:String,required:true},
+    fechaStatusWon:{type:String,required:true},
+    fechaRecepcion:{type:String,required:true},
+    fechaCreaccionApp:{type:String,default:getCurrentDate()},
+    visible:{type:Boolean,default:true},
+    mainStatus:{type:String,default:"Pending"},
+    firmas:{
+      autOperaciones:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      dirOperaciones:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      autComercial:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      dirComercial:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      autPRL:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      dirPRL:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      autCRiesgos:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      },
+      dirCRiesgos:{
+        value:{type:Boolean,default:false},
+        person:{type:String,default:""}
+      }
+    },
+    historico:{type:Array,default:[]},
+    uploadedFiles:{type:Array,default:[]}
+}
+```
+**Notice Models**
+```json
+{
+    noticeType:{type:String,required:true},
+    destinatario:{type:String,required:true},
+    cc:{type:String},
+    subject:{type:String,required:true},
+    emailBody:{type:String,required:true},
+    attachments:[String],
+    periodicidad:{type:String}
+    }
+```
 
 ## WireFrames
-
 
 <img src="/public/images/wireframes/register.png" alt="" heigth="200px">
 <img src="/public/images/wireframes/login.png" alt="" heigth="200px">
