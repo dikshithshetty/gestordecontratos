@@ -135,7 +135,7 @@ List of other features outside of the MVPs scope
 
 ## Models
 **User Models**
-```json
+```
 {
     name:{type:String,required:true},
     surname:{type:String,required:true},
@@ -150,7 +150,7 @@ List of other features outside of the MVPs scope
 ```
 
 **Contract Models**
-```json
+```
 {
     pq:{type:String,required:true},
     comercial:{type:String,required:true},
@@ -203,7 +203,7 @@ List of other features outside of the MVPs scope
 }
 ```
 **Notice Models**
-```json
+```
 {
     noticeType:{type:String,required:true},
     destinatario:{type:String,required:true},
