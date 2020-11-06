@@ -675,7 +675,7 @@ td span{
     text-align: left;
 }
 
-.upload-file{
+.upload-files{
     width: 100%;
 }
 
@@ -759,9 +759,9 @@ textarea{
         cursor: pointer;
     }
 
-    .btn-back-responsive{
+    /* .btn-back-responsive{
         display: none;
-    }
+    } */
 
     .nav3{
         display: flex;
@@ -824,15 +824,18 @@ textarea{
         grid-template-columns: 50px 2fr 2fr 90px;
         grid-gap: 10px;
         text-align: left;
+        /* height: 0; */
     }
 
     .info-avisos{
-        margin: 15px 0 0 0;
+        /* margin: 15px 0 0 0; */
         display: grid;
         grid-template-columns: 50px 1fr;
         grid-gap: 10px;
-        color: var(--color-grey);
+        /* padding-left: 2%; */
+        color: #474747;
         font-style: italic;
+        padding-top: 5px;
     }
 
     .email-status-card{
@@ -1087,20 +1090,20 @@ textarea{
     }
 
     @media(max-width: 976px){
-        .btn-back-responsive{
+        /* .btn-back-responsive{
             display: block;
-            margin-bottom: 50px;
             position: absolute;
             right: 0;
+            float: right;
+            margin-top: 1.9em;
+            margin-right: 2em;
         }
+
         .btn-back-responsive a img{
             width: auto;
             height: 35px;
             cursor: pointer;
-            float: right;
-            margin-top: 2em;
-            margin-right: 2em;
-        }
+        } */
 
         .contract-details{
             margin: 0 10px 40px 10px;
@@ -1117,9 +1120,9 @@ textarea{
             margin: 0 20px;
         }
 
-        .nav3 a{
+        /* .nav3 a{
             display: none;
-        }
+        } */
 
         .archivos-preview-container{
             display: flex;
@@ -1222,12 +1225,16 @@ textarea{
     }
 
     @media(max-width: 610px){
-        .btn-back-responsive, .edit-container{
+        .edit-container{
+            transform: scale(0.9);
+        }
+
+        .nav3 a, .nav3 h2{
             transform: scale(0.9);
         }
 
         .edit-container{
-            margin: -140px 0 0 0;
+            margin: -80px 0 0 0;
 
         }
     }
@@ -1347,7 +1354,7 @@ textarea{
 
     @media(max-width: 409px){
         .edit-container{
-            padding: 0;
+            /* padding: 0; */
         }
     }
     @media(max-width: 404px){
@@ -1402,13 +1409,63 @@ textarea{
         .success-message{
             width: 320px;
         }
+
+        .titulos-avisos{
+            grid-template-columns: 30px 90px 70px 90px;
+            grid-gap: 10px;
+            word-break: break-word;
+            grid-template-rows: auto;
+        }
     }
 
-    @media(max-width: 339px){
+    @media(max-width: 388px){
+        .archivos-upload{
+            padding: 30px 0;
+        }
+
+        .archivos-nav, .contracts-cards-items{
+            transform: scale(0.8);
+        }
+    }
+
+    /* @media(max-width: 341px){
+        .email-status-card{
+            padding: 15px;
+            transform: scale(0.9);
+        }
+
+        .info-container{
+            padding: 20px;
+        }
+
+        .titulos-avisos{
+            grid-template-columns: 30px 80px 70px 85px;
+        }
+
+        .edit-container{
+            margin: -100px 0 0 0;
+            padding: 30px 20px;
+        }
+
+        /*.btn-back-responsive{
+            margin-right: 0;
+            transform: scale(0.8);
+        } */
+/*
+        .contract-details h2{
+            font-size: 1.5rem;
+        }
+    } */
+
+    @media(max-width: 441px){
         .first-nav1{
             flex-wrap: wrap;
             justify-content: flex-end;
             margin: 0 auto;
+        }
+
+        .info-avisos{
+            grid-template-columns: 20px 1fr;
         }
 
         .title-container{
@@ -1421,17 +1478,17 @@ textarea{
         }
 
         .edit-container{
-            padding: 30px 0;
+            padding: 55px 0;
         }
 
-        .btn-back-responsive{
+        /* .btn-back-responsive{
             transform: scale(0.7);
             float: none;
             position: absolute;
             top: 0;
             right: -30px;
             margin: 9rem 0 0 0;
-        }
+        } */
 
         .info-container{
             padding: 15px;
@@ -1455,12 +1512,10 @@ textarea{
             font-size: 0.875rem;
         }
     
-        .info-avisos{
-            margin: 10px 0 0 0;
-            display: grid;
-            grid-template-columns: 50px 1fr;
-            grid-gap: 10px;
-        }
+
+        /* .email-status-card p{
+            padding-top: 10px;
+        } */
 
 
         .celda-actions {
@@ -1499,5 +1554,16 @@ textarea{
         .contract-details h2{
             font-size: 1.5rem;
         }
+
+        .email-status-card, .archivos-nav{
+            transform: scale(1);
+        }
         
+        .archivos-nav, .contracts-cards-items{
+            transform: scale(1);
+        }
+
+        .email-status .titulos-avisos{
+            font-size: 0.75rem;
+        }
     }

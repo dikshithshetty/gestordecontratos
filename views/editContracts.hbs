@@ -8,9 +8,9 @@
             </ul>
         </div>
 </div>
-<div class="btn-back-responsive">
-<a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
-</div>
+{{!-- <div class="btn-back-responsive">
+    <a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
+</div> --}}
 <div class="edit-container">
     {{!-- Detalles Contrato --}}
     <div class="contract-details">
@@ -81,10 +81,12 @@
                     <div class="tipo-aviso-nombre">{{persona}}</div>
                     <div class="tipo-aviso-fecha">{{fecha}}</div>
                 </div>
+                {{#if observaciones}}
                 <div class="info-avisos">
                     <p></p>
                     <p>{{observaciones}}</p>
                 </div>
+                {{/if}}
             </div>
             {{/each}}
         </div>
