@@ -49,6 +49,10 @@ const contractSchema = new Schema(
           dirCRiesgos:{
             value:{type:Boolean,default:false},
             person:{type:String,default:""}
+          },
+          dirGeneral:{
+            value:{type:Boolean,default:false},
+            person:{type:String,default:""}
           }
         },
         historico:{type:Array,default:[]},

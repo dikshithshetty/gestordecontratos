@@ -58,7 +58,7 @@
             </div>
             <div class="block">
                 <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
-                <div class="btn1 btn-red">Dirección General </div>
+                <div class="btn1 btn-{{#if firmas.dirGeneral.value}}blue{{else}}red{{/if}}">{{#if firmas.dirGeneral.person}}{{firmas.dirGeneral.person}}{{else}}Dirección General{{/if}}</div>
             </div>
             
         </div>

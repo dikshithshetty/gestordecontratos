@@ -324,10 +324,15 @@ router.post("/approveContract/:id",async(req,res)=>{
         let currentUser = await User.find({email:sesionEmail})
         // console.log(currentUser)
         // console.log(fullRole)
-
-        const dept=fullRole.split(" - ")[0]
-        const splitRole=fullRole.split(" - ")[1]
-        // console.log(dept)
+        if (fullRole.includes(" - ")){
+            var dept=fullRole.split(" - ")[0]
+            var splitRole=fullRole.split(" - ")[1]
+        } else {
+            var dept = "Dirección General"
+            var splitRole = "Dirección General"
+        }
+        
+        console.log(dept)
         // console.log(splitRole)
         
         let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
@@ -341,10 +346,16 @@ router.post("/approveContract/:id",async(req,res)=>{
         }
         let contract = await Contract.find({_id:id})
         let historico = contract[0].historico
+        let canDirectorGeneralSign = getCanDirectorGeneralsign(historico)
+        console.log("Can Dirección General Sign? ",canDirectorGeneralSign)
         let canDirectorsign = getCanDirectorSign(historico)
+        console.log("Can Directors Sign? ",canDirectorsign)
         let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
-        // console.log(canDirectorsign)
-        errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign)
+        console.log("Can This Department Sign? ",canThisDeptSign)
+
+        console.log(dept)
+        
+        errorMsg = await createErrorMsgApprove(role,canDirectorsign,canThisDeptSign,canDirectorGeneralSign)
         // console.log(errorMsg)
         // console.log("HISTORICO EN DB: ",historico)
         // console.log(nuevaAccion)
@@ -382,11 +393,22 @@ router.post("/approveContract/:id",async(req,res)=>{
                         await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirPRL.person":personaFirma,"firmas.dirPRL.value":true})
                     }
                     break;
+                case "Dirección General":
+                    nuevaAccion={
+                        accion:"Cerrado",
+                        persona:personaFirma,
+                        icono:"mail-unread-outline",
+                        fecha: getCurrentDate(),
+                        observaciones:approveInfo
+                    }
+                    historico.push(nuevaAccion)
+                    await Contract.findByIdAndUpdate({"_id":id},{"historico":historico,"firmas.dirGeneral.person":personaFirma,"firmas.dirGeneral.value":true,"mainStatus":"Closed"})
+                    break;
             }
             // await Contract.findByIdAndUpdate({_id:id},{historico:historico})
 
             let timeToScale = await mustScale(historico)
-            // console.log("Time To Sacle: ",timeToScale)
+            console.log("Time To Sacle: ",timeToScale)
             if(timeToScale===true){
                 nuevaAccion={
                     accion:"Escalado",
@@ -652,6 +674,22 @@ router.get("/deleteRole/:role",async(req,res)=>{
     }catch(err){console.log("Error en deleteRole Role Get:",err)}
 })
 
+function getCanDirectorGeneralsign(historico){
+    let indexLastRejection = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
+    }
+    // console.log("indexLastRejection: -->", indexLastRejection)
+    //Cut everything previous to last rejection.
+    if (indexLastRejection===-1){
+        var historicoRelevante = historico
+    } else{
+        var historicoRelevante = historico.slice(indexLastRejection+1)
+    }
+    // console.log(historicoRelevante)
+    if (countEscalados(historicoRelevante)===2){return true}else{return false}
+}
 async function mustScale(historico){
     // console.log(historico)
 
@@ -715,9 +753,17 @@ function countApprove(hist){
 async function getCanThisDeptSign(historico,fullRole,personaFirma){
     // console.log(historico)
     // console.log(fullRole)
-    let dept = fullRole.split(" - ")[0]
+    // let dept = fullRole.split(" - ")[0]
     // console.log(dept)
-    let role = fullRole.split(" - ")[1]
+    // let role = fullRole.split(" - ")[1]
+    if (fullRole.includes(" - ")){
+        var dept=fullRole.split(" - ")[0]
+        var role=fullRole.split(" - ")[1]
+    } else {
+        var dept = "Dirección General"
+        var role = "Dirección General"
+    }
+    miniDept = getMiniDept(dept)
     // console.log(role)
     //Get the historico after the last reject
     let relevantHistorico = getRelevantHistorico(historico)
@@ -738,7 +784,7 @@ async function getCanThisDeptSign(historico,fullRole,personaFirma){
         // console.log(historicoLastEscalado[i].accion)
         // console.log(historicoLastEscalado[i].persona)
         // console.log(personaFirma)
-        if(historicoLastEscalado[i].accion === "Aprobado" && historicoLastEscalado[i].persona === personaFirma ){
+        if(historicoLastEscalado[i].accion === "Aprobado" && historicoLastEscalado[i].persona.includes(miniDept) ){
             // console.log("Result =false")
             result = false
         }
@@ -816,7 +862,7 @@ function canUserSign(user,contract){
     user = user[0]
     //Transforms "Control de Riesgos - Director" to "Esteve M. (C. Riesgos) for each role."
     let roles = formatRolesToResumedRoles(user)
-    // console.log("Roles: -->",roles)
+    console.log("Roles: -->",roles)
   
     //Get the historico after the last reject
     let historico = contract.historico
@@ -835,7 +881,7 @@ function canUserSign(user,contract){
 
         let cargo=role.split("-")[2]
         let dept=role.split("-")[1]
-        // console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
+        console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
         switch (cargo){
             case "Autorizado":
                 // console.log("---------->>>>>Soy Autorizado!")
@@ -855,8 +901,9 @@ function canUserSign(user,contract){
                 }
 
             break;
-            case "Dirección General":
-                // console.log("---------->>>>>Soy Director General!")
+            default:
+
+                console.log("---------->>>>>Soy Director General!")
                 if (numEscalados===2){
                     let approvedByMyDepartment = checkIfApprovedByMyDepartment(historicoLastEscalado,dept)
                     // console.log("Previously Approved by My Department?",approvedByMyDepartment)
@@ -891,9 +938,9 @@ function getLastEscaladoHistorico(historico){
     return historicoLastEscalado
 }
 function checkIfApprovedByMyDepartment(hist,dept){
-    // console.log("------------check if aproved by my department------------")
+    console.log("------------check if aproved by my department------------")
     // console.log(hist)
-    // console.log(dept)
+    console.log("Departamento: ",dept)
     for (i=0;i<hist.length;i++){
         if (hist[i].persona.includes(dept)){return true;}
         // console.log(hist[i].persona.includes(dept))
@@ -927,12 +974,23 @@ function getRelevantHistorico(historico){
 function formatRolesToResumedRoles(user){
     // console.log(user)
     const resumedUserRole = user.role.map(role=>{
-        personalHist = getPersonaHistorico(user.name,user.surname,role.split(" - ")[0])
-        return personalHist.replace(" (","-").replace(")","-")+role.split(" - ")[1]
+        if (role==="Dirección General"){
+            personalHist = getPersonaHistorico(user.name,user.surname,role)
+        } else {
+
+            personalHist = getPersonaHistorico(user.name,user.surname,role.split(" - ")[0])
+        }
+            // console.log("Format Roles to Resumed Role: ",personalHist)
+            result = personalHist.replace(" (","-").replace(")","-")+role.split(" - ")[1]
+            // console.log("Format Roles to Resumed Role Result: ",result)
+
+        return result
+        // }
+        
         // console.log(personalHist)
         // return personalHist
     })
-    // console.log("resumedUserRole: --> ",resumedUserRole)
+    console.log("resumedUserRole: --> ",resumedUserRole)
     return resumedUserRole
 }
 async function sendEmail(emailParams){
@@ -1218,7 +1276,7 @@ function createErrorMsgReject(role,reason){
     // console.log(errorMsg)
     return errorMsg;
 }
-async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign){
+async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign,canDirectorGeneralSign){
     // console.log(canThisDeptSign)
     if(role === "Select your Role and Department"){
         errorMsg = "Select a role."
@@ -1302,6 +1360,12 @@ function getPersonaHistorico(name,surname,dept){
     
     let surnameInicial=surname.charAt(0)
     
+    let minidept =getMiniDept(dept)
+    let result = name1 + " " + surnameInicial+". (" + minidept +")"
+    
+    return result
+}
+function getMiniDept(dept){
     let minidept = ""
 
     if (dept === "Comercial"){
@@ -1312,10 +1376,10 @@ function getPersonaHistorico(name,surname,dept){
         minidept = "Oper."
     }else if (dept === "PRL"){
         minidept = "PRL"
+    } else if (dept === "Dirección General"){
+        minidept = "Dir. General"
     }
-    let result = name1 + " " + surnameInicial+". (" + minidept +")"
-    
-    return result
+    return minidept
 }
 function getCurrentDate(){
     var today = new Date();
@@ -1347,6 +1411,7 @@ async function createRoleSelector(role){
     if (role.indexOf("PRL - Director")!==-1){roleObj.dirPRL=true;roleCountVariable=+1}else{roleObj.dirPRL=false}
     if (role.indexOf("Operaciones - Director")!==-1){roleObj.dirOperaciones=true;roleCountVariable=+1}else{roleObj.dirOperaciones=false}
     if (role.indexOf("Control de Riesgos - Director")!==-1){roleObj.dirControlRiesgos=true;roleCountVariable=+1}else{roleObj.dirControlRiesgos=false}
+    if (role.indexOf("Dirección General")!==-1){roleObj.dirGeneral=true;roleCountVariable=+1}else{roleObj.dirGeneral=false}
     
     if (roleCountVariable>1){roleObj.singleRole = true}else{roleObj.singleRole = false}
     return roleObj

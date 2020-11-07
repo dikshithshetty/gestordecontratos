@@ -147,7 +147,6 @@
                 <h2 class="blue">Accept contract</h2>
                 <form method="POST" action="/approveContract/{{_id}}" >
                 <div class="select select-box">
-                    {{!-- <select name="role"  value="{{#if ../formData.role}}{{../formData.role}}{{/if}}"> --}}
                     <select name="role">
                         {{#if ../formData.roleObj.singleRole}}{{else}}<option hidden selected>Select your Role and Department</option>{{/if}}
                         {{#if ../formData.roleObj.autComercial}}<option value="Comercial - Autorizado">Comercial - Autorizado</option>{{/if}}
@@ -158,6 +157,7 @@
                         {{#if ../formData.roleObj.dirOperaciones}}<option value="Operaciones - Director">Operaciones - Director</option>{{/if}}
                         {{#if ../formData.roleObj.autPRL}}<option value="PRL - Autorizado">PRL - Autorizado</option>{{/if}}
                         {{#if ../formData.roleObj.dirPRL}}<option value="PRL - Director">PRL - Director</option>{{/if}}
+                        {{#if ../formData.roleObj.dirGeneral}}<option value="Dirección General">Dirección General</option>{{/if}}
                     </select>
                 </div>
                 <textarea  class="textarea-reject" placeholder="Additional information...." rows ="10" name="approveInfo"></textarea>
@@ -184,6 +184,8 @@
                         {{#if ../formData.roleObj.dirOperaciones}}<option value="Operaciones - Director">Operaciones - Director</option>{{/if}}
                         {{#if ../formData.roleObj.autPRL}}<option value="PRL - Autorizado">PRL - Autorizado</option>{{/if}}
                         {{#if ../formData.roleObj.dirPRL}}<option value="PRL - Director">PRL - Director</option>{{/if}}
+                        {{#if ../formData.roleObj.dirGeneral}}<option value="Dirección General">Dirección General</option>{{/if}}
+
                     </select>
                 </div>
 
