@@ -10,9 +10,9 @@
 <div class="alertas-container">
     <div class="nav-alertas">
         <h2>My profile</h2>
-        <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
+        <a href="/profile/changePassword" class="btn">Change Password</a>       
+        <a href="/" ><img id="back-btn" src="/images/icons/back-btn.png"></a>
 </div>
-
 <div class="profile-container">
         <div class="profile-info-container border">
                 <div class="block">
@@ -27,14 +27,12 @@
                             </ul>
                         </li>
                 </div>
-        </div>
-
-        
+        </div>        
         <div class="select-user">
             <form method="POST" id="registerForm" action="/profile/addRoles/{{user.email}}">
                 <div class="select">
                     <select name="role">
-                        <option hidden selected>Select your Role and Department</option>
+                        <option hidden selected value="Select your Role and Department">Select your Role and Department</option>
                         <option value="Comercial - Autorizado">Comercial - Autorizado</option>
                         <option value="Comercial - Director">Comercial - Director</option>
                         <option value="Control de Riesgos - Autorizado">Control de Riesgos - Autorizado</option>
@@ -43,6 +41,7 @@
                         <option value="Operaciones - Director">Operaciones - Director</option>
                         <option value="PRL - Autorizado">PRL - Autorizado</option>
                         <option value="PRL - Director">PRL - Director</option>
+                        <option value="Dirección General">Dirección General</option>
                     </select>
                 </div>
                 <p id="addRoleSelectorBtn" class="underline-link forgot-password"  onclick="addRoleSelectorBtn(this)">Add more roles/departments</p>
@@ -50,8 +49,6 @@
             </form>
         </div>
 </div>
-
-
 
 <script>
 

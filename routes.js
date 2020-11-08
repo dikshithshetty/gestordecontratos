@@ -216,22 +216,26 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
                     await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
                     // const newAlert = await Notice.findOneAndUpdate({noticeType:"newContract"},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
-
+                    const noticeTemplate = await Notice.findOne({noticeType:"newContract"})
+                    console.log(noticeTemplate)
                     emailParams={
                         host:process.env.EMAIL_HOST,
                         port:process.env.EMAIL_PORT,
                         secure:false,
+                        // service:"Hotmail",
                         auth: {
                             user: process.env.EMAIL_USER,
                             pass: process.env.EMAIL_PASS
                         },
-                        from:'"Esteve Martín - MPA Solutions"<estevemartinmauri@hotmail.com>',
-                        to:"esteve.martin@mpasolutions.es",
-                        subject:"Nuevo Contrato ("+pq+") Requiere su firma",
-                        html: "<p>Hola Sr. Martín,</p><p>Se ha creado un nuevo contrato en el gestor de contratos y requiere de su revisión y firma.</p><ul><li>PQ: "+pq+"</li><li>Cliente: "+cliente+"</li><li>Importe: "+numberToCurrency(importe)+"</li><li>Nº de Pedido: "+nPedido+"</li><li>Obra: "+obra+"</li></ul><p>Muchas gracias.</p>",
+                        from:'"Automatic Alert from MPA Solutions"<estevemartinmauri@hotmail.com>',
+                        to:noticeTemplate.destinatario,
+                        cc:noticeTemplate.cc,
+                        subject:noticeTemplate.subject,
+                        html: noticeTemplate.emailBody,
                         attachments:uploadedFiles
                     }
 
+                    
                     // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
                     // console.log(contractList)
                     // //Send Email
@@ -507,11 +511,10 @@ router.post("/rejectContract/:id",async(req,res)=>{
     }catch(err){console.log("Error en Reject Contract ID Post:",err)}
 
 })
-
 router.get("/alertsContracts",async (req,res,next)=>{
     try{
-        let successMsg = req.params.successMsg;
-        // console.log(successMsg)
+        let successMsg = req.query.successMsg;
+        console.log("SUCCESS MESSAGE: ",successMsg)
 
         const notice = await Notice.find();
         notice.successMsg = successMsg
@@ -673,7 +676,115 @@ router.get("/deleteRole/:role",async(req,res)=>{
         res.redirect("/profile")
     }catch(err){console.log("Error en deleteRole Role Get:",err)}
 })
+router.get("/profile/changePassword",async(req,res,next)=>{
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        console.log(req.query)
+        let successMsg=req.query.successMsg
+        let errorMsg = req.query.errorMsg
+        console.log("Inside profile Change password")
+        console.log("Success Message: ", successMsg)
+        console.log("Error Message: ", errorMsg)
 
+        if (successMsg !== undefined){
+            res.render('resetPassword',{successMsg})
+        } else if (errorMsg !== undefined){
+            res.render('resetPassword',{errorMsg})
+        } else{
+            res.render('resetPassword')
+        }
+        
+    }catch(err){console.log("Error en Reset Password Get:",err)}
+})
+router.post("/profile/uploadNewPassword",async(req,res,next)=>{
+    try{
+        if (!req.session.currentUser){res.redirect("/")}
+        const {currentPass,newPass,repeatedPass}=req.body
+        const sesionEmail = req.session.currentUser.email
+        let currentUser = await User.find({email:sesionEmail})
+        console.log("Current Pass: ",currentPass,"  |  New Pass: ",newPass,"  | Repeated Pass:",repeatedPass)
+        errorMsg = createChangePasswordErrorMsg(currentPass,newPass,repeatedPass)
+        if (errorMsg.length===0){
+            if (bcrypt.compareSync(currentPass, currentUser[0].password)) {          //Check if password match.
+                const bcryptSalt = 10;
+                const salt = bcrypt.genSaltSync(bcryptSalt);
+                const hashPass = bcrypt.hashSync(newPass, salt);
+                await User.findByIdAndUpdate({"_id":currentUser[0].id},{password:hashPass})
+                successMsg="Password Succesfully Changed."
+                res.redirect('/profile/changePassword?successMsg='+successMsg)
+            }else{
+                errorMsg="Incorrect password."
+                res.redirect('/profile/changePassword?errorMsg='+errorMsg)
+
+            }
+        } else{
+            formData={
+                errorMsg:errorMsg,
+                currentPass:currentPass,
+                newPass:newPass,
+                repeatedPass:repeatedPass
+            }
+            res.render('resetPassword',{formData})
+        }
+    }catch(err){console.log("Error en Upload New Password: ",err)}
+})
+
+function createChangePasswordErrorMsg(currentPass,newPass,repeatedPass){
+    // let insertErrorMsg = "You forgot to write the "
+    // if (currentPass === "" && newPass === "" && repeatedPass === ""){
+    //     insertErrorMsg = "You forgot to write the current password, the new password and to repeat the new password."
+    // } else if(currentPass === "" && newPass === "" && repeatedPass === ""){
+    //     insertErrorMsg = "You forgot to write the current password, the new password and to repeat the new password."
+    // }
+    let resultErrorMsg=[]
+    
+    //INSERT ERRORS  (Validates that the fields are not empty).
+    let insertErrorMsg = []
+    let insertErrorMsgOutPut=''
+    if (currentPass=== ""){insertErrorMsg.push('current password')}
+    if (newPass=== ""){insertErrorMsg.push('new passowrd')}
+
+    // console.log(insertErrorMsg)
+    switch (insertErrorMsg.length){
+        case 1:
+            insertErrorMsgOutPut = "You forgot to fill the " + insertErrorMsg[0] + "."
+            break;
+        case 2:
+            insertErrorMsgOutPut = "You forgot to fill the " + insertErrorMsg[0] + " and the " + insertErrorMsg[1] + "."
+            break;
+    }
+    if (insertErrorMsgOutPut!==''){
+        resultErrorMsg.push(insertErrorMsgOutPut)
+    }
+
+    //REPEAT ERRORS (Validates that you repeated email and password).
+    let repeatErrorMsgOutPut=''
+    let repeatErrorMsg=[]
+    if (repeatedPass=== "" && !insertErrorMsgOutPut.includes('new password')){repeatErrorMsg.push('new password')}
+    switch (repeatErrorMsg.length){
+        case 1:
+            repeatErrorMsgOutPut = "You forgot to repeat the " + repeatErrorMsg[0] + "."
+            break;
+    }
+    if (repeatErrorMsgOutPut!==''){
+        resultErrorMsg.push(repeatErrorMsgOutPut)
+    }
+
+    //MATCH ERRORS (Validdates email and passwords match).
+    let matchErrorMsgOutPut=''
+    let matchErrorMsg=[]
+    if (newPass!==repeatedPass && !repeatErrorMsgOutPut.includes('new password') && !insertErrorMsgOutPut.includes('new password')){matchErrorMsg.push('new passwords')}
+    switch (matchErrorMsg.length){
+        case 1:
+            matchErrorMsgOutPut = "The " + matchErrorMsg[0] + " doesn't match."
+            break;
+    }
+    if (matchErrorMsgOutPut!==''){
+        resultErrorMsg.push(matchErrorMsgOutPut)
+    }
+    if (newPass.length<6  && !repeatErrorMsgOutPut.includes('password') && !insertErrorMsgOutPut.includes('password')){resultErrorMsg.push("The password must have at least 6 characters.")}
+    return resultErrorMsg
+}
 function getCanDirectorGeneralsign(historico){
     let indexLastRejection = -1
     // let historico = contract.historico
@@ -862,7 +973,7 @@ function canUserSign(user,contract){
     user = user[0]
     //Transforms "Control de Riesgos - Director" to "Esteve M. (C. Riesgos) for each role."
     let roles = formatRolesToResumedRoles(user)
-    console.log("Roles: -->",roles)
+    // console.log("Roles: -->",roles)
   
     //Get the historico after the last reject
     let historico = contract.historico
@@ -881,7 +992,7 @@ function canUserSign(user,contract){
 
         let cargo=role.split("-")[2]
         let dept=role.split("-")[1]
-        console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
+        // console.log("--->>> CURRENT ROLE:",cargo,"   --->>> CURRENT DEPT:",dept)
         switch (cargo){
             case "Autorizado":
                 // console.log("---------->>>>>Soy Autorizado!")
@@ -903,7 +1014,7 @@ function canUserSign(user,contract){
             break;
             default:
 
-                console.log("---------->>>>>Soy Director General!")
+                // console.log("---------->>>>>Soy Director General!")
                 if (numEscalados===2){
                     let approvedByMyDepartment = checkIfApprovedByMyDepartment(historicoLastEscalado,dept)
                     // console.log("Previously Approved by My Department?",approvedByMyDepartment)
@@ -938,9 +1049,9 @@ function getLastEscaladoHistorico(historico){
     return historicoLastEscalado
 }
 function checkIfApprovedByMyDepartment(hist,dept){
-    console.log("------------check if aproved by my department------------")
+    // console.log("------------check if aproved by my department------------")
     // console.log(hist)
-    console.log("Departamento: ",dept)
+    // console.log("Departamento: ",dept)
     for (i=0;i<hist.length;i++){
         if (hist[i].persona.includes(dept)){return true;}
         // console.log(hist[i].persona.includes(dept))
@@ -990,17 +1101,19 @@ function formatRolesToResumedRoles(user){
         // console.log(personalHist)
         // return personalHist
     })
-    console.log("resumedUserRole: --> ",resumedUserRole)
+    // console.log("resumedUserRole: --> ",resumedUserRole)
     return resumedUserRole
 }
 async function sendEmail(emailParams){
-    // console.log("ENTERED EMAIL")
+    console.log("ENTERED EMAIL")
+    console.log(emailParams)
+    let separator =process.env.FILE_SEPARATOR
     let attachmentsObj = []
     for (i=0;i<emailParams.attachments.length;i++){
         attachmentsObj.push(
             {
                 path:emailParams.attachments[i],
-                filename:emailParams.attachments[i].split("\\")[emailParams.attachments[i].split("\\").length-1]
+                filename:emailParams.attachments[i].split(separator)[emailParams.attachments[i].split(separator).length-1]
             }
         )
     }
@@ -1009,6 +1122,7 @@ async function sendEmail(emailParams){
         host: emailParams.host,
         port: emailParams.port,
         secure:false,
+        // service:emailParams.service,
         auth: {
             user: emailParams.auth.user,
             pass: emailParams.auth.pass
@@ -1023,6 +1137,7 @@ async function sendEmail(emailParams){
         attachments:attachmentsObj
     })
     // console.log(info)
+    console.log("EMAIL SENT")
 }
 async function deleteFile (filePath) {
     try {
@@ -1308,10 +1423,11 @@ function createRoleArray(role,role1,role2,role3,role4){
     const roleArr = []
     // console.log(role4)
     if (role!==undefined&&role!=="Select your Role and Department"){roleArr.push(role)}
-    if (role1!==undefined&&role!=="Select your Role and Department"){roleArr.push(role1)}
-    if (role2!==undefined&&role!=="Select your Role and Department"){roleArr.push(role2)}
-    if (role3!==undefined&&role!=="Select your Role and Department"){roleArr.push(role3)}
-    if (role4!==undefined&&role!=="Select your Role and Department"){roleArr.push(role4)}
+    if (role1!==undefined&&role1!=="Select your Role and Department"){roleArr.push(role1)}
+    if (role2!==undefined&&role2!=="Select your Role and Department"){roleArr.push(role2)}
+    if (role3!==undefined&&role3!=="Select your Role and Department"){roleArr.push(role3)}
+    if (role4!==undefined&&role4!=="Select your Role and Department"){roleArr.push(role4)}
+    console.log(roleArr)
     return roleArr
 }
 function getWho(currentUser,role){
