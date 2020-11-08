@@ -215,31 +215,32 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     //Create Contract to DB
                     // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
                     await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
-                    // const newAlert = await Notice.findOneAndUpdate({noticeType:"newContract"},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
-                    const noticeTemplate = await Notice.findOne({noticeType:"newContract"})
-                    console.log(noticeTemplate)
-                    emailParams={
-                        host:process.env.EMAIL_HOST,
-                        port:process.env.EMAIL_PORT,
-                        secure:false,
-                        // service:"Hotmail",
-                        auth: {
-                            user: process.env.EMAIL_USER,
-                            pass: process.env.EMAIL_PASS
-                        },
-                        from:'"Automatic Alert from MPA Solutions"<estevemartinmauri@hotmail.com>',
-                        to:noticeTemplate.destinatario,
-                        cc:noticeTemplate.cc,
-                        subject:noticeTemplate.subject,
-                        html: noticeTemplate.emailBody,
-                        attachments:uploadedFiles
-                    }
+                    await sendNoticeEmail("newContract")
+                    // // const newAlert = await Notice.findOneAndUpdate({noticeType:"newContract"},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
+                    // const noticeTemplate = await Notice.findOne({noticeType:"newContract"})
+                    // console.log(noticeTemplate)
+                    // emailParams={
+                    //     host:process.env.EMAIL_HOST,
+                    //     port:process.env.EMAIL_PORT,
+                    //     secure:false,
+                    //     // service:"Hotmail",
+                    //     auth: {
+                    //         user: process.env.EMAIL_USER,
+                    //         pass: process.env.EMAIL_PASS
+                    //     },
+                    //     from:'"Automatic Alert from MPA Solutions"<estevemartinmauri@hotmail.com>',
+                    //     to:noticeTemplate.destinatario,
+                    //     cc:noticeTemplate.cc,
+                    //     subject:noticeTemplate.subject,
+                    //     html: noticeTemplate.emailBody,
+                    //     attachments:uploadedFiles
+                    // }
 
                     
-                    // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
-                    // console.log(contractList)
-                    // //Send Email
-                    await sendEmail(emailParams)
+                    // // const contractList = await Contract.find({visible:true,mainStatus:"Pending"},'pq cliente importe comercial')
+                    // // console.log(contractList)
+                    // // //Send Email
+                    // await sendEmail(emailParams)
                     successMsg="Contrato "+pq+" Creado Correctamente.",
 
                     // formData={
@@ -729,6 +730,31 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
     }catch(err){console.log("Error en Upload New Password: ",err)}
 })
 
+
+async function sendNoticeEmail(noticetype){
+    const noticeTemplate = await Notice.findOne({noticeType:noticetype})
+    // console.log(noticeTemplate)
+    emailParams={
+        host:process.env.EMAIL_HOST,
+        port:process.env.EMAIL_PORT,
+        secure:false,
+        // service:"Hotmail",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        },
+        from:'"Automatic Alert from MPA Solutions"<estevemartinmauri@hotmail.com>',
+        to:noticeTemplate.destinatario,
+        cc:noticeTemplate.cc,
+        subject:noticeTemplate.subject,
+        html: noticeTemplate.emailBody,
+        attachments:uploadedFiles
+    }
+    
+    // console.log(contractList)
+    // //Send Email
+    await sendEmail(emailParams)
+}
 function createChangePasswordErrorMsg(currentPass,newPass,repeatedPass){
     // let insertErrorMsg = "You forgot to write the "
     // if (currentPass === "" && newPass === "" && repeatedPass === ""){
@@ -791,15 +817,17 @@ function getCanDirectorGeneralsign(historico){
     for(i=historico.length-1;i>=0;i--){
         if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
-    // console.log("indexLastRejection: -->", indexLastRejection)
+    console.log("indexLastRejection: -->", indexLastRejection)
     //Cut everything previous to last rejection.
     if (indexLastRejection===-1){
         var historicoRelevante = historico
     } else{
         var historicoRelevante = historico.slice(indexLastRejection+1)
     }
-    // console.log(historicoRelevante)
-    if (countEscalados(historicoRelevante)===2){return true}else{return false}
+    console.log(historicoRelevante)
+    let numEscalados = countEscalados(historicoRelevante)
+    console.log(numEscalados)
+    if (numEscalados===2){return true}else{return false}
 }
 async function mustScale(historico){
     // console.log(historico)
@@ -1400,6 +1428,8 @@ async function createErrorMsgApprove(role,canDirectorsign,canThisDeptSign,canDir
             errorMsg="You must aprove as Autorized befor approving as Director."
         }else if(canDirectorsign && role.includes("Autorizado")){
             errorMsg="This contract only needs to be signed by Directors."
+        } else if (!canDirectorGeneralSign && role.includes("General")){
+            errorMsg="This contract can't be signed by the General Direction yet."
         }else if(canThisDeptSign===false){
             errorMsg="You can't approve with this role again."
         }else{
