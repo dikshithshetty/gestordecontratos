@@ -424,6 +424,12 @@ router.post("/approveContract/:id",async(req,res)=>{
                 }
                 historico.push(nuevaAccion)
                 await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+                if (canDirectorsign){
+                    await sendNoticeEmail("escaladoDG")
+                } {
+                    await sendNoticeEmail("escaladoDirectores")
+                }
+                
                 successMsg = "Contrato Aprobado y Escalado Correctamente"
             } else {
                 successMsg = "Contrato Aprobado Correctamente"
@@ -501,7 +507,7 @@ router.post("/rejectContract/:id",async(req,res)=>{
 
             //Send Rejection Email
             // await sendEmail(emailParams)
-
+            await sendNoticeEmail("reject")
 
             successMsg = "Contrato Rechazado Correctamente"
             res.redirect('/displayPendingContracts?successMsg='+successMsg)
@@ -748,7 +754,7 @@ async function sendNoticeEmail(noticetype){
         cc:noticeTemplate.cc,
         subject:noticeTemplate.subject,
         html: noticeTemplate.emailBody,
-        attachments:uploadedFiles
+        // attachments:uploadedFiles
     }
     
     // console.log(contractList)
@@ -1133,18 +1139,21 @@ function formatRolesToResumedRoles(user){
     return resumedUserRole
 }
 async function sendEmail(emailParams){
-    console.log("ENTERED EMAIL")
-    console.log(emailParams)
+    // console.log("ENTERED EMAIL")
+    // console.log(emailParams)
     let separator =process.env.FILE_SEPARATOR
     let attachmentsObj = []
-    for (i=0;i<emailParams.attachments.length;i++){
-        attachmentsObj.push(
-            {
-                path:emailParams.attachments[i],
-                filename:emailParams.attachments[i].split(separator)[emailParams.attachments[i].split(separator).length-1]
-            }
-        )
+    if (emailParams.attachments){
+        for (i=0;i<emailParams.attachments.length;i++){
+            attachmentsObj.push(
+                {
+                    path:emailParams.attachments[i],
+                    filename:emailParams.attachments[i].split(separator)[emailParams.attachments[i].split(separator).length-1]
+                }
+            )
+        }
     }
+    
     // console.log(attachmentsObj)
     let transporter = nodemailer.createTransport({
         host: emailParams.host,

@@ -7,7 +7,6 @@ The main goal of this web application is to allow companies a better control and
 ## User Stories
 
 - **404** - As a user I want to see a nice 404 page when I go to a page that doesn't exist so that I know it was my fault.
-- **500** - As a user I want to see a nice error page when the super team screws it up so that I know that is not my fault.
 - **sign up** - As a user I want to sign up on the webpage so that I can register myself as a user.
 - **login** - As a user I want to be able to log in on the webpage so that I can log in into my accpunt.
 - **logout** - As a user I want to be able to log out from the webpage so that I can make sure no one will access my account.
@@ -18,7 +17,6 @@ The main goal of this web application is to allow companies a better control and
     - **delete contract** - As a user I want to delete a contract.
     - **update contract** - As a user I want to edit a contract.
     - **upload contract** - As a user I want to upload a contract.
-    - **view contract records** - As a user I want to view all the stages that a contract has gone through.
 - **edit alerts** - As a user I want to edit email templates.
 - **view KPIs** - As a user I want to see different KPIs that allows me to evaluate and follow up my teams performance.
 

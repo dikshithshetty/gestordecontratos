@@ -1441,6 +1441,7 @@ textarea{
             grid-gap: 10px;
             word-break: break-word;
             grid-template-rows: auto;
+            align-items: center;
         }
     }
 
