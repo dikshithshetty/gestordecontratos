@@ -13,7 +13,7 @@ const Contract = require('./models/contract-model');
 const Notice = require('./models/notice-model')
 const { Console } = require('console');
 const { findOne } = require("./models/user-model");
-const { pbkdf2 } = require('crypto');
+var crypto = require('crypto');
 
 router.get('/',(req,res,next)=>{
     
@@ -736,7 +736,200 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
     }catch(err){console.log("Error en Upload New Password: ",err)}
 })
 
+router.get("/forgotPassword",async(req,res,next)=>{
+    let template = {
+        layout: false
+    }
+    res.render('login-register/forgotPass',template)
+})
+router.post("/forgotPassword",async(req,res,next)=>{
+    try {
 
+        let userEmail = req.body.email
+        // console.log("User Email: ",userEmail)
+        let token = await createToken()
+        console.log("Token: ",token)
+        const user = await User.findOne({ email: userEmail });
+        // console.log("User: ", user)
+
+        if (!user){
+            errorMsg="This email doesn't exist."                        //User doesn't exists.
+            formData={errorMsg:errorMsg,email:userEmail,layout:false}
+            res.render("forgotPass",formData);
+        } else{
+            var tokenExpireDate = new Date();
+            tokenExpireDate.setHours(tokenExpireDate.getHours() + 1);
+
+            // console.log(tokenExpireDate)
+            await User.findOneAndUpdate({email:userEmail},{resetPasswordToken:token,resetPasswordExpires:tokenExpireDate})
+
+            emailParams={
+                host:process.env.EMAIL_HOST,
+                port:process.env.EMAIL_PORT,
+                secure:false,
+                // service:"Hotmail",
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                from:'"Contract Manager - Password Reset"<estevemartinmauri@hotmail.com>',
+                to:userEmail,
+                subject:"Contract Manager - Password Reset",
+                html:`<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Reset Password</title>
+                    <style>
+                        
+                        *{
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        html,body, input, button{
+                            font-family: calibri, sans-serif;
+                        }
+                        body{
+                            height: 100%;
+                            padding:20px;
+                            color:#303030;
+                        }
+                        .container{
+                            /* background-color: aqua; */
+                        }
+                        h1{
+                            text-align: center;
+                            margin:20px 0px 0px 0px;
+                            color:#00A2D1;
+                            font-weight: 700;
+                        }
+                        h2{
+                            text-align: center;
+                            color:#00A2D1;
+                            font-weight: 200;
+                            margin:0px;
+                        }
+                        h3{
+                            color:#303030;
+                            margin: 20px 0px;
+                        }
+                        h4{
+                            font-size: 18pt;
+                            padding-left:2%;
+                        }
+                        p{
+                            padding-bottom:20px;
+                            margin-left:0px;
+                        }
+                        a{
+                            
+                            /* margin-left:20px; */
+                            /* margin:40px; */
+                            /* margin:40px 0px; */
+                        }
+                        .link{
+                            /* padding:15px; */
+                            color: #00A2D1;
+                            /* border-radius: 5px; */
+                            text-decoration: none;
+                            /* margin:50px; */
+                            border:none;
+                            outline: none;
+                
+                        } 
+                        .link-container{
+                            padding:15px;
+                            background-color: #00A2D1;
+                            border-radius: 5px; 
+                            width: 140px;
+                            text-align: center;
+                        }
+                        .row-after-link{
+                            margin-top:20px;
+                            /* padding:0px; */
+                        }
+                        .row-before-link{
+                            margin-bottom: 5px;
+                                        padding:0px;
+                
+                        }
+                        .name{
+                            font-weight: 500;
+                            font-size: 16pt;
+                            margin-bottom:0px;
+                            padding:0px;
+                            font-family: arial;
+                        }
+                        .small{
+                            font-size: 10pt;
+                            margin:0px;
+                            padding: 0px;
+                            /* height: 12px; */
+                            /* margin-bottom:45px; */
+                            line-height: 16px;
+                        }
+                        img{
+                            margin-top:15px;
+                        }
+                        a{
+                            text-decoration: none;
+                        }
+                        
+                    </style>
+                </head>
+                <body>
+                    
+                        <div class="container">
+                            <h1>ASSA ABLOY</h1>
+                            <h2>Contract Manager</h2>
+                            <h3>Password Resset</h3>
+                            <p>You are receiving this because you (or someone else) have requested to reset the password for your account in the <b>Contract Manager</b> Platform.</p>
+                            <p class="row-before-link"> Please click on the following link to complete the process:</p>
+                            <h4><a class="link" href="`+__dirname+`/resetPassword/`+token+`">Reset Password</a></h4>
+                            <p class="row-after-link">If you did not request this, please ignore this email and your password will remain unchanged.</p>
+                            <p>Best regards,</p>
+                            <p class="name">Esteve Martín</p>
+                            <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
+                                Phone: +34 60 60 148<br>
+                                Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
+                                <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
+                
+                            <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
+                        </div>
+                    
+                </body>
+                </html>`
+                // attachments:uploadedFiles
+            }
+
+            await sendEmail(emailParams)
+            let template = {
+                layout: false,
+                successMsg:"Password recovery email has been sent."
+            }
+            res.render('login-register/forgotPass',template)
+        }
+    }catch(err){
+        console.log(err)
+    }
+})
+
+router.get("/resetPassword/:token",async(req,res,next)=>{
+    // res.render("forgotPassNewPass")
+    let template = {
+        layout: false
+    }
+    res.render('login-register/forgotPassNewPass',template)
+
+})
+
+async function createToken(){
+    let token = crypto.randomBytes(20)
+    let result = token.toString('hex')
+    return result
+}
 async function sendNoticeEmail(noticetype){
     const noticeTemplate = await Notice.findOne({noticeType:noticetype})
     // console.log(noticeTemplate)

@@ -11,6 +11,8 @@ const userSchema = new Schema(
         password:{type:String,required:true},
         role:{type:Array,required:true},
         usertype:{type:String, default: 'user'},
+        resetPasswordToken:{type:String,default:undefined},
+        resetPasswordExpires:{type:Date,default:undefined}
     },
     {
       timestamps: true
