@@ -762,7 +762,8 @@ router.post("/forgotPassword",async(req,res,next)=>{
 
             // console.log(tokenExpireDate)
             await User.findOneAndUpdate({email:userEmail},{resetPasswordToken:token,resetPasswordExpires:tokenExpireDate})
-
+            let tokenLink =  path.join(__dirname, 'resetPassword', token)
+            console.log("Token Link: ",tokenLink)
             emailParams={
                 host:process.env.EMAIL_HOST,
                 port:process.env.EMAIL_PORT,
@@ -887,7 +888,7 @@ router.post("/forgotPassword",async(req,res,next)=>{
                             <h3>Password Resset</h3>
                             <p>You are receiving this because you (or someone else) have requested to reset the password for your account in the <b>Contract Manager</b> Platform.</p>
                             <p class="row-before-link"> Please click on the following link to complete the process:</p>
-                            <h4><a class="link" href="`+__dirname+`/resetPassword/`+token+`">Reset Password</a></h4>
+                            <h4><a class="link" href="`+tokenLink+`">Reset Password</a></h4>
                             <p class="row-after-link">If you did not request this, please ignore this email and your password will remain unchanged.</p>
                             <p>Best regards,</p>
                             <p class="name">Esteve Martín</p>
