@@ -762,7 +762,7 @@ router.post("/forgotPassword",async(req,res,next)=>{
 
             // console.log(tokenExpireDate)
             await User.findOneAndUpdate({email:userEmail},{resetPasswordToken:token,resetPasswordExpires:tokenExpireDate})
-            let tokenLink =  path.join(__dirname, 'resetPassword', token)
+            let tokenLink =  path.join("https://gestordecontratos-nqx8w.ondigitalocean.app", 'resetPassword', token)
             console.log("Token Link: ",tokenLink)
             emailParams={
                 host:process.env.EMAIL_HOST,
