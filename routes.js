@@ -22,9 +22,6 @@ router.get('/',(req,res,next)=>{
         layout: false
     }
     if (req.session.currentUser) {
-
-
-
         res.redirect('/displayPendingContracts');
     } else {
         res.render('login-register/login', template);
@@ -33,46 +30,55 @@ router.get('/',(req,res,next)=>{
 router.post('/', async(req,res,next)=>{
     try{
 
-    // console.log("Entering Login POST Method")
-    const{email, password} = req.body;
-    var errorMsg = '';
+        // console.log("Entering Login POST Method")
+        const{email, password} = req.body;
+        var errorMsg = '';
 
-    //Validates that the fields are not empty
+        //Validates that the fields are not empty
 
-    if (email==="" && password ===""){
-        errorMsg = "You forgot to write your email and password."       //Email and Password not Filled.
-        formData={errorMsg:errorMsg,layout:false}
-        res.render("login-register/login",formData);                    //Render Login and Error Message.
-    }else if (email===""){
-        errorMsg = "You forgot to write your email."                    //Email not Filled.
-        formData={errorMsg:errorMsg,layout:false}
-        res.render("login-register/login",formData);                    //Render Login and Error Message.
-    }else if (password ===""){
-        errorMsg = "You forgot to write your password."                 //Password not Filled.
-        formData={errorMsg:errorMsg,email:email,layout:false}
-        res.render("login-register/login",formData);                    //Render Login and Error Message.
-    } else {
-        const user = await User.findOne({ email: email });              //Search User to BD by Email.
-        if (!user){
-            errorMsg="This email doesn't exist."                        //User doesn't exists.
+        if (email==="" && password ===""){
+            errorMsg = "You forgot to write your email and password."       //Email and Password not Filled.
+            formData={errorMsg:errorMsg,layout:false}
+            res.render("login-register/login",formData);                    //Render Login and Error Message.
+        }else if (email===""){
+            errorMsg = "You forgot to write your email."                    //Email not Filled.
+            formData={errorMsg:errorMsg,layout:false}
+            res.render("login-register/login",formData);                    //Render Login and Error Message.
+        }else if (password ===""){
+            errorMsg = "You forgot to write your password."                 //Password not Filled.
             formData={errorMsg:errorMsg,email:email,layout:false}
-            res.render("login-register/login",formData);
-        } else{
-                                                                        //User Exists.
-            if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
-                req.session.currentUser = user;                         //Save User Session.
-                // await deleteDir(path.join(__dirname,"uploadedContracts"))
-                // await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
-                // await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
-
-                res.redirect("/displayPendingContracts")                                       //Redirect to home.
-            }else{
-                errorMsg="Incorrect email or password."                 //Password is inccorrect.
+            res.render("login-register/login",formData);                    //Render Login and Error Message.
+        } else {
+            const user = await User.findOne({ email: email });              //Search User to BD by Email.
+            if (!user){
+                errorMsg="This email doesn't exist."                        //User doesn't exists.
                 formData={errorMsg:errorMsg,email:email,layout:false}
-                res.render("login-register/login",formData);            //Render Login and Error Message.
+                res.render("login-register/login",formData);
+            } else{
+                console.log("User Account Status:" , user.accountStatus)
+                console.log("User Account Status Comparison:" , user.accountStatus===false)
+                if (user.accountStatus===false){
+                    console.log("Inside user.accountStatus")
+                    errorMsg="The account needs to be activated. Check your email and spam mailbox for the activation email."                 //Password is inccorrect.
+                    formData={errorMsg:errorMsg,email:email,layout:false}
+                    res.render("login-register/login",formData);            //Render Login and Error Message.
+                } else {
+                    console.log("ignored user.accountStatus")                   //User Exists.
+                    if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
+                        req.session.currentUser = user;                         //Save User Session.
+                        // await deleteDir(path.join(__dirname,"uploadedContracts"))
+                        // await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
+                        // await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
+
+                        res.redirect("/displayPendingContracts")                                       //Redirect to home.
+                    }else{
+                        errorMsg="Incorrect email or password."                 //Password is inccorrect.
+                        formData={errorMsg:errorMsg,email:email,layout:false}
+                        res.render("login-register/login",formData);            //Render Login and Error Message.
+                    }
+                }
             }
         }
-    }
     }catch(err){console.log("Error en Login Post:",err)}
 
 })
@@ -91,8 +97,9 @@ router.post('/register',async (req,res,next)=>{
         const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
         var errorMsg = [];
         // console.log("Role4: ",role4)
-            roleArr = createRoleArray(role,role1,role2,role3,role4)
-            // console.log("Role Array", roleArr)
+        roleArr = createRoleArray(role,role1,role2,role3,role4)
+        // console.log("Role Array", roleArr)
+        let accountActivationToken = await createToken()
         errorMsg = await createErrorMsgRegister(username, usersurname, email, repeatemail, password, repeatedpassword, roleArr)
         
         formData={
@@ -113,8 +120,27 @@ router.post('/register',async (req,res,next)=>{
             const salt = bcrypt.genSaltSync(bcryptSalt);
             const hashPass = bcrypt.hashSync(password, salt);
             
-            await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr});
-            formData.succesMsg="User succesfully created.";
+            await User.create({name:username,surname:usersurname,email,password:hashPass,role:roleArr,accountActivationToken});
+            let tokenLink =  path.join("https://gestordecontratos-nqx8w.ondigitalocean.app", 'activateAccount', accountActivationToken)
+
+            emailParams={
+                host:process.env.EMAIL_HOST,
+                port:process.env.EMAIL_PORT,
+                secure:false,
+                // service:"Hotmail",
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                from:'"Contract Manager - Account Activation [Action Required]"<estevemartinmauri@hotmail.com>',
+                to:email,
+                subject:"Contract Manager - Account Activation [Action Required]",
+                html:getEmailBodyClickToActivateAccount(tokenLink)
+                // attachments:uploadedFiles
+            }
+            await sendEmail(emailParams)
+
+            formData.succesMsg="User succesfully created. Check your email to activate the account.";
             res.render("login-register/login",{formData, layout: false});
         } else{
             res.render("login-register/register",{formData, layout: false});
@@ -701,7 +727,7 @@ router.get("/profile/changePassword",async(req,res,next)=>{
             res.render('resetPassword')
         }
         
-    }catch(err){console.log("Error en Reset Password Get:",err)}
+    }catch(err){console.log("Error en /Profile/changePassword Get:",err)}
 })
 router.post("/profile/uploadNewPassword",async(req,res,next)=>{
     try{
@@ -733,14 +759,19 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
             }
             res.render('resetPassword',{formData})
         }
-    }catch(err){console.log("Error en Upload New Password: ",err)}
+    }catch(err){console.log("Error en /profile/uploadNewPAssword: ",err)}
 })
 
 router.get("/forgotPassword",async(req,res,next)=>{
-    let template = {
-        layout: false
+    try{
+        let template = {
+            layout: false
+        }
+        res.render('login-register/forgotPass',template)
+    } catch(err){
+        console.log("Error en /forgotPassword Get: ", err)
     }
-    res.render('login-register/forgotPass',template)
+    
 })
 router.post("/forgotPassword",async(req,res,next)=>{
     try {
@@ -748,14 +779,14 @@ router.post("/forgotPassword",async(req,res,next)=>{
         let userEmail = req.body.email
         // console.log("User Email: ",userEmail)
         let token = await createToken()
-        console.log("Token: ",token)
+        // console.log("Token: ",token)
         const user = await User.findOne({ email: userEmail });
         // console.log("User: ", user)
 
         if (!user){
             errorMsg="This email doesn't exist."                        //User doesn't exists.
             formData={errorMsg:errorMsg,email:userEmail,layout:false}
-            res.render("forgotPass",formData);
+            res.render("login-register/forgotPass",formData);
         } else{
             var tokenExpireDate = new Date();
             tokenExpireDate.setHours(tokenExpireDate.getHours() + 1);
@@ -763,7 +794,7 @@ router.post("/forgotPassword",async(req,res,next)=>{
             // console.log(tokenExpireDate)
             await User.findOneAndUpdate({email:userEmail},{resetPasswordToken:token,resetPasswordExpires:tokenExpireDate})
             let tokenLink =  path.join("https://gestordecontratos-nqx8w.ondigitalocean.app", 'resetPassword', token)
-            console.log("Token Link: ",tokenLink)
+            // console.log("Token Link: ",tokenLink)
             emailParams={
                 host:process.env.EMAIL_HOST,
                 port:process.env.EMAIL_PORT,
@@ -776,132 +807,7 @@ router.post("/forgotPassword",async(req,res,next)=>{
                 from:'"Contract Manager - Password Reset"<estevemartinmauri@hotmail.com>',
                 to:userEmail,
                 subject:"Contract Manager - Password Reset",
-                html:`<!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Reset Password</title>
-                    <style>
-                        
-                        *{
-                            margin: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                        }
-                        html,body, input, button{
-                            font-family: calibri, sans-serif;
-                        }
-                        body{
-                            height: 100%;
-                            padding:20px;
-                            color:#303030;
-                        }
-                        .container{
-                            /* background-color: aqua; */
-                        }
-                        h1{
-                            text-align: center;
-                            margin:20px 0px 0px 0px;
-                            color:#00A2D1;
-                            font-weight: 700;
-                        }
-                        h2{
-                            text-align: center;
-                            color:#00A2D1;
-                            font-weight: 200;
-                            margin:0px;
-                        }
-                        h3{
-                            color:#303030;
-                            margin: 20px 0px;
-                        }
-                        h4{
-                            font-size: 18pt;
-                            padding-left:2%;
-                        }
-                        p{
-                            padding-bottom:20px;
-                            margin-left:0px;
-                        }
-                        a{
-                            
-                            /* margin-left:20px; */
-                            /* margin:40px; */
-                            /* margin:40px 0px; */
-                        }
-                        .link{
-                            /* padding:15px; */
-                            color: #00A2D1;
-                            /* border-radius: 5px; */
-                            text-decoration: none;
-                            /* margin:50px; */
-                            border:none;
-                            outline: none;
-                
-                        } 
-                        .link-container{
-                            padding:15px;
-                            background-color: #00A2D1;
-                            border-radius: 5px; 
-                            width: 140px;
-                            text-align: center;
-                        }
-                        .row-after-link{
-                            margin-top:20px;
-                            /* padding:0px; */
-                        }
-                        .row-before-link{
-                            margin-bottom: 5px;
-                                        padding:0px;
-                
-                        }
-                        .name{
-                            font-weight: 500;
-                            font-size: 16pt;
-                            margin-bottom:0px;
-                            padding:0px;
-                            font-family: arial;
-                        }
-                        .small{
-                            font-size: 10pt;
-                            margin:0px;
-                            padding: 0px;
-                            /* height: 12px; */
-                            /* margin-bottom:45px; */
-                            line-height: 16px;
-                        }
-                        img{
-                            margin-top:15px;
-                        }
-                        a{
-                            text-decoration: none;
-                        }
-                        
-                    </style>
-                </head>
-                <body>
-                    
-                        <div class="container">
-                            <h1>ASSA ABLOY</h1>
-                            <h2>Contract Manager</h2>
-                            <h3>Password Resset</h3>
-                            <p>You are receiving this because you (or someone else) have requested to reset the password for your account in the <b>Contract Manager</b> Platform.</p>
-                            <p class="row-before-link"> Please click on the following link to complete the process:</p>
-                            <h4><a class="link" href="`+tokenLink+`">Reset Password</a></h4>
-                            <p class="row-after-link">If you did not request this, please ignore this email and your password will remain unchanged.</p>
-                            <p>Best regards,</p>
-                            <p class="name">Esteve Martín</p>
-                            <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
-                                Phone: +34 60 60 148<br>
-                                Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
-                                <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
-                
-                            <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
-                        </div>
-                    
-                </body>
-                </html>`
+                html:getEmailBodyClickToChangePassword(tokenLink)
                 // attachments:uploadedFiles
             }
 
@@ -913,19 +819,563 @@ router.post("/forgotPassword",async(req,res,next)=>{
             res.render('login-register/forgotPass',template)
         }
     }catch(err){
-        console.log(err)
+        console.log("Error en /forgotPassword Post: ", err)
     }
 })
 
 router.get("/resetPassword/:token",async(req,res,next)=>{
-    // res.render("forgotPassNewPass")
-    let template = {
-        layout: false
+    try{
+        // res.render("forgotPassNewPass")
+        let token = req.params.token
+        // console.log("GET Token: ",token)
+        let formData = {
+            layout: false,
+            thistoken:token
+        }
+        res.render('login-register/forgotPassNewPass',formData)
+    } catch(err){
+        console.log("Error en /resetPassword/:token Get: ", err)
+
     }
-    res.render('login-register/forgotPassNewPass',template)
+    
 
 })
+router.post("/resetPassword/:token",async(req,res,next)=>{
+    // console.log("INSIDE RESETPASSWORD/:TOKEN")
+    try{
 
+        let newPass = req.body.newPassword
+        let newPassRepeat = req.body.newPasswordRepeat
+        let token = req.params.token
+        // console.log("newPass:",newPass)
+        // console.log("newPassRepeat:",newPassRepeat)
+        // console.log("Token inside ResetPassword: ",token)
+        let errorMsg = await createErrorMsgUploadNewPassword(newPass,newPassRepeat)
+        // console.log(errorMsg)
+        if (errorMsg.length>0){
+            let formData = {
+                layout: false,
+                errorMsg:errorMsg,
+                thistoken:token
+            }
+            res.render('login-register/forgotPassNewPass',formData)
+        } else {
+            // console.log("Errors: 0")
+            const user = await User.findOne({ resetPasswordToken: token });
+            // console.log(user)
+            if (!user){
+                console.log("User not found")
+                let formData = {
+                    layout: false,
+                    thistoken:token,
+                    errorMsg:"This link has already been used."
+                }
+                res.render('login-register/forgotPassNewPass',formData)
+            } else{
+                // console.log("User found")
+                const currentTime = new Date();
+                const tokenExpirationDate = user.resetPasswordExpires
+                // console.log("Current Time:",currentTime )
+                // console.log("Expiration Time: ",tokenExpirationDate)
+                if(currentTime.getTime()>tokenExpirationDate.getTime()){
+                    // console.log("Token already expired")
+                    await User.findOneAndUpdate({resetPasswordToken:token},{resetPasswordToken:undefined,resetPasswordExpires:undefined})
+                    let formData = {
+                        layout: false,
+                        thistoken:token,
+                        errorMsg:"This link has expired."
+                    }
+                    res.render('login-register/forgotPassNewPass',formData)
+                }
+                // console.log("Token still valid")
+
+                const bcryptSalt = 10;
+                const salt = bcrypt.genSaltSync(bcryptSalt);
+                const hashPass = bcrypt.hashSync(newPass, salt);
+                await User.findOneAndUpdate({resetPasswordToken:token},{resetPasswordToken:undefined,resetPasswordExpires:undefined,password:hashPass})
+                const webLink = "https://gestordecontratos-nqx8w.ondigitalocean.app/"
+                // console.log("User Password Updated")
+                emailParams={
+                    host:process.env.EMAIL_HOST,
+                    port:process.env.EMAIL_PORT,
+                    secure:false,
+                    // service:"Hotmail",
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS
+                    },
+                    from:'"Contract Manager - Password Reset"<estevemartinmauri@hotmail.com>',
+                    to:user.email,
+                    subject:"Contract Manager - Password has been reseted",
+                    html:getEmailBodyPasswordHasBeenReset(webLink)
+                    // attachments:uploadedFiles
+                }
+                await sendEmail(emailParams)
+                console.log("Confirmation Password Reset - Email Sent")
+                let formData = {
+                    layout: false,
+                    thistoken:token,
+                    succesMsg:"Password Successfully Changed."
+                }
+                res.render("login-register/login",formData)
+            }
+        }
+    } catch(err){
+        console.log("Error en /resetPassword/:token Post: ", err)
+    }
+})
+
+router.get("/activateAccount/:token",async(req,res,next)=>{
+    try{
+        let token = req.params.token
+        const user = await User.findOne({ accountActivationToken: token });
+        if(!user){
+            res.render("login-register/accountActivated",{layout: false,errorMsg:"This email doesn't exists."})
+        } else{
+            await User.findOneAndUpdate({accountActivationToken:token},{accountStatus:true})
+            res.render("login-register/accountActivated",{layout: false,successMsg:"Account Successfully Activated."})
+        }
+    }catch(err){
+        console.log("Error en /activateAccount/:token Get: ", err)
+    }
+})
+
+function getEmailBodyClickToActivateAccount(tokenLink){
+    const emailBody=`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Activation</title>
+        <style>
+            
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,body, input, button{
+                font-family: calibri, sans-serif;
+            }
+            body{
+                height: 100%;
+                padding:20px;
+                color:#303030;
+            }
+            .container{
+                /* background-color: aqua; */
+            }
+            h1{
+                text-align: center;
+                margin:20px 0px 0px 0px;
+                color:#00A2D1;
+                font-weight: 700;
+            }
+            h2{
+                text-align: center;
+                color:#00A2D1;
+                font-weight: 200;
+                margin:0px;
+            }
+            h3{
+                color:#303030;
+                margin: 20px 0px;
+            }
+            h4{
+                font-size: 18pt;
+                padding-left:2%;
+            }
+            p{
+                padding-bottom:20px;
+                margin-left:0px;
+            }
+            a{
+                
+                /* margin-left:20px; */
+                /* margin:40px; */
+                /* margin:40px 0px; */
+            }
+            .link{
+                /* padding:15px; */
+                color: #00A2D1;
+                /* border-radius: 5px; */
+                text-decoration: none;
+                /* margin:50px; */
+                border:none;
+                outline: none;
+    
+            } 
+            .link-container{
+                padding:15px;
+                background-color: #00A2D1;
+                border-radius: 5px; 
+                width: 140px;
+                text-align: center;
+            }
+            .row-after-link{
+                margin-top:20px;
+                /* padding:0px; */
+            }
+            .row-before-link{
+                margin-bottom: 5px;
+                            padding:0px;
+    
+            }
+            .name{
+                font-weight: 500;
+                font-size: 16pt;
+                margin-bottom:0px;
+                padding:0px;
+                font-family: arial;
+            }
+            .small{
+                font-size: 10pt;
+                margin:0px;
+                padding: 0px;
+                /* height: 12px; */
+                /* margin-bottom:45px; */
+                line-height: 16px;
+            }
+            img{
+                margin-top:15px;
+            }
+            a{
+                text-decoration: none;
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+            <div class="container">
+                <h1>ASSA ABLOY</h1>
+                <h2>Contract Manager</h2>
+                <h3>Account Activation</h3>
+                <p>This is a confirmation that your account has been created in the <b>Contract Manager</b> Platform.</p>
+                <p class="row-before-link"> Please click on the following link to activate your account:</p>
+                <h4><a class="link" href="`+tokenLink+`">Activate Account</a></h4>
+                <p class="row-after-link">Thank you.</p>
+                <p>Best regards,</p>
+                <p class="name">Esteve Martín</p>
+                <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
+                    Phone: +34 60 60 148<br>
+                    Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
+                    <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
+    
+                <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
+            </div>
+        
+    </body>
+    </html>`
+
+    return emailBody
+}
+function getEmailBodyPasswordHasBeenReset(webLink){
+    const emailBody = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password has been reseted</title>
+        <style>
+            
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,body, input, button{
+                font-family: calibri, sans-serif;
+            }
+            body{
+                height: 100%;
+                padding:20px;
+                color:#303030;
+            }
+            .container{
+                /* background-color: aqua; */
+            }
+            h1{
+                text-align: center;
+                margin:20px 0px 0px 0px;
+                color:#00A2D1;
+                font-weight: 700;
+            }
+            h2{
+                text-align: center;
+                color:#00A2D1;
+                font-weight: 200;
+                margin:0px;
+            }
+            h3{
+                color:#303030;
+                margin: 20px 0px;
+            }
+            h4{
+                font-size: 18pt;
+                padding-left:2%;
+            }
+            p{
+                padding-bottom:20px;
+                margin-left:0px;
+            }
+            a{
+                
+                /* margin-left:20px; */
+                /* margin:40px; */
+                /* margin:40px 0px; */
+            }
+            .link{
+                /* padding:15px; */
+                color: #00A2D1;
+                /* border-radius: 5px; */
+                text-decoration: none;
+                /* margin:50px; */
+                border:none;
+                outline: none;
+    
+            } 
+            .link-container{
+                padding:15px;
+                background-color: #00A2D1;
+                border-radius: 5px; 
+                width: 140px;
+                text-align: center;
+            }
+            .row-after-link{
+                margin-top:20px;
+                /* padding:0px; */
+            }
+            .row-before-link{
+                margin-bottom: 5px;
+                            padding:0px;
+    
+            }
+            .name{
+                font-weight: 500;
+                font-size: 16pt;
+                margin-bottom:0px;
+                padding:0px;
+                font-family: arial;
+            }
+            .small{
+                font-size: 10pt;
+                margin:0px;
+                padding: 0px;
+                /* height: 12px; */
+                /* margin-bottom:45px; */
+                line-height: 16px;
+            }
+            img{
+                margin-top:15px;
+            }
+            a{
+                text-decoration: none;
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+            <div class="container">
+                <h1>ASSA ABLOY</h1>
+                <h2>Contract Manager</h2>
+                <h3>Password Successfully Reseted</h3>
+                <p>This is a confirmation that your password has been changed in the <b>Contract Manager</b> Platform.</p>
+                <p class="row-before-link"> Please click on the following link to go to the platform.</p>
+                <h4><a class="link" href="`+webLink+`">Go to Contract Manager</a></h4>
+                <p class="row-after-link">Thank you.</p>
+                <p>Best regards,</p>
+                <p class="name">Esteve Martín</p>
+                <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
+                    Phone: +34 60 60 148<br>
+                    Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
+                    <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
+    
+                <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
+            </div>
+        
+    </body>
+    </html>`
+    return emailBody
+}
+function getEmailBodyClickToChangePassword(tokenLink){
+    const emailBody=`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Password</title>
+        <style>
+            
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,body, input, button{
+                font-family: calibri, sans-serif;
+            }
+            body{
+                height: 100%;
+                padding:20px;
+                color:#303030;
+            }
+            .container{
+                /* background-color: aqua; */
+            }
+            h1{
+                text-align: center;
+                margin:20px 0px 0px 0px;
+                color:#00A2D1;
+                font-weight: 700;
+            }
+            h2{
+                text-align: center;
+                color:#00A2D1;
+                font-weight: 200;
+                margin:0px;
+            }
+            h3{
+                color:#303030;
+                margin: 20px 0px;
+            }
+            h4{
+                font-size: 18pt;
+                padding-left:2%;
+            }
+            p{
+                padding-bottom:20px;
+                margin-left:0px;
+            }
+            a{
+                
+                /* margin-left:20px; */
+                /* margin:40px; */
+                /* margin:40px 0px; */
+            }
+            .link{
+                /* padding:15px; */
+                color: #00A2D1;
+                /* border-radius: 5px; */
+                text-decoration: none;
+                /* margin:50px; */
+                border:none;
+                outline: none;
+    
+            } 
+            .link-container{
+                padding:15px;
+                background-color: #00A2D1;
+                border-radius: 5px; 
+                width: 140px;
+                text-align: center;
+            }
+            .row-after-link{
+                margin-top:20px;
+                /* padding:0px; */
+            }
+            .row-before-link{
+                margin-bottom: 5px;
+                            padding:0px;
+    
+            }
+            .name{
+                font-weight: 500;
+                font-size: 16pt;
+                margin-bottom:0px;
+                padding:0px;
+                font-family: arial;
+            }
+            .small{
+                font-size: 10pt;
+                margin:0px;
+                padding: 0px;
+                /* height: 12px; */
+                /* margin-bottom:45px; */
+                line-height: 16px;
+            }
+            img{
+                margin-top:15px;
+            }
+            a{
+                text-decoration: none;
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+            <div class="container">
+                <h1>ASSA ABLOY</h1>
+                <h2>Contract Manager</h2>
+                <h3>Password Resset</h3>
+                <p>You are receiving this because you (or someone else) have requested to reset the password for your account in the <b>Contract Manager</b> Platform.</p>
+                <p class="row-before-link"> Please click on the following link to complete the process:</p>
+                <h4><a class="link" href="`+tokenLink+`">Reset Password</a></h4>
+                <p class="row-after-link">If you did not request this, please ignore this email and your password will remain unchanged.</p>
+                <p>Best regards,</p>
+                <p class="name">Esteve Martín</p>
+                <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
+                    Phone: +34 60 60 148<br>
+                    Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
+                    <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
+    
+                <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
+            </div>
+        
+    </body>
+    </html>`
+
+    return emailBody
+}
+async function createErrorMsgUploadNewPassword(newPass, newPassRepeated){
+    let resultErrorMsg=[]
+    
+    //INSERT ERRORS  (Validates that the fields are not empty).
+    let insertErrorMsg = []
+    let insertErrorMsgOutPut=''
+    if (newPass=== ""){insertErrorMsg.push('new password')}
+
+    // console.log(insertErrorMsg)
+    switch (insertErrorMsg.length){
+        case 1:
+            insertErrorMsgOutPut = "You forgot to fill the " + insertErrorMsg[0] + "."
+            break;
+    }
+    if (insertErrorMsgOutPut!==''){
+        resultErrorMsg.push(insertErrorMsgOutPut)
+    }
+
+    //REPEAT ERRORS (Validates that you repeated the password).
+    let repeatErrorMsgOutPut=''
+    let repeatErrorMsg=[]
+    if (newPassRepeated=== "" && !insertErrorMsgOutPut.includes('new password')){repeatErrorMsg.push('new password')}
+    switch (repeatErrorMsg.length){
+        case 1:
+            repeatErrorMsgOutPut = "You forgot to repeat the " + repeatErrorMsg[0] + "."
+            break;
+    }
+    if (repeatErrorMsgOutPut!==''){
+        resultErrorMsg.push(repeatErrorMsgOutPut)
+    }
+
+    //MATCH ERRORS (Validdates email and passwords match).
+    let matchErrorMsgOutPut=''
+    let matchErrorMsg=[]
+    if (newPass!==newPassRepeated && !repeatErrorMsgOutPut.includes('new password') && !insertErrorMsgOutPut.includes('new password')){matchErrorMsg.push('new passwords')}
+    switch (matchErrorMsg.length){
+        case 1:
+            matchErrorMsgOutPut = "The " + matchErrorMsg[0] + " doesn't match."
+            break;
+    }
+    if (matchErrorMsgOutPut!==''){
+        resultErrorMsg.push(matchErrorMsgOutPut)
+    }
+    if (newPass.length<6  && !repeatErrorMsgOutPut.includes('password') && !insertErrorMsgOutPut.includes('password') && resultErrorMsg.length===0){resultErrorMsg.push("The password must have at least 6 characters.")}
+    return resultErrorMsg
+
+}
 async function createToken(){
     let token = crypto.randomBytes(20)
     let result = token.toString('hex')

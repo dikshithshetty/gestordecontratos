@@ -12,7 +12,9 @@ const userSchema = new Schema(
         role:{type:Array,required:true},
         usertype:{type:String, default: 'user'},
         resetPasswordToken:{type:String,default:undefined},
-        resetPasswordExpires:{type:Date,default:undefined}
+        resetPasswordExpires:{type:Date,default:undefined},
+        accountStatus:{type:Boolean,default:false},
+        accountActivationToken:{type:String}
     },
     {
       timestamps: true
