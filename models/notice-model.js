@@ -7,9 +7,9 @@ const noticeSchema = new Schema(
         noticeType:{type:String,required:true},
         destinatario:{type:String,required:true},
         cc:{type:String},
-        subject:{type:String,required:true},
-        emailBody:{type:String,required:true},
-        attachments:[String],
+        // subject:{type:String,required:true},
+        // emailBody:{type:String,required:true},
+        // attachments:[String],
         periodicidad:{type:String}
     }
   );

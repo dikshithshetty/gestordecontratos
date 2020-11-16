@@ -21,8 +21,9 @@
                 <button id="reject" class="btn department-btn " onclick="btnSelected(this)">Reject Contract</button>
                 <button id="update" class="btn department-btn" onclick="btnSelected(this)">Update Contract</button>
                 {{!-- <button id="approve" class="btn department-btn" onclick="btnSelected(this)">Approve Contract</button> --}}
-                <button id="reminder" class="btn department-btn" onclick="btnSelected(this)">Reminders</button>
-                <button id="escalado" class="btn department-btn" onclick="btnSelected(this)">Escalado</button>
+                <button id="reminder" class="btn department-btn" onclick="btnSelected(this)" style="display:none;">Reminders</button>
+                <button id="escaladoDirectores" class="btn department-btn" onclick="btnSelected(this)">Escalado Directores</button>
+                <button id="escaladoDG" class="btn department-btn" onclick="btnSelected(this)">Dirección General</button>
             </div>
         </div>
         <div class="mess-container1">
@@ -31,8 +32,8 @@
             <form class="form-alertas" action="/updateAlerts/{{noticeType}}" method="post">
                 <input id="email-list" type="text" placeholder="For:" name="email" value="{{destinatario}}">
                 <input type="text" placeholder="Cc:" name="cc" value="{{cc}}">
-                <input type="text" placeholder="Subject:" name="subject" value="{{subject}}">
-                <textarea placeholder="Message...." rows ="10" name="emailBody" >{{emailBody}}</textarea>
+                {{!-- <input type="text" placeholder="Subject:" name="subject" value="{{subject}}">
+                <textarea placeholder="Message...." rows ="10" name="emailBody" >{{emailBody}}</textarea> --}}
                 <button class="btn btn-blue btn-save" type="submit">Save</button>
             </form>
         </div>
@@ -45,15 +46,15 @@
     
 function btnSelected(currentBtn){
     let id = currentBtn.id
-    console.log(id)
+    console.log("ID:",id)
     let form = document.getElementById("notice-type-"+id)
-        console.log(form)
+        console.log("Form To Show:",form)
 
     let buttons = document.getElementsByClassName("department-btn")
-        console.log(buttons)
+        console.log("All Buttons:",buttons)
 
     let forms = document.getElementsByClassName("mess-container")
-        console.log(forms)
+        console.log("All Forms:",forms)
 
     for (i=0;i<buttons.length;i++){
         buttons[i].classList.remove("btn-blue")
