@@ -2283,14 +2283,16 @@ async function deleteDirectoryContent(directory){
     fs.readdir(directory, (err, files) => {
         console.log("Directory: ", directory)
         console.log("Files: ", files)
-        console.log("Files in: ", directory, " = ",files.length)
         if (files!==undefined){
+            console.log("Files in: ", directory, " = ",files.length)
+
             if (err) throw err;
       
             for (const file of files) {
-            fs.unlink(path.join(directory, file), err => {
-                if (err) throw err;
-            });
+                console.log("File About To Delete:",path.join(directory, file))
+                fs.unlink(path.join(directory, file), err => {
+                    if (err) throw err;
+                });
             }
         }
       });
