@@ -2284,7 +2284,7 @@ async function deleteDirectoryContent(directory){
         console.log("Directory: ", directory)
         console.log("Files: ", files)
         console.log("Files in: ", directory, " = ",files.length)
-        if (files.length!==0){
+        if (files.length!==0 && files!==undefined){
             if (err) throw err;
       
             for (const file of files) {
