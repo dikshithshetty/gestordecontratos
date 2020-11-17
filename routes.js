@@ -55,15 +55,15 @@ router.post('/', async(req,res,next)=>{
                 formData={errorMsg:errorMsg,email:email,layout:false}
                 res.render("login-register/login",formData);
             } else{
-                console.log("User Account Status:" , user.accountStatus)
-                console.log("User Account Status Comparison:" , user.accountStatus===false)
+                console.log("User Account Activated:" , user.accountStatus)
+                // console.log("User Account Is Unactive:" , user.accountStatus===false)
                 if (user.accountStatus===false){
-                    console.log("Inside user.accountStatus")
+                    console.log("User Account It Not Activated")
                     errorMsg="The account needs to be activated. Check your email and spam mailbox for the activation email."                 //Password is inccorrect.
                     formData={errorMsg:errorMsg,email:email,layout:false}
                     res.render("login-register/login",formData);            //Render Login and Error Message.
                 } else {
-                    console.log("ignored user.accountStatus")                   //User Exists.
+                    console.log("User Account Is Active")                   //User Exists.
                     if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                         req.session.currentUser = user;                         //Save User Session.
                         // await deleteDir(path.join(__dirname,"uploadedContracts"))
@@ -2281,12 +2281,15 @@ async function getCanThisDeptSign(historico,fullRole,personaFirma){
 }
 async function deleteDirectoryContent(directory){
     fs.readdir(directory, (err, files) => {
-        if (err) throw err;
-      
-        for (const file of files) {
-          fs.unlink(path.join(directory, file), err => {
+        console.log("Files in: ", directory, " = ",files.length)
+        if (files.length!==0){
             if (err) throw err;
-          });
+      
+            for (const file of files) {
+            fs.unlink(path.join(directory, file), err => {
+                if (err) throw err;
+            });
+            }
         }
       });
 }
