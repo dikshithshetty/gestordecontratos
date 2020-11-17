@@ -2280,8 +2280,9 @@ async function getCanThisDeptSign(historico,fullRole,personaFirma){
 
 }
 async function deleteDirectoryContent(directory){
-    console.log("Directory: ", directory)
     fs.readdir(directory, (err, files) => {
+        console.log("Directory: ", directory)
+        console.log("Files: ", files)
         console.log("Files in: ", directory, " = ",files.length)
         if (files.length!==0){
             if (err) throw err;
