@@ -586,6 +586,8 @@ router.get("/editContracts/:id",async(req,res,next)=>{
         // console.log("entered the edit contract function")
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             const id = req.params.id
+            // const successMsg = req.params.successMsg
+            // console.log(successMsg)
             // console.log(id)
             const selectedContract = await Contract.findOne({_id:id})
             // console.log(selectedContract)
@@ -968,25 +970,19 @@ router.post("/notifyChanges/:id",async(req,res,next)=>{
     try{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             let id = req.params.id
-            let changesInfo = req.body.updateInfo
+            let changesInfo = req.body.notifyChangesInfo
+            console.log(changesInfo)
             const sesionEmail = req.session.currentUser.email
             let currentUser = await User.find({email:sesionEmail})
-            // console.log(currentUser)
-            // console.log(fullRole)
-            // if (fullRole.includes(" - ")){
-            //     var dept=fullRole.split(" - ")[0]
-            //     // var splitRole=fullRole.split(" - ")[1]
-            // } else {
-            //     var dept = "Dirección General"
-            //     // var splitRole = "Dirección General"
-            // }
+            // console.log("ID en Inicio Rutina:",id)
             
-            let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,"")
+            // let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,"")
+            // console.log("Persona Firma: ",personaFirma)
             let contract = await Contract.find({_id:id})
             let historico = contract[0].historico
             nuevaAccion={
                 accion:"Cambios Notificados",
-                persona:personaFirma,
+                persona:currentUser[0].name+" "+currentUser[0].surname,
                 icono:"mail-unread-outline",
                 fecha: getCurrentDate(),
                 observaciones:changesInfo
@@ -995,9 +991,11 @@ router.post("/notifyChanges/:id",async(req,res,next)=>{
         
             await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
             contract[0].historico = historico
-            await sendNoticeEmail("newContract",contract,changesInfo)
+            await sendNoticeEmail("notifyChanges",contract,changesInfo)
             let successMsg = "The changes had been notified."
-            res.render("/editContracts/" + id + "?successMsg=" + successMsg)
+            // console.log("ID en Final Rutina:",id)
+            
+            res.redirect("/editContracts/" + id)
         }   
     }catch(err){
         console.log("Error on notifyChanges/:id -->",err)

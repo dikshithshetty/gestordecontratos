@@ -104,9 +104,7 @@
                     {{/each}}
                 </div>
                 <button id="upload-btn" class="btn btn-blue" onclick="showNotifyChangestModal()" style="padding:8px 20px;display:flex;justify-content: center;align-items: center;"><ion-icon class="mail-unread-outline" name="mail-unread-outline" alt="mail-unread-outline" style="font-size: 25px;margin-right:10px;"></ion-icon> Notify Changes</button>
-                {{#if successMsg}}
-                    <div class="success-message">{{successMsg}}</div>
-                {{/if}}
+               
             </div>
         </div>
     </div>
@@ -127,10 +125,10 @@
         <div class="modal-content modal-blue">
             <span id="close-btn-add" class="close-btn" onclick="closeNotifyChangestModal()">&times;</span>
             <h2 class="blue">Notify Changes</h2>
-            <form class="add-contracts-form" action="/notifyChanges/{{id}}" method="post" enctype="multipart/form-data"><br><br>
+            <form class="add-contracts-form" action="/notifyChanges/{{id}}" method="post"><br><br>
                 {{!-- <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple> --}}
                 {{!-- <label for="updateInfo">Please select the rest of the files </label> --}}
-                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="updateInfo"></textarea><br><br><br>
+                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="notifyChangesInfo"></textarea><br><br><br>
                 <input class="create-contracts-btn" type="submit" value="Send Notification">
             </form>
         </div>
