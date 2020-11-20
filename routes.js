@@ -1000,7 +1000,7 @@ router.post("/notifyChanges/:id",async(req,res,next)=>{
             res.render("/editContracts/" + id + "?successMsg=" + successMsg)
         }   
     }catch(err){
-        console.log("Error on NotifyChanges/:id -->",err)
+        console.log("Error on notifyChanges/:id -->",err)
     }
 
 
@@ -2692,6 +2692,7 @@ function formatRolesToResumedRoles(user){
         // return personalHist
     })
     // console.log("resumedUserRole: --> ",resumedUserRole)
+    
     return resumedUserRole
 }
 async function sendEmail(emailParams){
@@ -3090,7 +3091,11 @@ function getPersonaHistorico(name,surname,dept){
     let surnameInicial=surname.charAt(0)
     
     let minidept =getMiniDept(dept)
-    let result = name1 + " " + surnameInicial+". (" + minidept +")"
+    if (minidept===""){
+        let result = name1 + " " + surnameInicial+"."
+    } else {
+        let result = name1 + " " + surnameInicial+". (" + minidept +")"
+    }
     
     return result
 }
