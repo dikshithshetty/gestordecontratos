@@ -12,103 +12,102 @@
     <a href="/"><img id="back-btn1" src="/images/icons/back-btn.png"></a>
 </div> --}}
 <div class="edit-container">
-    {{!-- Detalles Contrato --}}
-    <div class="contract-details">
-        <div class="nav3">
-            <h2 class="blue">Contract details</h2>
-            <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
-        </div>
-        <div class="info-container border">
-            <div class="block">
-                <li><strong>PQ: </strong>{{pq}}</li>
-                <li><strong>Client: </strong>{{cliente}}</li>
-                <li><strong>Commercial: </strong>{{comercial}}</li>
+    <div id="fields">
+        {{!-- Detalles Contrato --}}
+        <div class="contract-details">
+            <div class="nav3">
+                <h2 class="blue">Contract details</h2>
+                <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
             </div>
-            <div class="block">
-                <li><strong>Work: </strong>{{obra}}</li>
-                <li><strong>Amount: </strong>{{importe}}</li>
-                <li><strong>Final user: </strong>{{usuarioFinal}}</li>
-            </div>
-            <div class="block">
-                <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
-                <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
-                <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
-            </div>
-        </div>
-    </div>
-
-
-    {{!-- Firmas Necesarias --}}
-    <div class="contract-details">
-        <h2 class="blue">Signatures required</h2>
-        <div class="info-container border info-contract-details">
-            <div class="block">
-                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
-                <div class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.autComercial.person}}{{firmas.autComercial.person}}{{else}}Comercial{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{else}}Operaciones{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.autCRiesgos.person}}{{firmas.autCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.autPRL.person}}{{firmas.autPRL.person}}{{else}}PRL{{/if}}</div>
-            </div>
-            <div class="block">
-                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
-                <div class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.dirComercial.person}}{{firmas.dirComercial.person}}{{else}}Comercial{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.dirOperaciones.person}}{{firmas.dirOperaciones.person}}{{else}}Operaciones{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.dirCRiesgos.person}}{{firmas.dirCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
-                <div class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.dirPRL.person}}{{firmas.dirPRL.person}}{{else}}PRL{{/if}}</div>
-            </div>
-            <div class="block">
-                <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
-                <div class="btn1 btn-{{#if firmas.dirGeneral.value}}blue{{else}}red{{/if}}">{{#if firmas.dirGeneral.person}}{{firmas.dirGeneral.person}}{{else}}Dirección General{{/if}}</div>
-            </div>
-            
-        </div>
-    </div>
-
-    
-
-    
-    {{!-- Historial de alertas enviadas y archivos --}}
-    <div class="archivos-preview-container">
-        <div class="email-status archivos border">
-            <div class="archivos-nav">
-                <h3 class="blue">Contract history</h3>
-            </div>
-            {{#each historico}}
-            <div class="email-status-card bg-color-{{icono}}">
-                <div class="titulos-avisos">
-                    <div class="icon-alert"><ion-icon class="{{icono}}" name="{{icono}}" alt="{{icono}}"></ion-icon></div>
-                    <div class="tipo-aviso">{{accion}}</div>
-                    <div class="tipo-aviso-nombre">{{persona}}</div>
-                    <div class="tipo-aviso-fecha">{{fecha}}</div>
+            <div class="info-container border">
+                <div class="block">
+                    <li><strong>PQ: </strong>{{pq}}</li>
+                    <li><strong>Client: </strong>{{cliente}}</li>
+                    <li><strong>Commercial: </strong>{{comercial}}</li>
                 </div>
-                {{#if observaciones}}
-                <div class="info-avisos">
-                    <p></p>
-                    <p>{{observaciones}}</p>
+                <div class="block">
+                    <li><strong>Work: </strong>{{obra}}</li>
+                    <li><strong>Amount: </strong>{{importe}}</li>
+                    <li><strong>Final user: </strong>{{usuarioFinal}}</li>
                 </div>
-                {{/if}}
+                <div class="block">
+                    <li><strong>WON date: </strong>{{fechaStatusWon}}</li>
+                    <li><strong>Reception date: </strong>{{fechaRecepcion}}</li>
+                    <li><strong>App creation date: </strong>{{fechaCreacionApp}}</li>
+                </div>
             </div>
-            {{/each}}
         </div>
-
-        <div class="archivos-upload archivos border">
-            <div class="archivos-nav">
-                <h3 class="blue"><span>Contract </span>Files</h3>
-                {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
+        {{!-- Firmas Necesarias --}}
+        <div class="contract-details">
+            <h2 class="blue">Signatures required</h2>
+            <div class="info-container border info-contract-details">
+                <div class="block">
+                    <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Autorizados</strong></h3>
+                    <div class="btn1 btn-{{#if firmas.autComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.autComercial.person}}{{firmas.autComercial.person}}{{else}}Comercial{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.autOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.autOperaciones.person}}{{firmas.autOperaciones.person}}{{else}}Operaciones{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.autCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.autCRiesgos.person}}{{firmas.autCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.autPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.autPRL.person}}{{firmas.autPRL.person}}{{else}}PRL{{/if}}</div>
+                </div>
+                <div class="block">
+                    <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Directores</strong></h3>
+                    <div class="btn1 btn-{{#if firmas.dirComercial.value}}blue{{else}}red{{/if}}">{{#if firmas.dirComercial.person}}{{firmas.dirComercial.person}}{{else}}Comercial{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.dirOperaciones.value}}blue{{else}}red{{/if}}">{{#if firmas.dirOperaciones.person}}{{firmas.dirOperaciones.person}}{{else}}Operaciones{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.dirCRiesgos.value}}blue{{else}}red{{/if}}">{{#if firmas.dirCRiesgos.person}}{{firmas.dirCRiesgos.person}}{{else}}Control de Riesgos{{/if}}</div>
+                    <div class="btn1 btn-{{#if firmas.dirPRL.value}}blue{{else}}red{{/if}}">{{#if firmas.dirPRL.person}}{{firmas.dirPRL.person}}{{else}}PRL{{/if}}</div>
+                </div>
+                <div class="block">
+                    <h3 style="font-size: 1.2rem; margin-top: 10px;"><strong>Director General</strong></h3>
+                    <div class="btn1 btn-{{#if firmas.dirGeneral.value}}blue{{else}}red{{/if}}">{{#if firmas.dirGeneral.person}}{{firmas.dirGeneral.person}}{{else}}Dirección General{{/if}}</div>
+                </div>
+                
             </div>
-    
-            <div class="contracts-cards-items">
-                {{#each uploadedFiles}}
-                <div class="document-card">
-                    <p>{{fileName}}</p>
-                    <div class="icons-files">
-                        <a href="{{filePath}}" download="{{fileName}}" ><ion-icon id="download-btn" name="download-outline"></ion-icon></a>
-                        {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><ion-icon id="delete-btn" name="trash-outline"></ion-icon></a>{{/if}}
+        </div>
+        {{!-- Historial de alertas enviadas y archivos --}}
+        <div class="archivos-preview-container">
+            <div class="email-status archivos border">
+                <div class="archivos-nav">
+                    <h3 class="blue">Contract history</h3>
+                </div>
+                {{#each historico}}
+                <div class="email-status-card bg-color-{{icono}}">
+                    <div class="titulos-avisos">
+                        <div class="icon-alert"><ion-icon class="{{icono}}" name="{{icono}}" alt="{{icono}}"></ion-icon></div>
+                        <div class="tipo-aviso">{{accion}}</div>
+                        <div class="tipo-aviso-nombre">{{persona}}</div>
+                        <div class="tipo-aviso-fecha">{{fecha}}</div>
                     </div>
+                    {{#if observaciones}}
+                    <div class="info-avisos">
+                        <p></p>
+                        <p>{{observaciones}}</p>
+                    </div>
+                    {{/if}}
                 </div>
                 {{/each}}
             </div>
-            
+
+            <div class="archivos-upload archivos border">
+                <div class="archivos-nav">
+                    <h3 class="blue"><span>Contract </span>Files</h3>
+                    {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
+                </div>
+        
+                <div class="contracts-cards-items">
+                    {{#each uploadedFiles}}
+                    <div class="document-card">
+                        <p>{{fileName}}</p>
+                        <div class="icons-files">
+                            <a href="{{filePath}}" download="{{fileName}}" ><ion-icon id="download-btn" name="download-outline"></ion-icon></a>
+                            {{#if ../showeditButons}}<a href="/deleteFiles/{{../pq}}/{{fileName}}"><ion-icon id="delete-btn" name="trash-outline"></ion-icon></a>{{/if}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+                <button id="upload-btn" class="btn btn-blue" onclick="showNotifyChangestModal()" style="padding:8px 20px;display:flex;justify-content: center;align-items: center;"><ion-icon class="mail-unread-outline" name="mail-unread-outline" alt="mail-unread-outline" style="font-size: 25px;margin-right:10px;"></ion-icon> Notify Changes</button>
+                {{#if successMsg}}
+                    <div class="success-message">{{successMsg}}</div>
+                {{/if}}
+            </div>
         </div>
     </div>
     {{!-- UPLOAD FILE --}}
@@ -120,6 +119,19 @@
                 <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple>
                 <label for="otherFiles">Please select the rest of the files </label>
                 <input class="create-contracts-btn" type="submit" value="Upload">
+            </form>
+        </div>
+    </div>
+    {{!-- NOTIFY CHANGES  --}}
+    <div id="notifyChanges" class="modal">
+        <div class="modal-content modal-blue">
+            <span id="close-btn-add" class="close-btn" onclick="closeNotifyChangestModal()">&times;</span>
+            <h2 class="blue">Notify Changes</h2>
+            <form class="add-contracts-form" action="/notifyChanges/{{id}}" method="post" enctype="multipart/form-data"><br><br>
+                {{!-- <input id="otherFiles" class="upload-files" type="file" name="otherFiles" multiple> --}}
+                {{!-- <label for="updateInfo">Please select the rest of the files </label> --}}
+                <textarea  class="textarea-reject" placeholder="Message...." rows ="10" name="updateInfo"></textarea><br><br><br>
+                <input class="create-contracts-btn" type="submit" value="Send Notification">
             </form>
         </div>
     </div>
@@ -154,14 +166,28 @@
 function showAddNewContractModal(){
     let approveModal = document.getElementById("addModal");
     approveModal.style.display = "block";
-    let blurred = document.getElementById("container");
+    let blurred = document.getElementById("fields");
     blurred.classList.add('blurred');
 }
 function closeAddNewContractModal(){
-        let approveModal = document.getElementById("addModal");
-        approveModal.style.display = "none";
-        let blurred = document.getElementById("container");
-        blurred.classList.remove('blurred');
+    let approveModal = document.getElementById("addModal");
+    approveModal.style.display = "none";
+    let blurred = document.getElementById("fields");
+    blurred.classList.remove('blurred');
+}
+
+function showNotifyChangestModal(){
+    let notifyChangesModal = document.getElementById("notifyChanges");
+    notifyChangesModal.style.display = "block";
+    console.log(notifyChangesModal)
+    let blurred = document.getElementById("fields");
+    blurred.classList.add('blurred');
+}
+function closeNotifyChangestModal(){
+    let notifyChangesModal = document.getElementById("notifyChanges");
+    notifyChangesModal.style.display = "none";
+    let blurred = document.getElementById("fields");
+    blurred.classList.remove('blurred');
 }
 
 </script>

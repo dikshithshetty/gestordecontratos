@@ -206,7 +206,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     const fechaRecepcion=readExcel(tempFile,'U19');
                     // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
                     // await deleteFile(tempFile)
-                    console.log("PQ: ",pq,"PQ Folder: ",pqFolderName)
+                    // console.log("PQ: ",pq,"PQ Folder: ",pqFolderName)
                     var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
 
                     //Check that the contract doesn't exists in the DB.
@@ -557,7 +557,7 @@ router.get("/alertsContracts",async (req,res,next)=>{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
 
             let successMsg = req.query.successMsg;
-            console.log("SUCCESS MESSAGE: ",successMsg)
+            // console.log("SUCCESS MESSAGE: ",successMsg)
 
             const notice = await Notice.find();
             notice.successMsg = successMsg
@@ -585,7 +585,7 @@ router.get("/editContracts/:id",async(req,res,next)=>{
     try{
         // console.log("entered the edit contract function")
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
-                const id = req.params.id
+            const id = req.params.id
             // console.log(id)
             const selectedContract = await Contract.findOne({_id:id})
             // console.log(selectedContract)
@@ -594,6 +594,7 @@ router.get("/editContracts/:id",async(req,res,next)=>{
 
             // console.log(uploadedFiles)
             contr={
+                id:selectedContract.id,
                 pq:selectedContract.pq,
                 cliente:selectedContract.cliente,
                 comercial:selectedContract.comercial,
@@ -609,7 +610,6 @@ router.get("/editContracts/:id",async(req,res,next)=>{
                 uploadedFiles:uploadedFiles,
                 showeditButons:showeditButons
             }
-            
             res.render("editContracts",contr)
             // res.redirect("/editContracts?pq="+pq)
         }
@@ -734,12 +734,12 @@ router.get("/deleteRole/:role",async(req,res)=>{
 router.get("/profile/changePassword",async(req,res,next)=>{
     try{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
-            console.log(req.query)
+            // console.log(req.query)
             let successMsg=req.query.successMsg
             let errorMsg = req.query.errorMsg
-            console.log("Inside profile Change password")
-            console.log("Success Message: ", successMsg)
-            console.log("Error Message: ", errorMsg)
+            // console.log("Inside profile Change password")
+            // console.log("Success Message: ", successMsg)
+            // console.log("Error Message: ", errorMsg)
 
             if (successMsg !== undefined){
                 res.render('resetPassword',{successMsg})
@@ -758,7 +758,7 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
             const {currentPass,newPass,repeatedPass}=req.body
             const sesionEmail = req.session.currentUser.email
             let currentUser = await User.find({email:sesionEmail})
-            console.log("Current Pass: ",currentPass,"  |  New Pass: ",newPass,"  | Repeated Pass:",repeatedPass)
+            // console.log("Current Pass: ",currentPass,"  |  New Pass: ",newPass,"  | Repeated Pass:",repeatedPass)
             errorMsg = createChangePasswordErrorMsg(currentPass,newPass,repeatedPass)
             if (errorMsg.length===0){
                 if (bcrypt.compareSync(currentPass, currentUser[0].password)) {          //Check if password match.
@@ -888,7 +888,7 @@ router.post("/resetPassword/:token",async(req,res,next)=>{
             const user = await User.findOne({ resetPasswordToken: token });
             // console.log(user)
             if (!user){
-                console.log("User not found")
+                // console.log("User not found")
                 let formData = {
                     layout: false,
                     thistoken:token,
@@ -935,7 +935,7 @@ router.post("/resetPassword/:token",async(req,res,next)=>{
                     // attachments:uploadedFiles
                 }
                 await sendEmail(emailParams)
-                console.log("Confirmation Password Reset - Email Sent")
+                // console.log("Confirmation Password Reset - Email Sent")
                 let formData = {
                     layout: false,
                     thistoken:token,
@@ -964,8 +964,211 @@ router.get("/activateAccount/:token",async(req,res,next)=>{
     }
 })
 
+router.post("/notifyChanges/:id",async(req,res,next)=>{
+    try{
+        if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
+            let id = req.params.id
+            let changesInfo = req.body.updateInfo
+            const sesionEmail = req.session.currentUser.email
+            let currentUser = await User.find({email:sesionEmail})
+            // console.log(currentUser)
+            // console.log(fullRole)
+            // if (fullRole.includes(" - ")){
+            //     var dept=fullRole.split(" - ")[0]
+            //     // var splitRole=fullRole.split(" - ")[1]
+            // } else {
+            //     var dept = "Dirección General"
+            //     // var splitRole = "Dirección General"
+            // }
+            
+            let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,"")
+            let contract = await Contract.find({_id:id})
+            let historico = contract[0].historico
+            nuevaAccion={
+                accion:"Cambios Notificados",
+                persona:personaFirma,
+                icono:"mail-unread-outline",
+                fecha: getCurrentDate(),
+                observaciones:changesInfo
+            }
+            historico.push(nuevaAccion)
+        
+            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+            contract[0].historico = historico
+            await sendNoticeEmail("newContract",contract,changesInfo)
+            let successMsg = "The changes had been notified."
+            res.render("/editContracts/" + id + "?successMsg=" + successMsg)
+        }   
+    }catch(err){
+        console.log("Error on NotifyChanges/:id -->",err)
+    }
 
 
+})
+
+function getEmailBodyNotifyChanges(pq,client,comercial,work,amount,finalUser,wonDate,receptionDate,appCreationDate,nPedido,info){
+    const emailBody=`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contract Modified</title>
+        <style>
+            
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,body, input, button{
+                font-family: calibri, sans-serif;
+            }
+            body{
+                height: 100%;
+                padding:20px;
+                color:#303030;
+            }
+            .container{
+                /* background-color: aqua; */
+            }
+            h1{
+                text-align: center;
+                margin:20px 0px 0px 0px;
+                color:#00A2D1;
+                font-weight: 700;
+            }
+            h2{
+                text-align: center;
+                color:#00A2D1;
+                font-weight: 200;
+                margin:0px;
+            }
+            h3{
+                color:#303030;
+                margin: 20px 0px;
+            }
+            h4{
+                font-size: 18pt;
+                padding-left:2%;
+            }
+            p{
+                padding-bottom:20px;
+                margin-left:0px;
+            }
+            a{
+                
+                /* margin-left:20px; */
+                /* margin:40px; */
+                /* margin:40px 0px; */
+            }
+             .link{
+                /* padding:15px; */
+                color: #00A2D1;
+                /* border-radius: 5px; */
+                text-decoration: none;
+                /* margin:50px; */
+                border:none;
+                outline: none;
+    
+            } 
+            .link-container{
+                padding:15px;
+                background-color: #00A2D1;
+                border-radius: 5px; 
+                width: 140px;
+                text-align: center;
+            }
+            .row-after-link{
+                margin-top:20px;
+                /* padding:0px; */
+            }
+            .row-before-link{
+                margin-bottom: 5px;
+                            padding:0px;
+    
+            }
+            .name{
+                font-weight: 500;
+                font-size: 16pt;
+                margin-bottom:0px;
+                padding:0px;
+                font-family: arial;
+            }
+            .small{
+                font-size: 10pt;
+                margin:0px;
+                padding: 0px;
+                /* height: 12px; */
+                /* margin-bottom:45px; */
+                line-height: 16px;
+            }
+            img{
+                margin-top:15px;
+            }
+            a{
+                text-decoration: none;
+            }
+            table,tr{
+                /* border:solid black 1px;
+                border-collapse: collapse; */
+                padding:10px;
+                margin-top:-20px;
+            }
+            td{
+                padding:10px 40px 10px 0px;
+            }
+            @media (max-width:400px){
+                td{
+                    padding:10px 20px 10px 0px;
+                }
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+            <div class="container">
+                <h1>ASSA ABLOY</h1>
+                <h2>Contract Manager</h2>
+                <h3>Contract Modified (Order Number: `+nPedido+`)</h3>
+                <p>The following contract has been modified in the <b>Contract Manager</b> Platform.</p>
+                <table>
+                    <tr>
+                        <td><b>PQ: </b>`+pq+`</td>
+                        <td><b>Work: </b>`+work+`</td>
+                        <td><b>WON Date: </b>`+wonDate+`</td>
+                    </tr>
+                    <tr>
+                        <td><b>Client: </b>`+client+`</td>
+                        <td><b>Amount: </b>`+amount+`</td>
+                        <td><b>Reception Date: </b>`+receptionDate+`</td>
+                    </tr>
+                    <tr>
+                        <td><b>Commercial: </b>`+comercial+`</td>
+                        <td><b>Final User: </b>`+finalUser+`</td>
+                        <td><b>App Creation Date: </b`+appCreationDate+`</td>
+                    </tr>
+                </table>
+                <p><u>Modifications applied:</u> `+info+`</p>
+                <p>Please, find all the documents related to this contract attached to this email.</p>
+                <p class="row-before-link"> Click on the following link to accept or reject the contract:</p>
+                <h4><a class="link" href="https://gestordecontratos-nqx8w.ondigitalocean.app/">Manage Contract</a></h4>
+                <p class="row-after-link">Thank you.</p>
+                <p>Best regards,</p>
+                <p class="name">Esteve Martín</p>
+                <p class="small"><i><u>CEO & Founder at MPA Solutions</u><br>
+                    Phone: +34 60 60 148<br>
+                    Email: <a href="mailto:esteve.martin@mpasolutions.es">esteve.martin@mpasolutions.es</a><br>
+                    <a href="http://www.mpasolutions.es">www.mpasolutions.es</a></i></p>
+    
+                <img src="http://www.mpasolutions.es/logo_high_resolution.png" height="47"/>
+            </div>
+          
+    </body>
+    </html>`
+
+    return emailBody
+}
 function getEmailBodyEscaladoDG(pq,client,comercial,work,amount,finalUser,wonDate,receptionDate,appCreationDate,nPedido){
     const emailBody=`<!DOCTYPE html>
     <html lang="en">
@@ -2057,7 +2260,7 @@ async function createToken(){
     return result
 }
 async function sendNoticeEmail(noticetype,contract,info=''){
-    console.log(contract[0])
+    // console.log(contract[0])
     const {pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,fechaCreaccionApp,uploadedFiles} = contract[0]
     // console.log(pq)
     switch(noticetype){
@@ -2076,6 +2279,10 @@ async function sendNoticeEmail(noticetype,contract,info=''){
         case "escaladoDG":
             htmlEmailBody = getEmailBodyEscaladoDG(pq,cliente,comercial,obra,importe,usuarioFinal,fechaStatusWon,fechaRecepcion,fechaCreaccionApp,nPedido)
             emailSubject = "Contract Signature Required"
+            break;
+        case "notifyChanges":
+            htmlEmailBody = getEmailBodyNotifyChanges(pq,cliente,comercial,obra,importe,usuarioFinal,fechaStatusWon,fechaRecepcion,fechaCreaccionApp,nPedido,info)
+            emailSubject = "Contract Modified"
             break;
     }
     const noticeTemplate = await Notice.find({noticeType:noticetype})
@@ -2103,22 +2310,6 @@ async function sendNoticeEmail(noticetype,contract,info=''){
     // //Send Email
     await sendEmail(emailParams)
 }
-
-// function createAttachments(uploadeddFiles){
-//     let result = []
-//     for (i=0;i<uploadeddFiles.length;i++){
-//         let filePath = uploadeddFiles[i]
-//         let fileName = uploadeddFiles[i].split(process.env.FILE_SEPARATOR)[uploadeddFiles[i].split(process.env.FILE_SEPARATOR).length-1]
-//         let newFile = {
-//             filename:fileName,
-//             path:filePath
-//         }
-//         result.push(newFile)
-//         // console.log(newFile)
-//     }
-//     console.log(result)
-//     return result
-// }
 function createChangePasswordErrorMsg(currentPass,newPass,repeatedPass){
     // let insertErrorMsg = "You forgot to write the "
     // if (currentPass === "" && newPass === "" && repeatedPass === ""){
@@ -2181,16 +2372,16 @@ function getCanDirectorGeneralsign(historico){
     for(i=historico.length-1;i>=0;i--){
         if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
-    console.log("indexLastRejection: -->", indexLastRejection)
+    // console.log("indexLastRejection: -->", indexLastRejection)
     //Cut everything previous to last rejection.
     if (indexLastRejection===-1){
         var historicoRelevante = historico
     } else{
         var historicoRelevante = historico.slice(indexLastRejection+1)
     }
-    console.log(historicoRelevante)
+    // console.log(historicoRelevante)
     let numEscalados = countEscalados(historicoRelevante)
-    console.log(numEscalados)
+    // console.log(numEscalados)
     if (numEscalados===2){return true}else{return false}
 }
 async function mustScale(historico){
@@ -2299,15 +2490,15 @@ async function getCanThisDeptSign(historico,fullRole,personaFirma){
 }
 async function deleteDirectoryContent(directory){
     fs.readdir(directory, (err, files) => {
-        console.log("Directory: ", directory)
-        console.log("Files: ", files)
+        // console.log("Directory: ", directory)
+        // console.log("Files: ", files)
         if (files!==undefined){
-            console.log("Files in: ", directory, " = ",files.length)
+            // console.log("Files in: ", directory, " = ",files.length)
 
             if (err) throw err;
       
             for (const file of files) {
-                console.log("File About To Delete:",path.join(directory, file))
+                // console.log("File About To Delete:",path.join(directory, file))
                 fs.unlink(path.join(directory, file), err => {
                     if (err) throw err;
                 });
@@ -2511,8 +2702,8 @@ async function sendEmail(emailParams){
     if (emailParams.attachments){
         for (i=0;i<emailParams.attachments.length;i++){
             let fileName = emailParams.attachments[i].split(separator)
-            console.log("Separator:",separator)
-            console.log("FileName:",fileName)
+            // console.log("Separator:",separator)
+            // console.log("FileName:",fileName)
             attachmentsObj.push(
                 {
                     path:emailParams.attachments[i],
@@ -2522,7 +2713,7 @@ async function sendEmail(emailParams){
         }
     }
     
-    console.log("Attachments Obj:",attachmentsObj)
+    // console.log("Attachments Obj:",attachmentsObj)
     let transporter = nodemailer.createTransport({
         host: emailParams.host,
         port: emailParams.port,
@@ -2581,13 +2772,13 @@ async function deleteDir(dir){
 }
 function editPQ(pq){
     try{
-        console.log(pq)
-        console.log(pq.split('-'))
-        console.log(pq.split('-').length)
-        console.log(pq.split('-').length-1)
-        console.log(pq.split('-')[0])
-        console.log(pq.split('-')[1])
-        console.log(pq.split('-')[0] + "-"+pq.split('-')[1])
+        // console.log(pq)
+        // console.log(pq.split('-'))
+        // console.log(pq.split('-').length)
+        // console.log(pq.split('-').length-1)
+        // console.log(pq.split('-')[0])
+        // console.log(pq.split('-')[1])
+        // console.log(pq.split('-')[0] + "-"+pq.split('-')[1])
 
         if (pq.split('-').length===2){
             return pq;
@@ -2849,7 +3040,7 @@ function createRoleArray(role,role1,role2,role3,role4){
     if (role2!==undefined&&role2!=="Select your Role and Department"){roleArr.push(role2)}
     if (role3!==undefined&&role3!=="Select your Role and Department"){roleArr.push(role3)}
     if (role4!==undefined&&role4!=="Select your Role and Department"){roleArr.push(role4)}
-    console.log(roleArr)
+    // console.log(roleArr)
     return roleArr
 }
 function getWho(currentUser,role){
@@ -2916,6 +3107,8 @@ function getMiniDept(dept){
         minidept = "PRL"
     } else if (dept === "Dirección General"){
         minidept = "Dir. General"
+    } else {
+        minidept =""
     }
     return minidept
 }
