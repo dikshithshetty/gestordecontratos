@@ -55,15 +55,15 @@ router.post('/', async(req,res,next)=>{
                 formData={errorMsg:errorMsg,email:email,layout:false}
                 res.render("login-register/login",formData);
             } else{
-                console.log("User Account Activated:" , user.accountStatus)
+                // console.log("User Account Activated:" , user.accountStatus)
                 // console.log("User Account Is Unactive:" , user.accountStatus===false)
                 if (user.accountStatus===false){
-                    console.log("User Account It Not Activated")
+                    // console.log("User Account It Not Activated")
                     errorMsg="The account needs to be activated. Check your email and spam mailbox for the activation email."                 //Password is inccorrect.
                     formData={errorMsg:errorMsg,email:email,layout:false}
                     res.render("login-register/login",formData);            //Render Login and Error Message.
                 } else {
-                    console.log("User Account Is Active")                   //User Exists.
+                    // console.log("User Account Is Active")                   //User Exists.
                     if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                         req.session.currentUser = user;                         //Save User Session.
                         // await deleteDir(path.join(__dirname,"uploadedContracts"))
@@ -206,7 +206,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                     const fechaRecepcion=readExcel(tempFile,'U19');
                     // console.log("PQ: " + pq + " | Comercial: " + comercial + " | Cliente: " + cliente + " | Obra: " + obra + " | Usuario Final: " + usuarioFinal + " | Nº de Pedido: " + nPedido + " | Importe: " + importe + " | Fecha Status Won: " + fechaStatusWon + " | Fecha Recepción: " + fechaRecepcion);
                     // await deleteFile(tempFile)
-
+                    console.log("PQ: ",pq,"PQ Folder: ",pqFolderName)
                     var errorMsg = createErrorMessageOnNewContract(pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion)
 
                     //Check that the contract doesn't exists in the DB.
@@ -218,7 +218,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
                         res.redirect("/displayPendingContracts?errorMsg="+errorMsg);
                     } else {
                         //Create PQ Folder
-                        let contractsFolder = path.join(__dirname, "contracts");
+                        let contractsFolder = path.join(__dirname, "public", "contracts");
                         const pqFolder=path.join(contractsFolder,pqFolderName);
                         let uploadedFiles=[]
 
@@ -696,7 +696,7 @@ router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
             }else {
                 let pq = req.params.pq
                 pqFolderName = editPQ(pq)
-                pqPath = path.join(__dirname,"contracts",pq)
+                pqPath = path.join(__dirname,"public","contracts",pqFolderName)
                 const contract = await Contract.findOne({ pq: pq });
                 // console.log(contract)
                 pqId = contract._id
@@ -2057,8 +2057,8 @@ async function createToken(){
     return result
 }
 async function sendNoticeEmail(noticetype,contract,info=''){
-    // console.log(contract[0])
-    const {pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,fechaCreaccionApp} = contract[0]
+    console.log(contract[0])
+    const {pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,fechaCreaccionApp,uploadedFiles} = contract[0]
     // console.log(pq)
     switch(noticetype){
         case "newContract":
@@ -2080,6 +2080,8 @@ async function sendNoticeEmail(noticetype,contract,info=''){
     }
     const noticeTemplate = await Notice.find({noticeType:noticetype})
     // console.log(noticeTemplate)
+    // const nodemailerAttachments = createAttachments(uploadedFiles)
+    // console.log(nodemailerAttachments)
     emailParams={
         host:process.env.EMAIL_HOST,
         port:process.env.EMAIL_PORT,
@@ -2094,13 +2096,29 @@ async function sendNoticeEmail(noticetype,contract,info=''){
         cc:noticeTemplate[0].cc,
         subject:emailSubject,
         html: htmlEmailBody,
-        // attachments:uploadedFiles
+        attachments:uploadedFiles
     }
     
     // console.log(contractList)
     // //Send Email
     await sendEmail(emailParams)
 }
+
+// function createAttachments(uploadeddFiles){
+//     let result = []
+//     for (i=0;i<uploadeddFiles.length;i++){
+//         let filePath = uploadeddFiles[i]
+//         let fileName = uploadeddFiles[i].split(process.env.FILE_SEPARATOR)[uploadeddFiles[i].split(process.env.FILE_SEPARATOR).length-1]
+//         let newFile = {
+//             filename:fileName,
+//             path:filePath
+//         }
+//         result.push(newFile)
+//         // console.log(newFile)
+//     }
+//     console.log(result)
+//     return result
+// }
 function createChangePasswordErrorMsg(currentPass,newPass,repeatedPass){
     // let insertErrorMsg = "You forgot to write the "
     // if (currentPass === "" && newPass === "" && repeatedPass === ""){
@@ -2492,6 +2510,9 @@ async function sendEmail(emailParams){
     let attachmentsObj = []
     if (emailParams.attachments){
         for (i=0;i<emailParams.attachments.length;i++){
+            let fileName = emailParams.attachments[i].split(separator)
+            console.log("Separator:",separator)
+            console.log("FileName:",fileName)
             attachmentsObj.push(
                 {
                     path:emailParams.attachments[i],
@@ -2501,7 +2522,7 @@ async function sendEmail(emailParams){
         }
     }
     
-    // console.log(attachmentsObj)
+    console.log("Attachments Obj:",attachmentsObj)
     let transporter = nodemailer.createTransport({
         host: emailParams.host,
         port: emailParams.port,
@@ -2560,8 +2581,22 @@ async function deleteDir(dir){
 }
 function editPQ(pq){
     try{
-        if (pq.split('-').length-1===2){return pq;}
-        if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
+        console.log(pq)
+        console.log(pq.split('-'))
+        console.log(pq.split('-').length)
+        console.log(pq.split('-').length-1)
+        console.log(pq.split('-')[0])
+        console.log(pq.split('-')[1])
+        console.log(pq.split('-')[0] + "-"+pq.split('-')[1])
+
+        if (pq.split('-').length===2){
+            return pq;
+        } else if (pq===undefined){
+            return "";
+        } else {
+            return pq.split('-')[0] + "-"+pq.split('-')[1];
+        }
+        // if (pq===undefined){return ""}else{return pq.split('-')[0] + "-"+pq.split('-')[1];}
     } catch (error){
         // console.log(error)
     }
