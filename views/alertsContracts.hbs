@@ -12,14 +12,24 @@
         <h2>Alerts configuration</h2>
     </div>
     {{#if notice.successMsg}}
-    <div class="success-message">{{notice.successMsg}}</div>
+        <div class="success-message">
+            <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+            {{notice.successMsg}}
+        </div>
     {{/if}}
+    {{#if notice.errorMsg}}
+        <div class="error-message">
+            <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+            {{notice.errorMsg}}
+        </div>
+    {{/if}}
+    
     <div class="alertsContainer">
         <div class="second-nav-alerts">
             <div id="myDIV" class="departments-alerts-btn">
                 <button id="newContract" class="btn department-btn" onclick="btnSelected(this)">New Contract</button>
                 <button id="reject" class="btn department-btn " onclick="btnSelected(this)">Reject Contract</button>
-                <button id="update" class="btn department-btn" onclick="btnSelected(this)">Update Contract</button>
+                <button id="update" class="btn department-btn" onclick="btnSelected(this)" style="display:none;">Update Contract</button>
                 {{!-- <button id="approve" class="btn department-btn" onclick="btnSelected(this)">Approve Contract</button> --}}
                 <button id="reminder" class="btn department-btn" onclick="btnSelected(this)" style="display:none;">Reminders</button>
                 <button id="escaladoDirectores" class="btn department-btn" onclick="btnSelected(this)">Escalado Directores</button>
@@ -30,8 +40,8 @@
         {{#each notice}}
         <div class="mess-container" id="notice-type-{{noticeType}}">
             <form class="form-alertas" action="/updateAlerts/{{noticeType}}" method="post">
-                <input id="email-list" type="text" placeholder="For:" name="email" value="{{destinatario}}">
-                <input type="text" placeholder="Cc:" name="cc" value="{{cc}}">
+                <input id="email-list" type="email" placeholder="For:" name="email" value="{{destinatario}}" multiple>
+                <input type="email" placeholder="Cc:" name="cc" value="{{cc}}" multiple>
                 {{!-- <input type="text" placeholder="Subject:" name="subject" value="{{subject}}">
                 <textarea placeholder="Message...." rows ="10" name="emailBody" >{{emailBody}}</textarea> --}}
                 <button class="btn btn-blue btn-save" type="submit">Save</button>
@@ -64,6 +74,15 @@ function btnSelected(currentBtn){
     form.style.display="flex"
 }
 
+
+
+//CLOSE MESSAGES BTN
+function closeMssgPanel(element){
+    console.log(element)
+    console.log(element.parentElement)
+    //let mssg = document.getElementById('mssg1');
+    element.style.display="none";
+}
 //Btn Alerts Show Correct Form
 
 

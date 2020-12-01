@@ -17,6 +17,18 @@
         <div class="contract-details">
             <div class="nav3">
                 <h2 class="blue">Contract details</h2>
+                {{#if successMsg}}
+                    <div class="success-message">
+                        <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+                        {{successMsg}}
+                    </div>
+                {{/if}}
+                {{#if errorMsg}}
+                    <div class="error-message">
+                        <span class="closeBtn" onclick="closeMssgPanel(this.parentElement)">&times;</span>
+                        {{errorMsg}}
+                    </div>
+                {{/if}}
                 <a href="/"><img id="back-btn" src="/images/icons/back-btn.png"></a>
             </div>
             <div class="info-container border">
@@ -89,7 +101,9 @@
             <div class="archivos-upload archivos border">
                 <div class="archivos-nav">
                     <h3 class="blue"><span>Contract </span>Files</h3>
-                    {{#if showeditButons}}<button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>{{/if}}
+                    {{#if showeditButons}}
+                        <button id="upload-btn" class="btn btn-blue" onclick="showAddNewContractModal()">upload files</button>
+                    {{/if}}
                 </div>
         
                 <div class="contracts-cards-items">
@@ -103,8 +117,9 @@
                     </div>
                     {{/each}}
                 </div>
-                <button id="upload-btn" class="btn btn-blue" onclick="showNotifyChangestModal()" style="padding:8px 20px;display:flex;justify-content: center;align-items: center;"><ion-icon class="mail-unread-outline" name="mail-unread-outline" alt="mail-unread-outline" style="font-size: 25px;margin-right:10px;"></ion-icon> Notify Changes</button>
-               
+                {{#if showNotifyChangesButton}}
+                    <button id="upload-btn" class="btn btn-blue" onclick="showNotifyChangestModal()" style="padding:8px 20px;display:flex;justify-content: center;align-items: center;"><ion-icon class="mail-unread-outline" name="mail-unread-outline" alt="mail-unread-outline" style="font-size: 25px;margin-right:10px;"></ion-icon> Notify Changes</button>
+                {{/if}}
             </div>
         </div>
     </div>
@@ -186,6 +201,14 @@ function closeNotifyChangestModal(){
     notifyChangesModal.style.display = "none";
     let blurred = document.getElementById("fields");
     blurred.classList.remove('blurred');
+}
+
+//CLOSE MESSAGES BTN
+function closeMssgPanel(element){
+    //console.log(element)
+    //console.log(element.parentElement)
+    //let mssg = document.getElementById('mssg1');
+    element.style.display="none";
 }
 
 </script>

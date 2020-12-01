@@ -14,6 +14,7 @@ const Notice = require('./models/notice-model')
 const { Console } = require('console');
 const { findOne } = require("./models/user-model");
 var crypto = require('crypto');
+const e = require('express');
 
 router.get('/',(req,res,next)=>{
     
@@ -241,7 +242,7 @@ router.post("/uploadNewContractToDB",upload.any(), async (req,res)=>{
 
                         //Create Contract to DB
                         // console.log("!!!!!!ABOUT TO CREATE CONTRACT!!!!!")
-                        await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,historico:nuevaAccion});
+                        await Contract.create({pq,comercial,cliente,obra,usuarioFinal,nPedido,importe,fechaStatusWon,fechaRecepcion,uploadedFiles,folder:pqFolder,historico:nuevaAccion});
                         const contract= await Contract.find({pq})
                         await sendNoticeEmail("newContract",contract)
                         // // const newAlert = await Notice.findOneAndUpdate({noticeType:"newContract"},{destinatario:email,cc:cc,subject:subject,emailBody:emailBody})
@@ -319,12 +320,21 @@ router.get("/displayPendingContracts", async (req,res)=>{
             // console.log(roleObj)
             // console.log(contractList)
 
-            contractList.forEach(contract=>{
+            contractList.forEach(async contract=>{
                 contract.importe = numberToCurrency(contract.importe)
-                let allowApprove = canUserSign(currentUser,contract)
+                let allowReject = allowRejection(contract.historico);
+                console.log(allowReject)
+                // contract.roleObj = await createRoleSelector(currentUser[0].role)
+                contract.roleObj = createContractRoleSelectorObject(currentUser[0],contract)
+                let allowApprove
                 // let allowApprove = true;
                 // console.log(allowApprove)
-                let allowReject = true;
+                if (!allowReject){
+                    allowApprove = canUserSign(currentUser,contract)
+                } else {
+                    allowApprove = false
+                }
+                // console.log("AllowReject:",allowReject)
                 contract.allowApprove = allowApprove
                 contract.allowReject = allowReject
                 // console.log(contract.allowAprove)
@@ -386,7 +396,7 @@ router.post("/approveContract/:id",async(req,res)=>{
             // console.log("Can Dirección General Sign? ",canDirectorGeneralSign)
             let canDirectorsign = getCanDirectorSign(historico)
             // console.log("Can Directors Sign? ",canDirectorsign)
-            let canThisDeptSign = await getCanThisDeptSign(historico,role,personaFirma)
+            let canThisDeptSign = await getCanThisDeptSign(historico,role)
             // console.log("Can This Department Sign? ",canThisDeptSign)
 
             // console.log(dept)
@@ -475,19 +485,34 @@ router.post("/approveContract/:id",async(req,res)=>{
                 res.redirect('/displayPendingContracts?successMsg='+successMsg)
             }
         }
-    }catch(err){console.log("Error en Approve Contract ID Post:",err)}
-
+    }catch(err){
+        console.log("Error en Approve Contract ID Post:",err)
+        errorMsg = "No se ha podido aprobar el contrato."
+        res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
+    }
 })
 router.get("/deleteContract/:id",async(req,res)=>{
     try{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             // console.log(req.params.id)
             const id=req.params.id
+            const contractToDelete = await Contract.findOne({_id:id})
+            console.log(contractToDelete.folder)
             // console.log("GET INSIDE ID: ", id)
+            // await deleteDirectoryContent(contractToDelete.folder)
+            // console.log("Folder Emptied")
+            fs.rmdirSync(contractToDelete.folder, { recursive: true }, err => {
+                if (err) throw err;
+            });
             await Contract.deleteOne({_id:id})
-            res.redirect("/displayPendingContracts")
+            successMsg = "Contrato Borrado"
+            res.redirect("/displayPendingContracts?successMsg="+successMsg)
         }
-    }catch(err){console.log("Error en DeleteContract ID Get:",err)}
+    }catch(err){
+        console.log("Error en DeleteContract ID Get:",err)
+        errorMsg = "No se ha podido borrar el contrato."
+        res.redirect("/displayPendingContracts?errorMsg="+errorMsg)
+    }
 })
 router.post("/rejectContract/:id",async(req,res)=>{
     try{
@@ -506,17 +531,19 @@ router.post("/rejectContract/:id",async(req,res)=>{
             const splitRole=fullRole.split(" - ")[1]
             errorMsg = createErrorMsgReject(fullRole,reason)
             let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,dept)
+            // console.log("Inside Reject Contract --> Persona Firma:", personaFirma)
             nuevaAccion={
-                accion:"Rechazado (" +reason+")",
+                accion:"Rechazado",
                 persona:personaFirma,
                 icono:"thumbs-down-sharp",
                 fecha: getCurrentDate(),
-                observaciones:rejectInfo
+                observaciones:"(" +reason+") "+rejectInfo
             }
             // console.log(nuevaAccion)
             // observaciones={reason:reason,additionalInfo:rejectInfo}
 
             let contract = await Contract.find({_id:id})
+            
             let historico = contract[0].historico
             // console.log("HISTORICO EN DB: ",historico)
             if (errorMsg!==""){
@@ -549,18 +576,24 @@ router.post("/rejectContract/:id",async(req,res)=>{
             // res.render("contracts",{errorMsg})
         }
         
-    }catch(err){console.log("Error en Reject Contract ID Post:",err)}
+    }catch(err){
+        errorMsg = "No se ha podido rechazar el contrato."
+        res.redirect('/displayPendingContracts?errorMsg='+errorMsg)
+        console.log("Error en Reject Contract ID Post:",err)}
 
 })
 router.get("/alertsContracts",async (req,res,next)=>{
     try{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
 
-            let successMsg = req.query.successMsg;
+            // let successMsg = req.query.successMsg;
+            const {successMsg,errorMsg}=req.query
             // console.log("SUCCESS MESSAGE: ",successMsg)
+            // console.log("ERROR MESSAGE: ",errorMsg)
 
             const notice = await Notice.find();
             notice.successMsg = successMsg
+            notice.errorMsg=errorMsg
             // console.log(notice)
 
 
@@ -573,19 +606,38 @@ router.post("/updateAlerts/:alertType",async(req,res)=>{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             const alertType=req.params.alertType;
             const {email,cc}=req.body
-            // console.log(alertType,email,cc,subject,emailBody)
-            const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc})
-            // console.log(newAlert)
-            const successMsg = "Configuración Guardada"
-            res.redirect("/alertsContracts?successMsg="+successMsg)
+            // console.log(email)
+            const isEmail = validateEmail(email)
+            const isCC = validateEmail(cc)
+            // console.log(isEmail)
+            // console.log(email)
+            if (email==="" || email===undefined || email===null || isEmail===false || isCC===false){
+                errorMsg = "Debe ponerse al menos un destinatario."
+                res.redirect('/alertsContracts?errorMsg='+errorMsg)
+            } else {
+                // console.log(alertType,email,cc,subject,emailBody)
+                const newAlert = await Notice.findOneAndUpdate({noticeType:alertType},{destinatario:email,cc:cc})
+                if (alertType==="newContract"){
+                    const newAlertChanges = await Notice.findOneAndUpdate({noticeType:"notifyChanges"},{destinatario:email,cc:cc})
+                }
+                // console.log(newAlert)
+                const successMsg = "Configuración Guardada"
+                res.redirect("/alertsContracts?successMsg="+successMsg)
+            }
         }
-    }catch(err){console.log("Error en UpdatAlerts AlertType Post:",err)}
+    }catch(err){
+        console.log("Error en UpdatAlerts AlertType Post:",err)
+        errorMsg = "No se ha podido guardar la configuración."
+        res.redirect('/alertsContracts?errorMsg='+errorMsg)
+    }
 })
 router.get("/editContracts/:id",async(req,res,next)=>{
     try{
         // console.log("entered the edit contract function")
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             const id = req.params.id
+            // console.log(req.query)
+            const {successMsg, errorMsg} = req.query
             // const successMsg = req.params.successMsg
             // console.log(successMsg)
             // console.log(id)
@@ -593,7 +645,8 @@ router.get("/editContracts/:id",async(req,res,next)=>{
             // console.log(selectedContract)
             const uploadedFiles = getFiles(selectedContract.uploadedFiles)
             const showeditButons = getshoweditButons(selectedContract.mainStatus)
-
+            const showNotifyChangesButton = getShowNotifyChangesButtons(selectedContract.historico)
+            // console.log(showNotifyChangesButton)
             // console.log(uploadedFiles)
             contr={
                 id:selectedContract.id,
@@ -610,7 +663,10 @@ router.get("/editContracts/:id",async(req,res,next)=>{
                 historico:selectedContract.historico,
                 firmas:selectedContract.firmas,
                 uploadedFiles:uploadedFiles,
-                showeditButons:showeditButons
+                showeditButons:showeditButons,
+                successMsg:successMsg,
+                errorMsg:errorMsg,
+                showNotifyChangesButton:showNotifyChangesButton
             }
             res.render("editContracts",contr)
             // res.redirect("/editContracts?pq="+pq)
@@ -645,9 +701,14 @@ router.get("/deleteFiles/:pq/:fileName",async(req,res,next)=>{
             await fs.remove(fileToDelete)
             
             // console.log(newUploadedFiles)
-            res.redirect("/editContracts/"+id)
+            successMsg = "Fichero eliminado correctamente."
+            res.redirect("/editContracts/"+id+"?successMsg="+successMsg)
         }
-    }catch(err){console.log("Error en DeleteFiles PQ Get:",err)}
+    }catch(err){
+        console.log("Error en DeleteFiles PQ Get:",err)
+        errorMsg = "No se ha podido eliminar el fichero."
+        res.redirect("/editContracts/"+id+"?errorMsg="+errorMsg)
+    }
 })
 router.get("/profile",async(req,res,next)=>{
     try{
@@ -710,10 +771,15 @@ router.post("/editContracts/uploadFiles/:pq/",upload.any(),async(req,res)=>{
                     newUploadedFiles.push(fileToSave)
                 }
                 await Contract.findOneAndUpdate({pq:pq},{uploadedFiles:newUploadedFiles})
-                res.redirect("/editContracts/"+pqId)
+                successMsg = "Fichero añadido correctamente."
+                res.redirect("/editContracts/"+pqId+"?successMsg="+successMsg)
             }
         }
-    }catch(err){console.log("Error en Edit Contracts UploadFiles PQ Post:",err)}
+    }catch(err){
+        console.log("Error en Edit Contracts UploadFiles PQ Post:",err)
+        errorMsg = "No se ha podido subir el fichero."
+        res.redirect("/editContracts/"+id+"?errorMsg="+errorMsg)
+    }
 })
 router.get("/deleteRole/:role",async(req,res)=>{
     try{
@@ -971,14 +1037,15 @@ router.post("/notifyChanges/:id",async(req,res,next)=>{
         if (!req.session.currentUser || req.session.currentUser===undefined ){res.redirect("/")}else{
             let id = req.params.id
             let changesInfo = req.body.notifyChangesInfo
-            console.log(changesInfo)
+            // console.log(changesInfo)
             const sesionEmail = req.session.currentUser.email
             let currentUser = await User.find({email:sesionEmail})
             // console.log("ID en Inicio Rutina:",id)
-            
+
             // let personaFirma=getPersonaHistorico(currentUser[0].name,currentUser[0].surname,"")
             // console.log("Persona Firma: ",personaFirma)
             let contract = await Contract.find({_id:id})
+            await sendNoticeEmail("notifyChanges",contract,changesInfo)
             let historico = contract[0].historico
             nuevaAccion={
                 accion:"Cambios Notificados",
@@ -988,22 +1055,217 @@ router.post("/notifyChanges/:id",async(req,res,next)=>{
                 observaciones:changesInfo
             }
             historico.push(nuevaAccion)
+            firmas={
+                autOperaciones:{value:false,person:""},
+                dirOperaciones:{value:false,person:""},
+                autComercial:{value:false,person:""},
+                dirComercial:{value:false,person:""},
+                autPRL:{value:false,person:""},
+                dirPRL:{value:false,person:""},
+                autCRiesgos:{value:false,person:""},
+                dirCRiesgos:{value:false,person:""}
+            }
         
-            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico})
+            await Contract.findByIdAndUpdate({"_id":id},{"historico":historico, "firmas":firmas})
             contract[0].historico = historico
-            await sendNoticeEmail("notifyChanges",contract,changesInfo)
-            let successMsg = "The changes had been notified."
+            
+            let successMsg = "The changes have been notified."
             // console.log("ID en Final Rutina:",id)
             
-            res.redirect("/editContracts/" + id)
+            res.redirect("/editContracts/" + id + "?successMsg="+successMsg)
         }   
     }catch(err){
+        let id = req.params.id
+        let errorMsg="No se han podido notificar los cambios."
+        res.redirect("/editContracts/" + id + "?errorMsg="+errorMsg)
         console.log("Error on notifyChanges/:id -->",err)
+    }
+})
+
+
+function createContractRoleSelectorObject(user,contract){
+    // console.log("Inside createContractRoleSelectorObject")
+    // console.log("User:",user)
+    const userRoles = user.role
+    // console.log("User Roles:",userRoles)
+    // console.log("Contract:", contract)
+    const contractHistoriy = contract.historico
+    // console.log("Historico Contrato:",contractHistoriy)
+    const resultObject = {
+    }
+    // const roleList = [
+    //     "Comercial - Autorizado","Comercial - Director",
+    //     "Control de Riesgos - Autorizado","Control de Riesgos - Director",
+    //     "Operaciones - Autorizado","Operaciones - Director",
+    //     "PRL - Autorizado","PRL - Director",
+    //     "Dirección General"
+    // ]
+
+    
+    //Check if the user have that role
+
+
+    //Check if that department have to sign
+    // console.log("Can Autorizado Sign??",getCanAutorizedSign(contractHistoriy,"Comercial - Autorizado"))
+    // console.log("Can Directors Sign??",getCanDirectorSign(contractHistoriy,"Comercial - Director"))
+    // console.log("Can Director General Sign??",getCanDirectorGeneralsign(contractHistoriy))
+
+    // console.log("Can Comercial Sign??",getCanThisDeptSign(contractHistoriy,"Comercial - Autorizado"))
+    // console.log("Can PRL Sign??",getCanThisDeptSign(contractHistoriy,"PRL - Autorizado"))
+    // console.log("Can Operaciones Sign??",getCanThisDeptSign(contractHistoriy,"Operaciones - Autorizado"))
+    // console.log("Can Control de Riesgos Sign??",getCanThisDeptSign(contractHistoriy,"Control de Riesgos - Autorizado"))
+
+
+
+
+    //AUTORIZADOS
+    if (userRoles.indexOf("Comercial - Autorizado")===-1){
+        resultObject.autComercial=false
+    }else{
+        if(getCanAutorizedSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Comercial - Autorizado")){
+            resultObject.autComercial=true
+            roleCountVariable=+1
+        } else {
+            resultObject.autComercial=false
+        }    
+    }
+
+    if (userRoles.indexOf("PRL - Autorizado")===-1){
+        resultObject.autPRL=false
+    }else{
+        if(getCanAutorizedSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"PRL - Autorizado")){
+            resultObject.autPRL=true
+            roleCountVariable=+1
+        } else {
+            resultObject.autPRL=false
+        }    
+    }
+
+    if (userRoles.indexOf("Operaciones - Autorizado")===-1){
+        resultObject.autOperaciones=false
+    }else{
+        if(getCanAutorizedSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Operaciones - Autorizado")){
+            resultObject.autOperaciones=true
+            roleCountVariable=+1
+        } else {
+            resultObject.autOperaciones=false
+        }    
+    }
+
+    if (userRoles.indexOf("Control de Riesgos - Autorizado")===-1){
+        resultObject.autControlRiesgos=false
+    }else{
+        if(getCanAutorizedSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Control de Riesgos - Autorizado")){
+            resultObject.autControlRiesgos=true
+            roleCountVariable=+1
+        } else {
+            resultObject.autControlRiesgos=false
+        }
+    }
+
+    //DIRECTORES
+    if (userRoles.indexOf("Comercial - Director")===-1){
+        resultObject.dirComercial=false
+    }else{
+        if(getCanDirectorSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Comercial - Director")){
+            resultObject.dirComercial=true
+            roleCountVariable=+1
+        } else {
+            resultObject.dirComercial=false
+        }
+    }
+
+    if (userRoles.indexOf("PRL - Director")===-1){
+        resultObject.dirPRL=false
+    }else{
+        if(getCanDirectorSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"PRL - Director")){
+            resultObject.dirPRL=true
+            roleCountVariable=+1
+        } else {
+            resultObject.dirPRL=false
+        }
+    }
+
+    if (userRoles.indexOf("Operaciones - Director")===-1){
+        resultObject.dirOperaciones=false
+    }else{
+        if(getCanDirectorSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Operaciones - Director")){
+            resultObject.dirOperaciones=true
+            roleCountVariable=+1
+        } else {
+            resultObject.dirOperaciones=false
+        }
+    }
+
+    if (userRoles.indexOf("Control de Riesgos - Director")===-1){
+        resultObject.dirControlRiesgos=false
+    }else{
+        if(getCanDirectorSign(contractHistoriy) && getCanThisDeptSign(contractHistoriy,"Control de Riesgos - Director")){
+            resultObject.dirControlRiesgos=true
+            roleCountVariable=+1
+        } else {
+            resultObject.dirControlRiesgos=false
+        }
     }
 
 
-})
+    //DIRECTOR GENERAL
+    if (userRoles.indexOf("Dirección General")===-1){
+        resultObject.dirGeneral=false
+    }else{
+        if(getCanDirectorGeneralsign(contractHistoriy)){
+            resultObject.dirGeneral=true
+            roleCountVariable=+1
+        } else {
+            resultObject.dirGeneral=false
+        }
+    }
+    
 
+    //MULTIPLES ROLES?
+    if (roleCountVariable>1){resultObject.singleRole = true}else{resultObject.singleRole = false}
+    // console.log(resultObject)
+    return resultObject
+}
+function allowRejection(historico){
+    if(historico[historico.length-1].accion === "Rechazado"){
+        return false
+    } else {
+        return true
+    }
+}
+function getShowNotifyChangesButtons(historico){
+    // console.log("Last Action:", historico[historico.length-1].accion)
+    if(historico[historico.length-1].accion !== "Rechazado"){
+        return false
+    } else {
+        return true
+    }
+}
+function validateEmail(email) {
+    // console.log("INSIDE VALIDAE EMAIL")
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    // console.log("Emails inside validateEmail:", email)
+    let emailSeparator
+    if (email.includes(";")){
+        emailSeparator=";"
+    } else if (email.includes(",")){
+        emailSeparator=","
+    } else if (email.includes(" ")){
+        emailSeparator=" "
+    }
+
+    const emailList = email.split(emailSeparator)
+
+    for (i=0; i<emailList.length-1;i++){
+        if (!re.test(String(emailList[i]).toLowerCase())){
+            result =  false
+        }
+    }
+    result = true
+    // console.log("result", result)
+    return result;
+}
 function getEmailBodyNotifyChanges(pq,client,comercial,work,amount,finalUser,wonDate,receptionDate,appCreationDate,nPedido,info){
     const emailBody=`<!DOCTYPE html>
     <html lang="en">
@@ -2287,6 +2549,9 @@ async function sendNoticeEmail(noticetype,contract,info=''){
     // console.log(noticeTemplate)
     // const nodemailerAttachments = createAttachments(uploadedFiles)
     // console.log(nodemailerAttachments)
+
+    // console.log(noticeTemplate[0].destinatario)
+
     emailParams={
         host:process.env.EMAIL_HOST,
         port:process.env.EMAIL_PORT,
@@ -2301,7 +2566,7 @@ async function sendNoticeEmail(noticetype,contract,info=''){
         cc:noticeTemplate[0].cc,
         subject:emailSubject,
         html: htmlEmailBody,
-        attachments:uploadedFiles
+        //attachments:uploadedFiles
     }
     
     // console.log(contractList)
@@ -2367,6 +2632,7 @@ function createChangePasswordErrorMsg(currentPass,newPass,repeatedPass){
 function getCanDirectorGeneralsign(historico){
     let indexLastRejection = -1
     // let historico = contract.historico
+    //Find position of last rejection and save the position in 'indexLastRejection'
     for(i=historico.length-1;i>=0;i--){
         if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
     }
@@ -2442,7 +2708,7 @@ function countApprove(hist){
     }
     return result
 }
-async function getCanThisDeptSign(historico,fullRole,personaFirma){
+function getCanThisDeptSign(historico,fullRole){
     // console.log(historico)
     // console.log(fullRole)
     // let dept = fullRole.split(" - ")[0]
@@ -2519,6 +2785,22 @@ function getCanDirectorSign(historico){
     }
     // console.log(historicoRelevante)
     if (countEscalados(historicoRelevante)===1){return true}else{return false}
+}
+function getCanAutorizedSign(historico){
+    let indexLastRejection = -1
+    // let historico = contract.historico
+    for(i=historico.length-1;i>=0;i--){
+        if(historico[i].accion.includes("Rechazado")){indexLastRejection=i;break}
+    }
+    // console.log("indexLastRejection: -->", indexLastRejection)
+    //Cut everything previous to last rejection.
+    if (indexLastRejection===-1){
+        var historicoRelevante = historico
+    } else{
+        var historicoRelevante = historico.slice(indexLastRejection+1)
+    }
+    // console.log(historicoRelevante)
+    if (countEscalados(historicoRelevante)===0){return true}else{return false}
 }
 function getshoweditButons(mainStatus){
     if(mainStatus==="Closed"){
@@ -2843,7 +3125,7 @@ function readExcel(excelPath,cell){
     // console.log(desired_value)
     return desired_value;
 }
-function validateEmail(email) {
+function validateEmail2(email) {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
@@ -3078,6 +3360,9 @@ function getPersonaHistorico(name,surname,dept){
     // let name2=""
     // let minidept=""
     // let result=""
+
+    // console.log("Inside Get Personal Historico:", name, surname, dept)
+    
     if (name.includes(" ")){
         var name1 = name.split(" ")[0]
         var name2 = name.split(" ")[1].charAt(0)
@@ -3085,16 +3370,22 @@ function getPersonaHistorico(name,surname,dept){
     } else {
         var name1=name
     }
-    
+    // console.log("Name1:", name1)
+
     let surnameInicial=surname.charAt(0)
-    
+    // console.log("surnameInicial:", surnameInicial)
+    // console.log("dept:", dept)
     let minidept =getMiniDept(dept)
+    // console.log("minidept:", minidept)
+    let result
     if (minidept===""){
-        let result = name1 + " " + surnameInicial+"."
+        // console.log("minidept === ''")
+        result = name1 + " " + surnameInicial+"."
     } else {
-        let result = name1 + " " + surnameInicial+". (" + minidept +")"
+        // console.log("minidept !== ''")
+        result = name1 + " " + surnameInicial+". (" + minidept +")"
     }
-    
+    // console.log("result:", result)
     return result
 }
 function getMiniDept(dept){
@@ -3137,6 +3428,7 @@ function getCanReject(historico){
 async function createRoleSelector(role){
     var roleCountVariable=0
     var roleObj={}
+    console.log(role)
     if (role.indexOf("Comercial - Autorizado")!==-1){roleObj.autComercial=true;roleCountVariable=+1}else{roleObj.autComercial=false}
     if (role.indexOf("PRL - Autorizado")!==-1){roleObj.autPRL=true;roleCountVariable=+1}else{roleObj.autPRL=false}
     if (role.indexOf("Operaciones - Autorizado")!==-1){roleObj.autOperaciones=true;roleCountVariable=+1}else{roleObj.autOperaciones=false}

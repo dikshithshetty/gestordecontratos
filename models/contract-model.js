@@ -17,6 +17,7 @@ const contractSchema = new Schema(
         fechaCreaccionApp:{type:String,default:getCurrentDate()},
         visible:{type:Boolean,default:true},
         mainStatus:{type:String,default:"Pending"},
+        folder:{type:String,required:true},
         firmas:{
           autOperaciones:{
             value:{type:Boolean,default:false},
