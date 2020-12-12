@@ -14,7 +14,7 @@ const app = express();
 
 // require configurations
 require('./cfg/db-cfg');
-const config = require('./config.js');
+const config = require('./cfg/config.js');
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
