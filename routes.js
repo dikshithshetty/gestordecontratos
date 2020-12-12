@@ -30,7 +30,7 @@ router.get('/contractmanager/',(req,res,next)=>{
 })
 router.post('/contractmanager/', async(req,res,next)=>{
     try{
-
+        console.log('INSIDE /contractmanager/ POST')
         // console.log("Entering Login POST Method")
         const{email, password} = req.body;
         var errorMsg = '';
@@ -84,7 +84,7 @@ router.post('/contractmanager/', async(req,res,next)=>{
     }catch(err){console.log("Error en Login Post:",err)}
 
 })
-router.get('/register',(req,res,next)=>{
+router.get('/contractmanager/register',(req,res,next)=>{
     // if (req.session!==undefined) {
     //     res.render('contracts');
     // } else {
@@ -94,7 +94,7 @@ router.get('/register',(req,res,next)=>{
         res.render('login-register/register', template);
     // }
 })
-router.post('/register',async (req,res,next)=>{
+router.post('/contractmanager/register',async (req,res,next)=>{
     try{
         const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
         var errorMsg = [];
@@ -855,7 +855,7 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
     }catch(err){console.log("Error en /profile/uploadNewPAssword: ",err)}
 })
 
-router.get("/forgotPassword",async(req,res,next)=>{
+router.get("/contractmanager/forgotPassword",async(req,res,next)=>{
     try{
         let template = {
             layout: false
@@ -866,7 +866,7 @@ router.get("/forgotPassword",async(req,res,next)=>{
     }
     
 })
-router.post("/forgotPassword",async(req,res,next)=>{
+router.post("/contractmanager/forgotPassword",async(req,res,next)=>{
     try {
 
         let userEmail = req.body.email
