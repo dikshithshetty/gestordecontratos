@@ -24,12 +24,12 @@ require('./cfg/db-cfg');
 // hbs.registerPartials(__dirname + '/views/partials');
 // hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname,'contractmanager', 'views'));
 app.set('view engine', 'hbs');
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname,'contractmanager', 'public')));
 
 //Registrar varis partials
-var partialsDir = __dirname + '/views/partials';
+var partialsDir = __dirname + '/contractmanager/views/partials';
 var filenames = fs.readdirSync(partialsDir);
 filenames.forEach(function (filename) {
 var matches = /^([^.]+).hbs$/.exec(filename);
@@ -67,6 +67,6 @@ app.use(session({
 
 const index = require('./routes');
 
-app.use('/', index);
+app.use('/contractmanager/', index);
 
 module.exports = app;

@@ -16,7 +16,7 @@ const { findOne } = require("./models/user-model");
 var crypto = require('crypto');
 const e = require('express');
 
-router.get('/',(req,res,next)=>{
+router.get('/contractmanager/',(req,res,next)=>{
     
     // console.log(req.session)
     let template = {

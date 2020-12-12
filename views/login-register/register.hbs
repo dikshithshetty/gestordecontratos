@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link  rel="icon"   href="/images/icons/favicon.png" type="image/png" />
+    <link  rel="icon"   href="/contractmanager/images/icons/favicon.png" type="image/png" />
     <title>Contract Manager</title>
-    <link rel="stylesheet" href="/stylesheets/main.css">
-    <link rel="stylesheet" href="/stylesheets/login-register.css">
-    <script src="/js/register.js"></script>
+    <link rel="stylesheet" href="/contractmanager/stylesheets/main.css">
+    <link rel="stylesheet" href="/contractmanager/stylesheets/login-register.css">
+    <script src="/contractmanager/js/register.js"></script>
 </head>
 <body>
 
-<form class="bg-register-login register-container register" action="/register" method="POST" id="registerForm">
+<form class="bg-register-login register-container register" action="/contractmanager/register" method="POST" id="registerForm">
     <h1 class="black">Register</h1>
          <div class="form-label">
             <input type="text" placeholder="First name" name="username" value="{{#if formData.username}}{{formData.username}}{{/if}}">    
@@ -68,7 +68,7 @@
         <div class="devided"></div>
     </div>
 
-        <a class="create-account-link" href="/">Go to Login</a>
+        <a class="create-account-link" href="/contractmanager/">Go to Login</a>
 
 </form>
 
