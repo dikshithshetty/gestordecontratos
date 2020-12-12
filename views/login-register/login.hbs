@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link  rel="icon"   href="/contractmanager/images/icons/favicon.png" type="image/png" />
+    <link  rel="icon"   href="/images/icons/favicon.png" type="image/png" />
     <title>Contract Manager</title>
-    <link rel="stylesheet" href="/contractmanager/stylesheets/main.css">
-    <link rel="stylesheet" href="/contractmanager/stylesheets/login-register.css">
+    <link rel="stylesheet" href="/stylesheets/main.css">
+    <link rel="stylesheet" href="/stylesheets/login-register.css">
 </head>
 <body>
 
-<form class="bg-register-login login-container" action="/contractmanager/" method="POST"> 
+<form class="bg-register-login login-container" action="/" method="POST"> 
     <h1 class="black">Login</h1>
 
     <input type="email" placeholder="Your email here" name="email"  value="{{#if formData.email}}{{formData.email}}{{/if}}{{#if email}}{{email}}{{/if}}">
     <input type="password" placeholder="Introduce a password" name="password" >
 
     <!-- forgot password -->
-    <a class="underline-link forgot-password" href="/contractmanager/forgotPassword">Forgot your password?</a>
+    <a class="underline-link forgot-password" href="/forgotPassword">Forgot your password?</a>
 
     <button class="btn btn-blue" type="submit">LOG IN</button>
 
@@ -41,7 +41,7 @@
         <div class="devided"></div>
     </div>
 
-    <a class="create-account-link" href="/contractmanager/register">Create an account</a>
+    <a class="create-account-link" href="/register">Create an account</a>
 </form>
 <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 </body>

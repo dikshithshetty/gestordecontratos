@@ -16,7 +16,7 @@ const { findOne } = require("./models/user-model");
 var crypto = require('crypto');
 const e = require('express');
 
-router.get('/contractmanager/',(req,res,next)=>{
+router.get('/',(req,res,next)=>{
     
     // console.log(req.session)
     let template = {
@@ -28,7 +28,7 @@ router.get('/contractmanager/',(req,res,next)=>{
         res.render('login-register/login', template);
     }
 })
-router.post('/contractmanager/', async(req,res,next)=>{
+router.post('/', async(req,res,next)=>{
     try{
         console.log('INSIDE /contractmanager/ POST')
         // console.log("Entering Login POST Method")
@@ -72,7 +72,7 @@ router.post('/contractmanager/', async(req,res,next)=>{
                         await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
                         await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
 
-                        res.redirect("/contractmanager/displayPendingContracts")                                       //Redirect to home.
+                        res.redirect("/displayPendingContracts")                                       //Redirect to home.
                     }else{
                         errorMsg="Incorrect email or password."                 //Password is inccorrect.
                         formData={errorMsg:errorMsg,email:email,layout:false}
@@ -84,17 +84,18 @@ router.post('/contractmanager/', async(req,res,next)=>{
     }catch(err){console.log("Error en Login Post:",err)}
 
 })
-router.get('/contractmanager/register',(req,res,next)=>{
+router.get('/register',(req,res,next)=>{
     // if (req.session!==undefined) {
     //     res.render('contracts');
     // } else {
+        
         let template = {
             layout: false
         }
         res.render('login-register/register', template);
     // }
 })
-router.post('/contractmanager/register',async (req,res,next)=>{
+router.post('/register',async (req,res,next)=>{
     try{
         const{username, usersurname, email, repeatemail, password, repeatedpassword, role,role1,role2,role3,role4} = req.body;
         var errorMsg = [];
@@ -855,7 +856,7 @@ router.post("/profile/uploadNewPassword",async(req,res,next)=>{
     }catch(err){console.log("Error en /profile/uploadNewPAssword: ",err)}
 })
 
-router.get("/contractmanager/forgotPassword",async(req,res,next)=>{
+router.get("/forgotPassword",async(req,res,next)=>{
     try{
         let template = {
             layout: false
@@ -866,7 +867,7 @@ router.get("/contractmanager/forgotPassword",async(req,res,next)=>{
     }
     
 })
-router.post("/contractmanager/forgotPassword",async(req,res,next)=>{
+router.post("/forgotPassword",async(req,res,next)=>{
     try {
 
         let userEmail = req.body.email
