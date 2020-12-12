@@ -9,19 +9,12 @@ const session    = require("express-session");
 const path = require('path');
 const MongoStore = require("connect-mongo")(session);
 const app_name = require('./package.json').name;
-
 const fs=require('fs');
-// const fileUpload = require('express-fileupload');
-
 const app = express();
 
-// require database configuration
+// require configurations
 require('./cfg/db-cfg');
-
-// hbs.registerPartial('partial', fs.readFileSync(__dirname + '/views/partials/', 'utf8'));
-// hbs.registerPartials(__dirname + "/views/partials");
-// hbs.registerPartials(__dirname + '/views/partials');
-// hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
+const config = require('./config.js');
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -40,18 +33,11 @@ filenames.forEach(function (filename) {
   hbs.registerPartial(name, template);
 });
 
-
-
-
-
-
-
 // Middleware Setup ¿¿¿¿¿QUE HACE ESTO?????
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(fileUpload())
 app.use(session({
     secret: "basic-auth-secret",
     cookie: { maxAge: 24 * 60 * 60 * 1000 },
@@ -66,7 +52,7 @@ app.use(session({
 
 const index = require('./routes');
 
-app.use('/contractmanager/', index);
+app.use(config.baseUrl, index);
 // app.use('/', index);
 
 module.exports = app;

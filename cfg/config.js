@@ -1,4 +1,5 @@
 //config.js
 module.exports  = {
-	baseUrl: '/',
+  baseUrl: '/'
+  // baseUrl: '/contractmanager/'
 }

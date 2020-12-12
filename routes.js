@@ -11,10 +11,30 @@ const nodemailer=require('nodemailer')
 const User = require('./models/user-model');
 const Contract = require('./models/contract-model');
 const Notice = require('./models/notice-model')
-const { Console } = require('console');
-const { findOne } = require("./models/user-model");
+// const { Console } = require('console');
+// const { findOne } = require("./models/user-model");
 var crypto = require('crypto');
-const e = require('express');
+// const e = require('express');
+
+
+// const config = require('./config.js');
+
+// var app = express();
+
+// var mainRouter = express.Router();
+// indexRouter.get('/', function(req, res) {
+// 	res.send('Hello World!');
+// });
+
+// const contractManagerRouter = express.Router();
+// var fooRouter = express.Router();
+// fooRouter.get('/', function(req, res) {
+//   res.send('Hello from foo');
+// });
+// router.use('/contractmanager', contractManagerRouter);
+
+// app.use(config.baseUrl, indexRouter);
+
 
 router.get('/',(req,res,next)=>{
     
