@@ -28,7 +28,7 @@ router.get('/',(req,res,next)=>{
         res.render('login-register/login', template);
     }
 })
-router.post('/', async(req,res,next)=>{
+router.post('/contractmanager/', async(req,res,next)=>{
     try{
 
         // console.log("Entering Login POST Method")
