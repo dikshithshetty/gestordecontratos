@@ -68,10 +68,11 @@ router.post('/', async(req,res,next)=>{
                     if (bcrypt.compareSync(password, user.password)) {          //Check if password match.
                         req.session.currentUser = user;                         //Save User Session.
                         // await deleteDir(path.join(__dirname,"uploadedContracts"))
+                        console.log("INSIDE LOGIN POST -> _dirname:", __dirname)
                         await deleteDirectoryContent(path.join(__dirname,"uploadedContracts"))
                         await deleteDirectoryContent(path.join(__dirname,"temporaryFiles"))
 
-                        res.redirect("/displayPendingContracts")                                       //Redirect to home.
+                        res.redirect("/contractmanager/displayPendingContracts")                                       //Redirect to home.
                     }else{
                         errorMsg="Incorrect email or password."                 //Password is inccorrect.
                         formData={errorMsg:errorMsg,email:email,layout:false}
